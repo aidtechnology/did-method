@@ -1,0 +1,53 @@
+excludes:
+  - vendor
+protoc:
+  version: 3.6.1
+  allow_unused_imports: false
+  includes:
+    - vendor
+    - vendor/github.com/gogo/protobuf
+    - vendor/github.com/gogo/googleapis
+    - vendor/github.com/grpc-ecosystem/grpc-gateway
+lint:
+  rules:
+    add:
+      - SYNTAX_PROTO3
+      - FILE_OPTIONS_GO_PACKAGE_NOT_LONG_FORM
+      - FILE_OPTIONS_GO_PACKAGE_SAME_IN_DIR
+    remove:
+      - REQUEST_RESPONSE_TYPES_UNIQUE
+      - REQUEST_RESPONSE_TYPES_IN_SAME_FILE
+      - PACKAGES_SAME_IN_DIR
+      - FILE_OPTIONS_EQUAL_GO_PACKAGE_PB_SUFFIX
+      - FILE_OPTIONS_EQUAL_JAVA_PACKAGE_COM_PREFIX
+      - FILE_OPTIONS_EQUAL_JAVA_OUTER_CLASSNAME_PROTO_SUFFIX
+create:
+  packages:
+    - directory: .
+      name: io.bryk.id
+generate:
+  go_options:
+    import_path: github.com/bryk-io/id
+    extra_modifiers:
+      google/protobuf/any.proto: github.com/gogo/protobuf/types
+      google/protobuf/empty.proto: github.com/gogo/protobuf/types
+      google/protobuf/duration.proto: github.com/gogo/protobuf/types
+      google/protobuf/field_mask.proto: github.com/gogo/protobuf/types
+      google/protobuf/struct.proto: github.com/gogo/protobuf/types
+      google/protobuf/timestamp.proto: github.com/gogo/protobuf/types
+      google/protobuf/wrappers.proto: github.com/gogo/protobuf/types
+      google/api/annotations.proto: github.com/gogo/googleapis/google/api
+      gogoproto/gogo.proto: github.com/gogo/protobuf/gogoproto
+  plugins:
+    - name: gogofast
+      type: gogo
+      flags: plugins=grpc
+      output: .
+    - name: grpc-gateway
+      type: go
+      output: .
+#    - name: descriptor_set
+#      file_suffix: bin
+#      include_imports: true
+#      include_source_info: true
+#      output: descriptor

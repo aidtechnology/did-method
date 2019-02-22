@@ -1,0 +1,23 @@
+# Generals
+.DS_Store
+.idea
+*.iml
+
+# Deps
+vendor/**
+
+# PKI
+*.crt
+*.csr
+*.cer
+*.pem
+*.key
+!**/testdata/*.cer
+!**/testdata/*.pem
+
+# protobuf / RPC
+*.swagger.json
+
+# Build
+bryk-id
+bryk-id-*
