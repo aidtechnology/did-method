@@ -5,7 +5,11 @@ BINARY_NAME=bryk-id
 VERSION_TAG=0.1.0
 
 # Custom compilation tags
-LD_FLAGS=""
+LD_FLAGS="\
+-X github.com/bryk-io/id/client/cli/cmd.coreVersion=$(VERSION_TAG) \
+-X github.com/bryk-io/id/client/cli/cmd.buildCode=`git log --pretty=format:'%H' -n1` \
+-X github.com/bryk-io/id/client/cli/cmd.buildTimestamp=`date +'%s'` \
+"
 
 test: ## Run all tests excluding the vendor dependencies
 	# Formatting
