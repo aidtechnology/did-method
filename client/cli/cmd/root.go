@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -11,12 +12,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Main configuration file
-var cfgFile string
+var (
+	cfgFile string
+	homeDir string
+)
 
 var rootCmd = &cobra.Command{
-	Use:   "bryk-id",
-	Short: "Bryk Identity: client application",
+	Use:           "bryk-id",
+	Short:         "Bryk Identity: client application",
+	SilenceErrors: true,
 }
 
 func Execute() {
@@ -28,11 +32,11 @@ func Execute() {
 
 func init() { 
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(
-		&cfgFile,
-		"config",
-		"",
-		"config file (default is $HOME/.bryk-id/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.bryk-id/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.bryk-id)")
+	if err := viper.BindPFlag("home", rootCmd.PersistentFlags().Lookup("home")); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func initConfig() {
@@ -44,7 +48,8 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		viper.AddConfigPath(path.Join(home, ".bryk-id"))
+		homeDir = path.Join(home, ".bryk-id")
+		viper.AddConfigPath(homeDir)
 		viper.SetConfigName("config")
 	}
 

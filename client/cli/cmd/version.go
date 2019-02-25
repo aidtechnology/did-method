@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/spf13/cobra"
 )
 
 // Defines the semantic version of the build
