@@ -23,6 +23,7 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 }
 
+// Execute will process the CLI invocation
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -40,14 +41,21 @@ func init() {
 }
 
 func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := homedir.Dir()
+	home := ""
+	if homeDir == "" {
+		h, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		home = h
+	} else {
+		home = homeDir
+	}
+
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
 		homeDir = path.Join(home, ".bryk-id")
 		viper.AddConfigPath(homeDir)
 		viper.SetConfigName("config")

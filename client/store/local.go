@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 // LocalStore provides a filesystem-backed store
@@ -36,6 +37,28 @@ func (ls *LocalStore) Save(id string, record *Entry) error {
 		return err
 	}
 	return ioutil.WriteFile(path.Join(ls.home, id), contents, 0400)
+}
+
+// List currently registered entries
+func (ls *LocalStore) List() []*Entry {
+	var list []*Entry
+	_ = filepath.Walk(ls.home, func(f string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			contents, err := ioutil.ReadFile(filepath.Clean(f))
+			if err != nil {
+				return err
+			}
+			entry := &Entry{}
+			if err := entry.Decode(contents); err == nil {
+				list = append(list, entry)
+			}
+		}
+		return nil
+	})
+	return list
 }
 
 // Close the store instance and free resources
