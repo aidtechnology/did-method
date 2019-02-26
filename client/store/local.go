@@ -32,11 +32,7 @@ func (ls *LocalStore) Save(id string, record *Entry) error {
 	if exist(path.Join(ls.home, id)) {
 		return errors.New("duplicated entry")
 	}
-	contents, err := record.Encode()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(path.Join(ls.home, id), contents, 0400)
+	return ls.save(id, record)
 }
 
 // List currently registered entries
@@ -47,23 +43,52 @@ func (ls *LocalStore) List() []*Entry {
 			return err
 		}
 		if !info.IsDir() {
-			contents, err := ioutil.ReadFile(filepath.Clean(f))
+			entry, err := loadEntry(filepath.Clean(f))
 			if err != nil {
 				return err
 			}
-			entry := &Entry{}
-			if err := entry.Decode(contents); err == nil {
-				list = append(list, entry)
-			}
+			list = append(list, entry)
 		}
 		return nil
 	})
 	return list
 }
 
+// Get an existing entry based on its reference name
+func (ls *LocalStore) Get(name string) *Entry {
+	for _, e := range ls.List() {
+		if e.Name == name {
+			return e
+		}
+	}
+	return nil
+}
+
+// Update the contents of an existing entry
+func (ls *LocalStore) Update(id string, contents []byte) error {
+	if !exist(path.Join(ls.home, id)) {
+		return errors.New("duplicated entry")
+	}
+	entry, err := loadEntry(path.Join(ls.home, filepath.Clean(id)))
+	if err != nil {
+		return err
+	}
+	entry.Contents = contents
+	return ls.save(id, entry)
+}
+
 // Close the store instance and free resources
 func (ls *LocalStore) Close() error {
 	return nil
+}
+
+// Store a record
+func (ls *LocalStore) save(id string, record *Entry) error {
+	contents, err := record.Encode()
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path.Join(ls.home, id), contents, 0400)
 }
 
 // Verify the provided path is either a file or directory that exists
@@ -79,4 +104,17 @@ func dirExist(name string) bool {
 		return false
 	}
 	return info.IsDir()
+}
+
+// Get an entry from an existing file
+func loadEntry(f string) (*Entry, error) {
+	contents, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, err
+	}
+	entry := &Entry{}
+	if err := entry.Decode(contents); err != nil {
+		return nil, err
+	}
+	return entry, nil
 }

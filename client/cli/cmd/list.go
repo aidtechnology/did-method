@@ -22,7 +22,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
-func runListCmd(cmd *cobra.Command, args []string) error {
+func runListCmd(_ *cobra.Command, _ []string) error {
 	// Get store handler
 	st, err := store.NewLocalStore(viper.GetString("home"))
 	if err != nil {
