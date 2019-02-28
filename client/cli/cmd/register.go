@@ -98,7 +98,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 		Recovery: viper.GetString("register.recovery-mode"),
 		Contents: contents,
 	}
-	return st.Save(id.GetSubject(), record)
+	return st.Save(id.Subject(), record)
 }
 
 func getSecret(name string) ([]byte, error) {

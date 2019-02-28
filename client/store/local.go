@@ -88,7 +88,7 @@ func (ls *LocalStore) save(id string, record *Entry) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(path.Join(ls.home, id), contents, 0400)
+	return ioutil.WriteFile(path.Join(ls.home, id), contents, 0600)
 }
 
 // Verify the provided path is either a file or directory that exists

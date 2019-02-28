@@ -10,4 +10,4 @@ require (
 	golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613
 )
 
-replace github.com/bryk-io/x v0.0.0-20181116223904-7226e214d5bc => github.com/bcessa/bryk-x v0.0.0-20190224161941-7efa2d35b63c
+replace github.com/bryk-io/x v0.0.0-20181116223904-7226e214d5bc => github.com/bcessa/bryk-x v0.0.0-20190228165153-245460366811

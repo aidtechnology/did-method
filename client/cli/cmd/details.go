@@ -46,7 +46,7 @@ func runDidDetailsCmd(_ *cobra.Command, args []string) error {
 		return errors.New("failed to decode entry contents")
 	}
 
-	info, _ := json.MarshalIndent(id.GetDocument(), "", "  ")
+	info, _ := json.MarshalIndent(id.Document(), "", "  ")
 	fmt.Printf("%s\n", info)
 	return nil
 }

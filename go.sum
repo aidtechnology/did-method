@@ -12,6 +12,8 @@ github.com/bcessa/bryk-x v0.0.0-20190221132723-ca8ea71d7e05 h1:pxbQrGy1IBHVmmlXX
 github.com/bcessa/bryk-x v0.0.0-20190221132723-ca8ea71d7e05/go.mod h1:ITsq05ZoRdjjAGaJ6HXcN2NM/meNd59L/CDzChIeXBY=
 github.com/bcessa/bryk-x v0.0.0-20190224161941-7efa2d35b63c h1:oX6al/3xJiUb0WKGHLDj/Ym20ILiXT0LL6tocS8/0xg=
 github.com/bcessa/bryk-x v0.0.0-20190224161941-7efa2d35b63c/go.mod h1:ITsq05ZoRdjjAGaJ6HXcN2NM/meNd59L/CDzChIeXBY=
+github.com/bcessa/bryk-x v0.0.0-20190228165153-245460366811 h1:cGEgLTcvkSNmmuZeoHELBmdughek9fpPqKSuMpuZjuY=
+github.com/bcessa/bryk-x v0.0.0-20190228165153-245460366811/go.mod h1:ITsq05ZoRdjjAGaJ6HXcN2NM/meNd59L/CDzChIeXBY=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20160729034951-a0c5244a21f4/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=

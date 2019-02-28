@@ -42,7 +42,7 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 		if err := id.Decode(e.Contents); err != nil {
 			continue
 		}
-		_, _ = fmt.Fprintf(table,"%s\t%s\t%s\n", e.Name, e.Recovery, id.GetDID())
+		_, _ = fmt.Fprintf(table,"%s\t%s\t%s\n", e.Name, e.Recovery, id.DID())
 	}
 	return table.Flush()
 }
