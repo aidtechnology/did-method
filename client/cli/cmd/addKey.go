@@ -57,6 +57,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer st.Close()
 
 	// Get identifier
 	name := sanitize.Name(args[0])
