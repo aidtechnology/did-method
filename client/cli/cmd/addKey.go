@@ -47,7 +47,7 @@ func init() {
 	didCmd.AddCommand(addKeyCmd)
 }
 
-func runAddKeyCmd(cmd *cobra.Command, args []string) error {
+func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("you must specify a DID reference name")
 	}
@@ -77,6 +77,7 @@ func runAddKeyCmd(cmd *cobra.Command, args []string) error {
 	if strings.Count(keyName, "#") == 1 {
 		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys()) + 1), 1)
 	}
+	keyName = sanitize.Name(viper.GetString("key-add.name"))
 	keyType := did.KeyTypeEd
 	keyEnc := did.EncodingHex
 	if viper.GetString("key-add.type") == "rsa" {
@@ -87,6 +88,9 @@ func runAddKeyCmd(cmd *cobra.Command, args []string) error {
 	// Add key
 	if err = id.AddNewKey(keyName, keyType, keyEnc); err != nil {
 		return fmt.Errorf("failed to add new key: %s", err)
+	}
+	if err = id.AddProof("master", didDomainValue); err != nil {
+		return fmt.Errorf("failed to generate proof: %s", err)
 	}
 
 	// Update record

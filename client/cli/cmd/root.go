@@ -15,6 +15,7 @@ import (
 var (
 	cfgFile string
 	homeDir string
+	didDomainValue = "identity.bryk.io"
 )
 
 var rootCmd = &cobra.Command{

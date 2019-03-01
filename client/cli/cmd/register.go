@@ -84,7 +84,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	if err = id.AddAuthenticationKey("master"); err != nil {
 		return err
 	}
-	if err = id.AddProof("master", "identity.bryk.io"); err != nil {
+	if err = id.AddProof("master", didDomainValue); err != nil {
 		return err
 	}
 
