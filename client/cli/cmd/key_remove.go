@@ -12,14 +12,14 @@ import (
 )
 
 var removeKeyCmd = &cobra.Command{
-	Use:     "key-remove",
-	Example: "bryk-id did key-remove [DID reference name] [key name]",
+	Use:     "remove",
+	Example: "bryk-id did key remove [DID reference name] [key name]",
 	Short:   "Remove an existing cryptographic key for the DID",
 	RunE:    runRemoveKeyCmd,
 }
 
 func init() {
-	didCmd.AddCommand(removeKeyCmd)
+	keyCmd.AddCommand(removeKeyCmd)
 }
 
 func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
@@ -46,6 +46,9 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Remove key
+	if len(id.Keys()) >= 2 {
+		_ = id.RemoveAuthenticationKey(sanitize.Name(args[1]))
+	}
 	if err = id.RemoveKey(sanitize.Name(args[1])); err != nil {
 		return fmt.Errorf("failed to remove key: %s", name)
 	}

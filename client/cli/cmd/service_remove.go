@@ -12,14 +12,14 @@ import (
 )
 
 var removeServiceCmd = &cobra.Command{
-	Use:     "service-remove",
-	Example: "bryk-id did service-remove [DID reference name] [service name]",
+	Use:     "remove",
+	Example: "bryk-id did service remove [DID reference name] [service name]",
 	Short:   "Remove an existing service entry for the DID",
 	RunE:    runRemoveServiceCmd,
 }
 
 func init() {
-	didCmd.AddCommand(removeServiceCmd)
+	serviceCmd.AddCommand(removeServiceCmd)
 }
 
 func runRemoveServiceCmd(_ *cobra.Command, args []string) error {

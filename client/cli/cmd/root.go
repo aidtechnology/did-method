@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
+	hd "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -20,8 +20,16 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:           "bryk-id",
-	Short:         "Bryk Identity: client application",
+	Short:         "Bryk Identity: Client",
 	SilenceErrors: true,
+	Long:          `Bryk Identity: Client
+
+Reference client implementation for the "bryk" DID method. The platform allows
+entities to fully manage Decentralized Identifiers as described on the version
+v0.11 of the specification.
+
+For more information:
+https://w3c-ccg.github.io/did-spec`,
 }
 
 // Execute will process the CLI invocation
@@ -44,7 +52,7 @@ func init() {
 func initConfig() {
 	home := ""
 	if homeDir == "" {
-		h, err := homedir.Dir()
+		h, err := hd.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

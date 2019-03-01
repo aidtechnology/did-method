@@ -15,8 +15,8 @@ import (
 )
 
 var addServiceCmd = &cobra.Command{
-	Use:     "service-add",
-	Example: "bryk-id did service-add [DID reference name] --name \"service name\" --endpoint https://www.agency.com/user_id",
+	Use:     "add",
+	Example: "bryk-id did service add [DID reference name] --name \"service name\" --endpoint https://www.agency.com/user_id",
 	Short:   "Register a new service entry for the DID",
 	RunE:    runAddServiceCmd,
 }
@@ -45,7 +45,7 @@ func init() {
 	if err := setupCommandParams(addServiceCmd, params); err != nil {
 		log.Fatal(err)
 	}
-	didCmd.AddCommand(addServiceCmd)
+	serviceCmd.AddCommand(addServiceCmd)
 }
 
 func runAddServiceCmd(_ *cobra.Command, args []string) error {

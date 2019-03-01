@@ -14,8 +14,8 @@ import (
 )
 
 var addKeyCmd = &cobra.Command{
-	Use:     "key-add",
-	Example: "bryk-id did key-add [DID reference name] --name my-new-key --type ed --authentication",
+	Use:     "add",
+	Example: "bryk-id did key add [DID reference name] --name my-new-key --type ed --authentication",
 	Short:   "Add a new cryptographic key for the DID",
 	RunE:    runAddKeyCmd,
 }
@@ -44,7 +44,7 @@ func init() {
 	if err := setupCommandParams(addKeyCmd, params); err != nil {
 		log.Fatal(err)
 	}
-	didCmd.AddCommand(addKeyCmd)
+	keyCmd.AddCommand(addKeyCmd)
 }
 
 func runAddKeyCmd(_ *cobra.Command, args []string) error {
@@ -78,7 +78,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if strings.Count(keyName, "#") == 1 {
 		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys()) + 1), 1)
 	}
-	keyName = sanitize.Name(viper.GetString("key-add.name"))
+	keyName = sanitize.Name(keyName)
 	keyType := did.KeyTypeEd
 	keyEnc := did.EncodingHex
 	if viper.GetString("key-add.type") == "rsa" {
@@ -89,6 +89,11 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	// Add key
 	if err = id.AddNewKey(keyName, keyType, keyEnc); err != nil {
 		return fmt.Errorf("failed to add new key: %s", err)
+	}
+	if viper.GetBool("key-add.authentication") {
+		if err = id.AddAuthenticationKey(keyName); err != nil {
+			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
+		}
 	}
 	if err = id.AddProof("master", didDomainValue); err != nil {
 		return fmt.Errorf("failed to generate proof: %s", err)

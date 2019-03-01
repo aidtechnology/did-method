@@ -108,7 +108,7 @@ func dirExist(name string) bool {
 
 // Get an entry from an existing file
 func loadEntry(f string) (*Entry, error) {
-	contents, err := ioutil.ReadFile(f)
+	contents, err := ioutil.ReadFile(filepath.Clean(f))
 	if err != nil {
 		return nil, err
 	}
