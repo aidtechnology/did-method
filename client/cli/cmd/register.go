@@ -20,8 +20,8 @@ import (
 
 var registerCmd = &cobra.Command{
 	Use:     "register",
-	Example: "bryk-id register [DID reference name]",
 	Short:   "Register a new DID with the network",
+	Example: "bryk-id register [DID reference name]",
 	RunE:    runRegisterCmd,
 }
 
@@ -123,7 +123,7 @@ func getSecret(name string) ([]byte, error) {
 		}
 		return secret, nil
 	case "passphrase":
-		secret, err := secureAsk("\nEnter a secure pass phrase: ")
+		secret, err := secureAsk("\nEnter a secure passphrase: ")
 		if err != nil {
 			return nil, err
 		}
@@ -131,6 +131,7 @@ func getSecret(name string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("")
 		if !bytes.Equal(secret, confirmation) {
 			return nil, errors.New("the values provided are not equal")
 		}

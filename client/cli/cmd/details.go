@@ -14,9 +14,9 @@ import (
 
 var didDetailsCmd = &cobra.Command{
 	Use:     "details",
-	Aliases: []string{"info"},
-	Example: "bryk-id did details [DID reference name]",
 	Short:   "Display the current information available on an existing DID",
+	Example: "bryk-id did details [DID reference name]",
+	Aliases: []string{"info"},
 	RunE:    runDidDetailsCmd,
 }
 
