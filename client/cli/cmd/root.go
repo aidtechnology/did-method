@@ -16,6 +16,7 @@ var (
 	cfgFile string
 	homeDir string
 	didDomainValue = "identity.bryk.io"
+	defaultNode    = "identity.bryk.io"
 )
 
 var rootCmd = &cobra.Command{
@@ -73,9 +74,11 @@ func initConfig() {
 	// ENV
 	viper.SetEnvPrefix("bryk-id")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
 	// Read configuration file
+	viper.SetDefault("node", defaultNode)
 	if err := viper.ReadInConfig(); err != nil && viper.ConfigFileUsed() != "" {
 		fmt.Println("failed to load configuration file:", viper.ConfigFileUsed())
 	}
