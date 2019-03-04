@@ -34,18 +34,20 @@ func runDidDetailsCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer st.Close()
 
+	// Retrieve identifier
 	name := sanitize.Name(args[0])
 	e := st.Get(name)
 	if e == nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
 	}
-
 	id := &did.Identifier{}
 	if err = id.Decode(e.Contents); err != nil {
 		return errors.New("failed to decode entry contents")
 	}
 
+	// Present its LD document as output
 	info, _ := json.MarshalIndent(id.Document(), "", "  ")
 	fmt.Printf("%s\n", info)
 	return nil

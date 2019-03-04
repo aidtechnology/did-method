@@ -28,6 +28,9 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
+	defer st.Close()
+
+	// Get list of entries
 	list := st.List()
 	if len(list) == 0 {
 		fmt.Println("No DIDs registered for the moment")

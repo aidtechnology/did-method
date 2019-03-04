@@ -1,0 +1,78 @@
+syntax = "proto3";
+package io.bryk.id;
+
+// Go configuration
+option go_package = "proto";
+
+// Java configuration
+option java_package = "io.bryk.id";
+option java_multiple_files = true;
+option java_outer_classname = "PB";
+
+// GoGo proto extensions
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+option (gogoproto.gostring_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+
+// Add support for gRPC Gateway
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+
+// Common types
+// vendor/github.com/gogo/protobuf/types
+import "google/protobuf/empty.proto";
+
+// Generic ping response
+message Pong {
+  bool ok = 1;
+}
+
+// Request ticket for write operations
+message Ticket {
+  int64 timestamp = 1;
+  int64 nonce = 2 [(gogoproto.customname) = "NonceValue"];
+  bytes content = 3;
+  bytes signature = 4;
+}
+
+message Request {
+  string subject = 1;
+}
+
+message Response {
+  bool ok = 1;
+  bytes contents = 2;
+}
+
+// DID Method interface
+service Method {
+  // Reachability test
+  rpc Ping (google.protobuf.Empty) returns (Pong) {
+    option (google.api.http) = {
+      post: "/get"
+    };
+  }
+
+  // Return the current state of a DID subject
+  rpc Retrieve(Request) returns (Response) {
+    option (google.api.http) = {
+      get: "/retrieve/{subject}"
+    };
+  }
+
+  // Process an incoming request ticket
+  rpc Process(Ticket) returns (Response) {
+    option (google.api.http) = {
+      post: "/process"
+      body: "*"
+    };
+  }
+}

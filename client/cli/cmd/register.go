@@ -57,6 +57,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer st.Close()
 
 	// Get key secret from the user
 	secret, err := getSecret(name)
