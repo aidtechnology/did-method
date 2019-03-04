@@ -25,7 +25,7 @@ test: ## Run all tests excluding the vendor dependencies
 	go-consistent -v ./...
 
 	# Unit tests
-	# go test -race -cover -v $(GO_PKG_LIST)
+	go test -race -cover -v $(GO_PKG_LIST)
 
 build: ## Build for the default architecture in use
 	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME) github.com/bryk-io/id/client/cli

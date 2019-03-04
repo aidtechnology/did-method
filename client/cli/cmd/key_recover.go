@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"strings"
 
 	"github.com/bryk-io/x/crypto/shamir"
@@ -16,7 +17,7 @@ import (
 var recoverKeyCmd = &cobra.Command{
 	Use:     "recover",
 	Short:   "Recover a previously generated Ed25519 cryptographic key",
-	Example: "bryk-id did key recover --type ed --passphrase",
+	Example: "bryk-id did key recover --passphrase",
 	RunE:    runRecoverKeyCmd,
 }
 
@@ -52,17 +53,19 @@ func runRecoverKeyCmd(_ *cobra.Command, _ []string) error {
 		return errors.New("only one recovery mechanism might be used")
 	}
 
+	// Recover secret
 	secret, err := recoverSecret(pp, strings.Split(shares, ","))
 	if err != nil {
 		return err
 	}
 
+	// Recover key
 	kp, err := keyFromMaterial(secret)
 	if err != nil {
 		return fmt.Errorf("failed to recreate key: %s", err)
 	}
 	defer kp.Destroy()
-	fmt.Printf("\nkey recovered: %x\n", kp.Private)
+	fmt.Printf("\nkey recovered: %x\n", *kp.Private)
 	return nil
 }
 
@@ -87,7 +90,7 @@ func recoverSecret(pp bool, shareFile []string) ([]byte, error) {
 	// Use secret sharing
 	var parts [][]byte
 	for _, s := range shareFile {
-		c, err := ioutil.ReadFile(s)
+		c, err := ioutil.ReadFile(filepath.Clean(s))
 		if err != nil {
 			return nil, fmt.Errorf("failed to load the share: %s", s)
 		}

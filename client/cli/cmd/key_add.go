@@ -104,5 +104,5 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to encode identifier: %s", err)
 	}
-	return st.Update(id.Subject(), contents)
+	return st.Update(name, contents)
 }

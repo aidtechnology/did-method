@@ -3,7 +3,7 @@ package store
 // Entry represents an existing record on the store
 type Entry struct {
 	// Reference name for the DID instance
-	Name     string
+	Name string
 
 	// Recovery method specified
 	Recovery string
