@@ -10,6 +10,7 @@ import (
 	"github.com/bryk-io/id/client/store"
 	"github.com/bryk-io/id/proto"
 	"github.com/bryk-io/x/did"
+	"github.com/bryk-io/x/net/rpc"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -80,6 +81,24 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to verify ticket: %s", err)
 	}
 
-	// -> Submit request
+	// Submit request
+	fmt.Println("Establishing connection to the network")
+	var opts []rpc.ClientOption
+	opts = append(opts, rpc.WaitForReady())
+	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
+	conn, err := rpc.NewClientConnection(viper.GetString("node"), opts...)
+	if err != nil {
+		return fmt.Errorf("failed to establish connection: %s", err)
+	}
+	defer conn.Close()
+
+	// Submit request
+	fmt.Println("Submitting request to the network")
+	client := proto.NewMethodClient(conn)
+	res, err := client.Process(context.TODO(), ticket)
+	if err != nil {
+		return fmt.Errorf("network return an error: %s", err)
+	}
+	fmt.Printf("Final request status: %v\n", res.Ok)
 	return nil
 }

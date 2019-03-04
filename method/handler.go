@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Handler provides the required functionality for the DID method
 type Handler struct {
 	db     *kv.Store
 	server *rpc.Server

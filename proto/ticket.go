@@ -15,7 +15,7 @@ import (
 	e "golang.org/x/crypto/ed25519"
 )
 
-const ticketDifficultyLevel = 16
+const ticketDifficultyLevel = 24
 
 // ResetNonce returns the internal nonce value back to 0
 func (t *Ticket) ResetNonce() {
@@ -37,8 +37,8 @@ func (t *Ticket) Nonce() int64 {
 // timestamp and nonce are individually encoded using little endian byte order
 func (t *Ticket) Encode() ([]byte, error) {
 	var tc []byte
-	nb := new(bytes.Buffer)
-	tb := new(bytes.Buffer)
+	nb := bytes.NewBuffer(nil)
+	tb := bytes.NewBuffer(nil)
 	if err := binary.Write(nb, binary.LittleEndian, t.Nonce()); err != nil {
 		return nil, fmt.Errorf("failed to encode nonce value: %s", err)
 	}

@@ -28,10 +28,11 @@ test: ## Run all tests excluding the vendor dependencies
 	go test -race -cover -v $(GO_PKG_LIST)
 
 build: ## Build for the default architecture in use
-	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME) github.com/bryk-io/id/client/cli
+	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client github.com/bryk-io/id/client/cli
+	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-node github.com/bryk-io/id/method/cli
 
 install: ## Install the binary to GOPATH and keep cached all compiled artifacts
-	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME) github.com/bryk-io/id/client/cli
+	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME)-client github.com/bryk-io/id/client/cli
 
 clean: ## Download and compile all dependencies and intermediary products
 	go mod tidy

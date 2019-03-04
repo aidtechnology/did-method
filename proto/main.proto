@@ -43,10 +43,12 @@ message Ticket {
   bytes signature = 4;
 }
 
+// Request the contents of a DID based on its subject string
 message Request {
   string subject = 1;
 }
 
+// Generic query response
 message Response {
   bool ok = 1;
   bytes contents = 2;
@@ -57,7 +59,7 @@ service Method {
   // Reachability test
   rpc Ping (google.protobuf.Empty) returns (Pong) {
     option (google.api.http) = {
-      post: "/get"
+      get: "/ping"
     };
   }
 

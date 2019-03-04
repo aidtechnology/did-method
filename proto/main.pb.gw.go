@@ -116,7 +116,7 @@ func RegisterMethodHandler(ctx context.Context, mux *runtime.ServeMux, conn *grp
 // "MethodClient" to call the correct interceptors.
 func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MethodClient) error {
 
-	mux.Handle("POST", pattern_Method_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Method_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		if cn, ok := w.(http.CloseNotifier); ok {
@@ -207,7 +207,7 @@ func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 }
 
 var (
-	pattern_Method_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"get"}, ""))
+	pattern_Method_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"ping"}, ""))
 
 	pattern_Method_Retrieve_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"retrieve", "subject"}, ""))
 
