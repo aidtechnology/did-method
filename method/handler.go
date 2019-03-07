@@ -44,7 +44,7 @@ func (h *Handler) Close() (err error) {
 	return
 }
 
-// Retrieve an existing DID instance based on its subject strting
+// Retrieve an existing DID instance based on its subject string
 func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 	contents, err := h.db.Get([]byte(subject))
 	if err != nil {

@@ -95,9 +95,6 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	if err = id.AddService(svc); err != nil {
 		return fmt.Errorf("failed to add new service: %s", err)
 	}
-	if err = id.AddProof("master", didDomainValue); err != nil {
-		return fmt.Errorf("failed to generate proof: %s", err)
-	}
 
 	// Update record
 	contents, err := id.Encode()

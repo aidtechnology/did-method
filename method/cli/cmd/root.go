@@ -60,7 +60,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	opts = append(opts, rpc.WithPort(port))
 	opts = append(opts, rpc.WithHTTPGateway(rpc.HTTPGatewayOptions{
 		Port:         port,
-		EmitDefaults: true,
+		EmitDefaults: false,
 	}))
 	server, err := handler.GetServer(opts...)
 	if err != nil {
@@ -71,7 +71,8 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	fmt.Println("Waiting for requests...")
 	<-signalsHandler()
 	fmt.Println("Preparing to exit")
-	return handler.Close()
+	handler.Close()
+	return nil
 }
 
 // Custom OS signals handler

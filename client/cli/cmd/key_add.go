@@ -95,9 +95,6 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
 		}
 	}
-	if err = id.AddProof("master", didDomainValue); err != nil {
-		return fmt.Errorf("failed to generate proof: %s", err)
-	}
 
 	// Update record
 	contents, err := id.Encode()

@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -15,7 +13,7 @@ import (
 	e "golang.org/x/crypto/ed25519"
 )
 
-const ticketDifficultyLevel = 24
+const ticketDifficultyLevel = 16
 
 // ResetNonce returns the internal nonce value back to 0
 func (t *Ticket) ResetNonce() {
@@ -93,6 +91,13 @@ func (t *Ticket) Verify() (err error) {
 		return errors.New("invalid DID method")
 	}
 
+	// Verify private keys are not included
+	for _, k := range id.Keys() {
+		if len(k.Private) != 0 {
+			return errors.New("private keys included on the DID")
+		}
+	}
+
 	// Retrieve DID's master key
 	key := id.Key("master")
 	if key == nil {
@@ -100,18 +105,9 @@ func (t *Ticket) Verify() (err error) {
 	}
 
 	// Decode public key
-	var pubBytes []byte
-	if key.ValueHex != "" {
-		pubBytes, err = hex.DecodeString(key.ValueHex)
-		if err != nil {
-			return errors.New("invalid key hex encoding")
-		}
-	}
-	if key.ValueBase64 != "" {
-		pubBytes, err = base64.StdEncoding.DecodeString(key.ValueBase64)
-		if err != nil {
-			return errors.New("invalid key base64 encoding")
-		}
+	pubBytes, err := key.Bytes()
+	if err != nil {
+		return fmt.Errorf("failed to decode public key: %s", err)
 	}
 
 	// Get digest

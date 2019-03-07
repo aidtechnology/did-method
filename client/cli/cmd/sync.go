@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/bryk-io/id/client/store"
@@ -25,6 +26,17 @@ var syncCmd = &cobra.Command{
 }
 
 func init() {
+	params := []cParam{
+		{
+			name:      "proof-key",
+			usage:     "name of the key to use to generate the identifier proof",
+			flagKey:   "sync.proof",
+			byDefault: "master",
+		},
+	}
+	if err := setupCommandParams(syncCmd, params); err != nil {
+		log.Fatal(err)
+	}
 	rootCmd.AddCommand(syncCmd)
 }
 
@@ -51,12 +63,23 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return errors.New("failed to decode entry contents")
 	}
 
+	// Update proof
+	if err = id.AddProof(viper.GetString("sync.proof"), didDomainValue); err != nil {
+		return fmt.Errorf("failed to generate proof: %s", err)
+	}
+
+	// Get safe contents to synchronize with the network
+	safe, err := id.SafeEncode()
+	if err != nil {
+		return fmt.Errorf("failed to safely export identifier instance: %s", err)
+	}
+
 	// Generate request ticket
 	fmt.Printf("Publishing: %s\n", name)
 	fmt.Println("Generating request ticket...")
 	ticket := &proto.Ticket{
 		Timestamp:  time.Now().Unix(),
-		Content:    record.Contents,
+		Content:    safe,
 		NonceValue: 0,
 	}
 	start := time.Now()
