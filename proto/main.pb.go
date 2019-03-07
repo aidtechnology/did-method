@@ -8,7 +8,6 @@
 		proto/main.proto
 
 	It has these top-level messages:
-		DID
 		Pong
 		Ticket
 		Request
@@ -44,251 +43,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto1.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
-// Decentralized identifier elements
-type DID struct {
-}
-
-func (m *DID) Reset()                    { *m = DID{} }
-func (*DID) ProtoMessage()               {}
-func (*DID) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0} }
-
-// List any type of service the entity wishes to advertise, including decentralized
-// identity management services for further discovery, authentication, authorization, or interaction
-// https://w3c-ccg.github.io/did-spec/#service-endpoints
-type DID_Service struct {
-	ID              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type            string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	ServiceEndpoint string `protobuf:"bytes,3,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-}
-
-func (m *DID_Service) Reset()                    { *m = DID_Service{} }
-func (*DID_Service) ProtoMessage()               {}
-func (*DID_Service) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0, 0} }
-
-func (m *DID_Service) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-func (m *DID_Service) GetType() string {
-	if m != nil {
-		return m.Type
-	}
-	return ""
-}
-
-func (m *DID_Service) GetServiceEndpoint() string {
-	if m != nil {
-		return m.ServiceEndpoint
-	}
-	return ""
-}
-
-// Public keys registered for the subject
-// https://w3c-ccg.github.io/did-spec/#public-keys
-type DID_PublicKey struct {
-	ID          string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type        string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Controller  string `protobuf:"bytes,3,opt,name=controller,proto3" json:"controller,omitempty"`
-	Private     []byte `protobuf:"bytes,4,opt,name=private,proto3" json:"private,omitempty"`
-	ValueHex    string `protobuf:"bytes,5,opt,name=value_hex,json=valueHex,proto3" json:"value_hex,omitempty"`
-	ValueBase64 string `protobuf:"bytes,6,opt,name=value_base64,json=valueBase64,proto3" json:"value_base64,omitempty"`
-	ValueBase58 string `protobuf:"bytes,7,opt,name=value_base58,json=valueBase58,proto3" json:"value_base58,omitempty"`
-}
-
-func (m *DID_PublicKey) Reset()                    { *m = DID_PublicKey{} }
-func (*DID_PublicKey) ProtoMessage()               {}
-func (*DID_PublicKey) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0, 1} }
-
-func (m *DID_PublicKey) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-func (m *DID_PublicKey) GetType() string {
-	if m != nil {
-		return m.Type
-	}
-	return ""
-}
-
-func (m *DID_PublicKey) GetController() string {
-	if m != nil {
-		return m.Controller
-	}
-	return ""
-}
-
-func (m *DID_PublicKey) GetPrivate() []byte {
-	if m != nil {
-		return m.Private
-	}
-	return nil
-}
-
-func (m *DID_PublicKey) GetValueHex() string {
-	if m != nil {
-		return m.ValueHex
-	}
-	return ""
-}
-
-func (m *DID_PublicKey) GetValueBase64() string {
-	if m != nil {
-		return m.ValueBase64
-	}
-	return ""
-}
-
-func (m *DID_PublicKey) GetValueBase58() string {
-	if m != nil {
-		return m.ValueBase58
-	}
-	return ""
-}
-
-// Cryptographic proof of the integrity of the document instance
-// https://w3c-ccg.github.io/did-spec/#proof-optional
-type DID_Proof struct {
-	Context    []string `protobuf:"bytes,1,rep,name=context" json:"@context"`
-	Type       string   `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Creator    string   `protobuf:"bytes,3,opt,name=creator,proto3" json:"creator,omitempty"`
-	Created    string   `protobuf:"bytes,4,opt,name=created,proto3" json:"created,omitempty"`
-	Domain     string   `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"`
-	Nonce      string   `protobuf:"bytes,6,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ProofValue []byte   `protobuf:"bytes,7,opt,name=value,proto3" json:"value,omitempty"`
-}
-
-func (m *DID_Proof) Reset()                    { *m = DID_Proof{} }
-func (*DID_Proof) ProtoMessage()               {}
-func (*DID_Proof) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0, 2} }
-
-func (m *DID_Proof) GetContext() []string {
-	if m != nil {
-		return m.Context
-	}
-	return nil
-}
-
-func (m *DID_Proof) GetType() string {
-	if m != nil {
-		return m.Type
-	}
-	return ""
-}
-
-func (m *DID_Proof) GetCreator() string {
-	if m != nil {
-		return m.Creator
-	}
-	return ""
-}
-
-func (m *DID_Proof) GetCreated() string {
-	if m != nil {
-		return m.Created
-	}
-	return ""
-}
-
-func (m *DID_Proof) GetDomain() string {
-	if m != nil {
-		return m.Domain
-	}
-	return ""
-}
-
-func (m *DID_Proof) GetNonce() string {
-	if m != nil {
-		return m.Nonce
-	}
-	return ""
-}
-
-func (m *DID_Proof) GetProofValue() []byte {
-	if m != nil {
-		return m.ProofValue
-	}
-	return nil
-}
-
-// Document represents a valid DID document instance
-// https://w3c-ccg.github.io/did-spec/#did-documents
-type DID_Document struct {
-	Context        []string         `protobuf:"bytes,1,rep,name=context" json:"@context"`
-	Subject        string           `protobuf:"bytes,2,opt,name=subject,proto3" json:"subject,omitempty"`
-	Created        string           `protobuf:"bytes,3,opt,name=created,proto3" json:"created,omitempty"`
-	Updated        string           `protobuf:"bytes,4,opt,name=updated,proto3" json:"updated,omitempty"`
-	Authentication []string         `protobuf:"bytes,5,rep,name=authentication" json:"authentication,omitempty"`
-	PublicKey      []*DID_PublicKey `protobuf:"bytes,6,rep,name=public_keys,json=publicKeys" json:"public_keys,omitempty"`
-	Service        []*DID_Service   `protobuf:"bytes,7,rep,name=service" json:"service,omitempty"`
-	Proof          *DID_Proof       `protobuf:"bytes,8,opt,name=proof" json:"proof,omitempty"`
-}
-
-func (m *DID_Document) Reset()                    { *m = DID_Document{} }
-func (*DID_Document) ProtoMessage()               {}
-func (*DID_Document) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0, 3} }
-
-func (m *DID_Document) GetContext() []string {
-	if m != nil {
-		return m.Context
-	}
-	return nil
-}
-
-func (m *DID_Document) GetSubject() string {
-	if m != nil {
-		return m.Subject
-	}
-	return ""
-}
-
-func (m *DID_Document) GetCreated() string {
-	if m != nil {
-		return m.Created
-	}
-	return ""
-}
-
-func (m *DID_Document) GetUpdated() string {
-	if m != nil {
-		return m.Updated
-	}
-	return ""
-}
-
-func (m *DID_Document) GetAuthentication() []string {
-	if m != nil {
-		return m.Authentication
-	}
-	return nil
-}
-
-func (m *DID_Document) GetPublicKey() []*DID_PublicKey {
-	if m != nil {
-		return m.PublicKey
-	}
-	return nil
-}
-
-func (m *DID_Document) GetService() []*DID_Service {
-	if m != nil {
-		return m.Service
-	}
-	return nil
-}
-
-func (m *DID_Document) GetProof() *DID_Proof {
-	if m != nil {
-		return m.Proof
-	}
-	return nil
-}
-
 // Generic ping response
 type Pong struct {
 	Ok bool `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
@@ -296,7 +50,7 @@ type Pong struct {
 
 func (m *Pong) Reset()                    { *m = Pong{} }
 func (*Pong) ProtoMessage()               {}
-func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{1} }
+func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{0} }
 
 func (m *Pong) GetOk() bool {
 	if m != nil {
@@ -309,13 +63,14 @@ func (m *Pong) GetOk() bool {
 type Ticket struct {
 	Timestamp  int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	NonceValue int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	Content    []byte `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-	Signature  []byte `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
+	KeyId      string `protobuf:"bytes,3,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	Content    []byte `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	Signature  []byte `protobuf:"bytes,5,opt,name=signature,proto3" json:"signature,omitempty"`
 }
 
 func (m *Ticket) Reset()                    { *m = Ticket{} }
 func (*Ticket) ProtoMessage()               {}
-func (*Ticket) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{2} }
+func (*Ticket) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{1} }
 
 func (m *Ticket) GetTimestamp() int64 {
 	if m != nil {
@@ -329,6 +84,13 @@ func (m *Ticket) GetNonceValue() int64 {
 		return m.NonceValue
 	}
 	return 0
+}
+
+func (m *Ticket) GetKeyId() string {
+	if m != nil {
+		return m.KeyId
+	}
+	return ""
 }
 
 func (m *Ticket) GetContent() []byte {
@@ -352,7 +114,7 @@ type Request struct {
 
 func (m *Request) Reset()                    { *m = Request{} }
 func (*Request) ProtoMessage()               {}
-func (*Request) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{3} }
+func (*Request) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{2} }
 
 func (m *Request) GetSubject() string {
 	if m != nil {
@@ -369,7 +131,7 @@ type Response struct {
 
 func (m *Response) Reset()                    { *m = Response{} }
 func (*Response) ProtoMessage()               {}
-func (*Response) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{4} }
+func (*Response) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{3} }
 
 func (m *Response) GetOk() bool {
 	if m != nil {
@@ -386,455 +148,10 @@ func (m *Response) GetContents() []byte {
 }
 
 func init() {
-	proto1.RegisterType((*DID)(nil), "io.bryk.id.DID")
-	proto1.RegisterType((*DID_Service)(nil), "io.bryk.id.DID.Service")
-	proto1.RegisterType((*DID_PublicKey)(nil), "io.bryk.id.DID.PublicKey")
-	proto1.RegisterType((*DID_Proof)(nil), "io.bryk.id.DID.Proof")
-	proto1.RegisterType((*DID_Document)(nil), "io.bryk.id.DID.Document")
 	proto1.RegisterType((*Pong)(nil), "io.bryk.id.Pong")
 	proto1.RegisterType((*Ticket)(nil), "io.bryk.id.Ticket")
 	proto1.RegisterType((*Request)(nil), "io.bryk.id.Request")
 	proto1.RegisterType((*Response)(nil), "io.bryk.id.Response")
-}
-func (this *DID) VerboseEqual(that interface{}) error {
-	if that == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that == nil && this != nil")
-	}
-
-	that1, ok := that.(*DID)
-	if !ok {
-		that2, ok := that.(DID)
-		if ok {
-			that1 = &that2
-		} else {
-			return fmt.Errorf("that is not of type *DID")
-		}
-	}
-	if that1 == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that is type *DID but is nil && this != nil")
-	} else if this == nil {
-		return fmt.Errorf("that is type *DID but is not nil && this == nil")
-	}
-	return nil
-}
-func (this *DID) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DID)
-	if !ok {
-		that2, ok := that.(DID)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	return true
-}
-func (this *DID_Service) VerboseEqual(that interface{}) error {
-	if that == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that == nil && this != nil")
-	}
-
-	that1, ok := that.(*DID_Service)
-	if !ok {
-		that2, ok := that.(DID_Service)
-		if ok {
-			that1 = &that2
-		} else {
-			return fmt.Errorf("that is not of type *DID_Service")
-		}
-	}
-	if that1 == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that is type *DID_Service but is nil && this != nil")
-	} else if this == nil {
-		return fmt.Errorf("that is type *DID_Service but is not nil && this == nil")
-	}
-	if this.ID != that1.ID {
-		return fmt.Errorf("ID this(%v) Not Equal that(%v)", this.ID, that1.ID)
-	}
-	if this.Type != that1.Type {
-		return fmt.Errorf("Type this(%v) Not Equal that(%v)", this.Type, that1.Type)
-	}
-	if this.ServiceEndpoint != that1.ServiceEndpoint {
-		return fmt.Errorf("ServiceEndpoint this(%v) Not Equal that(%v)", this.ServiceEndpoint, that1.ServiceEndpoint)
-	}
-	return nil
-}
-func (this *DID_Service) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DID_Service)
-	if !ok {
-		that2, ok := that.(DID_Service)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ID != that1.ID {
-		return false
-	}
-	if this.Type != that1.Type {
-		return false
-	}
-	if this.ServiceEndpoint != that1.ServiceEndpoint {
-		return false
-	}
-	return true
-}
-func (this *DID_PublicKey) VerboseEqual(that interface{}) error {
-	if that == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that == nil && this != nil")
-	}
-
-	that1, ok := that.(*DID_PublicKey)
-	if !ok {
-		that2, ok := that.(DID_PublicKey)
-		if ok {
-			that1 = &that2
-		} else {
-			return fmt.Errorf("that is not of type *DID_PublicKey")
-		}
-	}
-	if that1 == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that is type *DID_PublicKey but is nil && this != nil")
-	} else if this == nil {
-		return fmt.Errorf("that is type *DID_PublicKey but is not nil && this == nil")
-	}
-	if this.ID != that1.ID {
-		return fmt.Errorf("ID this(%v) Not Equal that(%v)", this.ID, that1.ID)
-	}
-	if this.Type != that1.Type {
-		return fmt.Errorf("Type this(%v) Not Equal that(%v)", this.Type, that1.Type)
-	}
-	if this.Controller != that1.Controller {
-		return fmt.Errorf("Controller this(%v) Not Equal that(%v)", this.Controller, that1.Controller)
-	}
-	if !bytes.Equal(this.Private, that1.Private) {
-		return fmt.Errorf("Private this(%v) Not Equal that(%v)", this.Private, that1.Private)
-	}
-	if this.ValueHex != that1.ValueHex {
-		return fmt.Errorf("ValueHex this(%v) Not Equal that(%v)", this.ValueHex, that1.ValueHex)
-	}
-	if this.ValueBase64 != that1.ValueBase64 {
-		return fmt.Errorf("ValueBase64 this(%v) Not Equal that(%v)", this.ValueBase64, that1.ValueBase64)
-	}
-	if this.ValueBase58 != that1.ValueBase58 {
-		return fmt.Errorf("ValueBase58 this(%v) Not Equal that(%v)", this.ValueBase58, that1.ValueBase58)
-	}
-	return nil
-}
-func (this *DID_PublicKey) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DID_PublicKey)
-	if !ok {
-		that2, ok := that.(DID_PublicKey)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ID != that1.ID {
-		return false
-	}
-	if this.Type != that1.Type {
-		return false
-	}
-	if this.Controller != that1.Controller {
-		return false
-	}
-	if !bytes.Equal(this.Private, that1.Private) {
-		return false
-	}
-	if this.ValueHex != that1.ValueHex {
-		return false
-	}
-	if this.ValueBase64 != that1.ValueBase64 {
-		return false
-	}
-	if this.ValueBase58 != that1.ValueBase58 {
-		return false
-	}
-	return true
-}
-func (this *DID_Proof) VerboseEqual(that interface{}) error {
-	if that == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that == nil && this != nil")
-	}
-
-	that1, ok := that.(*DID_Proof)
-	if !ok {
-		that2, ok := that.(DID_Proof)
-		if ok {
-			that1 = &that2
-		} else {
-			return fmt.Errorf("that is not of type *DID_Proof")
-		}
-	}
-	if that1 == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that is type *DID_Proof but is nil && this != nil")
-	} else if this == nil {
-		return fmt.Errorf("that is type *DID_Proof but is not nil && this == nil")
-	}
-	if len(this.Context) != len(that1.Context) {
-		return fmt.Errorf("Context this(%v) Not Equal that(%v)", len(this.Context), len(that1.Context))
-	}
-	for i := range this.Context {
-		if this.Context[i] != that1.Context[i] {
-			return fmt.Errorf("Context this[%v](%v) Not Equal that[%v](%v)", i, this.Context[i], i, that1.Context[i])
-		}
-	}
-	if this.Type != that1.Type {
-		return fmt.Errorf("Type this(%v) Not Equal that(%v)", this.Type, that1.Type)
-	}
-	if this.Creator != that1.Creator {
-		return fmt.Errorf("Creator this(%v) Not Equal that(%v)", this.Creator, that1.Creator)
-	}
-	if this.Created != that1.Created {
-		return fmt.Errorf("Created this(%v) Not Equal that(%v)", this.Created, that1.Created)
-	}
-	if this.Domain != that1.Domain {
-		return fmt.Errorf("Domain this(%v) Not Equal that(%v)", this.Domain, that1.Domain)
-	}
-	if this.Nonce != that1.Nonce {
-		return fmt.Errorf("Nonce this(%v) Not Equal that(%v)", this.Nonce, that1.Nonce)
-	}
-	if !bytes.Equal(this.ProofValue, that1.ProofValue) {
-		return fmt.Errorf("ProofValue this(%v) Not Equal that(%v)", this.ProofValue, that1.ProofValue)
-	}
-	return nil
-}
-func (this *DID_Proof) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DID_Proof)
-	if !ok {
-		that2, ok := that.(DID_Proof)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.Context) != len(that1.Context) {
-		return false
-	}
-	for i := range this.Context {
-		if this.Context[i] != that1.Context[i] {
-			return false
-		}
-	}
-	if this.Type != that1.Type {
-		return false
-	}
-	if this.Creator != that1.Creator {
-		return false
-	}
-	if this.Created != that1.Created {
-		return false
-	}
-	if this.Domain != that1.Domain {
-		return false
-	}
-	if this.Nonce != that1.Nonce {
-		return false
-	}
-	if !bytes.Equal(this.ProofValue, that1.ProofValue) {
-		return false
-	}
-	return true
-}
-func (this *DID_Document) VerboseEqual(that interface{}) error {
-	if that == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that == nil && this != nil")
-	}
-
-	that1, ok := that.(*DID_Document)
-	if !ok {
-		that2, ok := that.(DID_Document)
-		if ok {
-			that1 = &that2
-		} else {
-			return fmt.Errorf("that is not of type *DID_Document")
-		}
-	}
-	if that1 == nil {
-		if this == nil {
-			return nil
-		}
-		return fmt.Errorf("that is type *DID_Document but is nil && this != nil")
-	} else if this == nil {
-		return fmt.Errorf("that is type *DID_Document but is not nil && this == nil")
-	}
-	if len(this.Context) != len(that1.Context) {
-		return fmt.Errorf("Context this(%v) Not Equal that(%v)", len(this.Context), len(that1.Context))
-	}
-	for i := range this.Context {
-		if this.Context[i] != that1.Context[i] {
-			return fmt.Errorf("Context this[%v](%v) Not Equal that[%v](%v)", i, this.Context[i], i, that1.Context[i])
-		}
-	}
-	if this.Subject != that1.Subject {
-		return fmt.Errorf("Subject this(%v) Not Equal that(%v)", this.Subject, that1.Subject)
-	}
-	if this.Created != that1.Created {
-		return fmt.Errorf("Created this(%v) Not Equal that(%v)", this.Created, that1.Created)
-	}
-	if this.Updated != that1.Updated {
-		return fmt.Errorf("Updated this(%v) Not Equal that(%v)", this.Updated, that1.Updated)
-	}
-	if len(this.Authentication) != len(that1.Authentication) {
-		return fmt.Errorf("Authentication this(%v) Not Equal that(%v)", len(this.Authentication), len(that1.Authentication))
-	}
-	for i := range this.Authentication {
-		if this.Authentication[i] != that1.Authentication[i] {
-			return fmt.Errorf("Authentication this[%v](%v) Not Equal that[%v](%v)", i, this.Authentication[i], i, that1.Authentication[i])
-		}
-	}
-	if len(this.PublicKey) != len(that1.PublicKey) {
-		return fmt.Errorf("PublicKey this(%v) Not Equal that(%v)", len(this.PublicKey), len(that1.PublicKey))
-	}
-	for i := range this.PublicKey {
-		if !this.PublicKey[i].Equal(that1.PublicKey[i]) {
-			return fmt.Errorf("PublicKey this[%v](%v) Not Equal that[%v](%v)", i, this.PublicKey[i], i, that1.PublicKey[i])
-		}
-	}
-	if len(this.Service) != len(that1.Service) {
-		return fmt.Errorf("Service this(%v) Not Equal that(%v)", len(this.Service), len(that1.Service))
-	}
-	for i := range this.Service {
-		if !this.Service[i].Equal(that1.Service[i]) {
-			return fmt.Errorf("Service this[%v](%v) Not Equal that[%v](%v)", i, this.Service[i], i, that1.Service[i])
-		}
-	}
-	if !this.Proof.Equal(that1.Proof) {
-		return fmt.Errorf("Proof this(%v) Not Equal that(%v)", this.Proof, that1.Proof)
-	}
-	return nil
-}
-func (this *DID_Document) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DID_Document)
-	if !ok {
-		that2, ok := that.(DID_Document)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.Context) != len(that1.Context) {
-		return false
-	}
-	for i := range this.Context {
-		if this.Context[i] != that1.Context[i] {
-			return false
-		}
-	}
-	if this.Subject != that1.Subject {
-		return false
-	}
-	if this.Created != that1.Created {
-		return false
-	}
-	if this.Updated != that1.Updated {
-		return false
-	}
-	if len(this.Authentication) != len(that1.Authentication) {
-		return false
-	}
-	for i := range this.Authentication {
-		if this.Authentication[i] != that1.Authentication[i] {
-			return false
-		}
-	}
-	if len(this.PublicKey) != len(that1.PublicKey) {
-		return false
-	}
-	for i := range this.PublicKey {
-		if !this.PublicKey[i].Equal(that1.PublicKey[i]) {
-			return false
-		}
-	}
-	if len(this.Service) != len(that1.Service) {
-		return false
-	}
-	for i := range this.Service {
-		if !this.Service[i].Equal(that1.Service[i]) {
-			return false
-		}
-	}
-	if !this.Proof.Equal(that1.Proof) {
-		return false
-	}
-	return true
 }
 func (this *Pong) VerboseEqual(that interface{}) error {
 	if that == nil {
@@ -921,6 +238,9 @@ func (this *Ticket) VerboseEqual(that interface{}) error {
 	if this.NonceValue != that1.NonceValue {
 		return fmt.Errorf("NonceValue this(%v) Not Equal that(%v)", this.NonceValue, that1.NonceValue)
 	}
+	if this.KeyId != that1.KeyId {
+		return fmt.Errorf("KeyId this(%v) Not Equal that(%v)", this.KeyId, that1.KeyId)
+	}
 	if !bytes.Equal(this.Content, that1.Content) {
 		return fmt.Errorf("Content this(%v) Not Equal that(%v)", this.Content, that1.Content)
 	}
@@ -952,6 +272,9 @@ func (this *Ticket) Equal(that interface{}) bool {
 		return false
 	}
 	if this.NonceValue != that1.NonceValue {
+		return false
+	}
+	if this.KeyId != that1.KeyId {
 		return false
 	}
 	if !bytes.Equal(this.Content, that1.Content) {
@@ -1076,82 +399,6 @@ func (this *Response) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *DID) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 4)
-	s = append(s, "&proto.DID{")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *DID_Service) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 7)
-	s = append(s, "&proto.DID_Service{")
-	s = append(s, "ID: "+fmt.Sprintf("%#v", this.ID)+",\n")
-	s = append(s, "Type: "+fmt.Sprintf("%#v", this.Type)+",\n")
-	s = append(s, "ServiceEndpoint: "+fmt.Sprintf("%#v", this.ServiceEndpoint)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *DID_PublicKey) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 11)
-	s = append(s, "&proto.DID_PublicKey{")
-	s = append(s, "ID: "+fmt.Sprintf("%#v", this.ID)+",\n")
-	s = append(s, "Type: "+fmt.Sprintf("%#v", this.Type)+",\n")
-	s = append(s, "Controller: "+fmt.Sprintf("%#v", this.Controller)+",\n")
-	s = append(s, "Private: "+fmt.Sprintf("%#v", this.Private)+",\n")
-	s = append(s, "ValueHex: "+fmt.Sprintf("%#v", this.ValueHex)+",\n")
-	s = append(s, "ValueBase64: "+fmt.Sprintf("%#v", this.ValueBase64)+",\n")
-	s = append(s, "ValueBase58: "+fmt.Sprintf("%#v", this.ValueBase58)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *DID_Proof) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 11)
-	s = append(s, "&proto.DID_Proof{")
-	s = append(s, "Context: "+fmt.Sprintf("%#v", this.Context)+",\n")
-	s = append(s, "Type: "+fmt.Sprintf("%#v", this.Type)+",\n")
-	s = append(s, "Creator: "+fmt.Sprintf("%#v", this.Creator)+",\n")
-	s = append(s, "Created: "+fmt.Sprintf("%#v", this.Created)+",\n")
-	s = append(s, "Domain: "+fmt.Sprintf("%#v", this.Domain)+",\n")
-	s = append(s, "Nonce: "+fmt.Sprintf("%#v", this.Nonce)+",\n")
-	s = append(s, "ProofValue: "+fmt.Sprintf("%#v", this.ProofValue)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *DID_Document) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 12)
-	s = append(s, "&proto.DID_Document{")
-	s = append(s, "Context: "+fmt.Sprintf("%#v", this.Context)+",\n")
-	s = append(s, "Subject: "+fmt.Sprintf("%#v", this.Subject)+",\n")
-	s = append(s, "Created: "+fmt.Sprintf("%#v", this.Created)+",\n")
-	s = append(s, "Updated: "+fmt.Sprintf("%#v", this.Updated)+",\n")
-	s = append(s, "Authentication: "+fmt.Sprintf("%#v", this.Authentication)+",\n")
-	if this.PublicKey != nil {
-		s = append(s, "PublicKey: "+fmt.Sprintf("%#v", this.PublicKey)+",\n")
-	}
-	if this.Service != nil {
-		s = append(s, "Service: "+fmt.Sprintf("%#v", this.Service)+",\n")
-	}
-	if this.Proof != nil {
-		s = append(s, "Proof: "+fmt.Sprintf("%#v", this.Proof)+",\n")
-	}
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
 func (this *Pong) GoString() string {
 	if this == nil {
 		return "nil"
@@ -1166,10 +413,11 @@ func (this *Ticket) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 8)
+	s := make([]string, 0, 9)
 	s = append(s, "&proto.Ticket{")
 	s = append(s, "Timestamp: "+fmt.Sprintf("%#v", this.Timestamp)+",\n")
 	s = append(s, "NonceValue: "+fmt.Sprintf("%#v", this.NonceValue)+",\n")
+	s = append(s, "KeyId: "+fmt.Sprintf("%#v", this.KeyId)+",\n")
 	s = append(s, "Content: "+fmt.Sprintf("%#v", this.Content)+",\n")
 	s = append(s, "Signature: "+fmt.Sprintf("%#v", this.Signature)+",\n")
 	s = append(s, "}")
@@ -1349,289 +597,6 @@ var _Method_serviceDesc = grpc.ServiceDesc{
 	Metadata: "proto/main.proto",
 }
 
-func (m *DID) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DID) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	return i, nil
-}
-
-func (m *DID_Service) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DID_Service) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.ID) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ID)))
-		i += copy(dAtA[i:], m.ID)
-	}
-	if len(m.Type) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Type)))
-		i += copy(dAtA[i:], m.Type)
-	}
-	if len(m.ServiceEndpoint) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ServiceEndpoint)))
-		i += copy(dAtA[i:], m.ServiceEndpoint)
-	}
-	return i, nil
-}
-
-func (m *DID_PublicKey) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DID_PublicKey) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.ID) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ID)))
-		i += copy(dAtA[i:], m.ID)
-	}
-	if len(m.Type) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Type)))
-		i += copy(dAtA[i:], m.Type)
-	}
-	if len(m.Controller) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Controller)))
-		i += copy(dAtA[i:], m.Controller)
-	}
-	if len(m.Private) > 0 {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Private)))
-		i += copy(dAtA[i:], m.Private)
-	}
-	if len(m.ValueHex) > 0 {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ValueHex)))
-		i += copy(dAtA[i:], m.ValueHex)
-	}
-	if len(m.ValueBase64) > 0 {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ValueBase64)))
-		i += copy(dAtA[i:], m.ValueBase64)
-	}
-	if len(m.ValueBase58) > 0 {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ValueBase58)))
-		i += copy(dAtA[i:], m.ValueBase58)
-	}
-	return i, nil
-}
-
-func (m *DID_Proof) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DID_Proof) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.Context) > 0 {
-		for _, s := range m.Context {
-			dAtA[i] = 0xa
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
-			}
-			dAtA[i] = uint8(l)
-			i++
-			i += copy(dAtA[i:], s)
-		}
-	}
-	if len(m.Type) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Type)))
-		i += copy(dAtA[i:], m.Type)
-	}
-	if len(m.Creator) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Creator)))
-		i += copy(dAtA[i:], m.Creator)
-	}
-	if len(m.Created) > 0 {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Created)))
-		i += copy(dAtA[i:], m.Created)
-	}
-	if len(m.Domain) > 0 {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Domain)))
-		i += copy(dAtA[i:], m.Domain)
-	}
-	if len(m.Nonce) > 0 {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Nonce)))
-		i += copy(dAtA[i:], m.Nonce)
-	}
-	if len(m.ProofValue) > 0 {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.ProofValue)))
-		i += copy(dAtA[i:], m.ProofValue)
-	}
-	return i, nil
-}
-
-func (m *DID_Document) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DID_Document) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.Context) > 0 {
-		for _, s := range m.Context {
-			dAtA[i] = 0xa
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
-			}
-			dAtA[i] = uint8(l)
-			i++
-			i += copy(dAtA[i:], s)
-		}
-	}
-	if len(m.Subject) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Subject)))
-		i += copy(dAtA[i:], m.Subject)
-	}
-	if len(m.Created) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Created)))
-		i += copy(dAtA[i:], m.Created)
-	}
-	if len(m.Updated) > 0 {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(len(m.Updated)))
-		i += copy(dAtA[i:], m.Updated)
-	}
-	if len(m.Authentication) > 0 {
-		for _, s := range m.Authentication {
-			dAtA[i] = 0x2a
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
-			}
-			dAtA[i] = uint8(l)
-			i++
-			i += copy(dAtA[i:], s)
-		}
-	}
-	if len(m.PublicKey) > 0 {
-		for _, msg := range m.PublicKey {
-			dAtA[i] = 0x32
-			i++
-			i = encodeVarintMain(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if len(m.Service) > 0 {
-		for _, msg := range m.Service {
-			dAtA[i] = 0x3a
-			i++
-			i = encodeVarintMain(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if m.Proof != nil {
-		dAtA[i] = 0x42
-		i++
-		i = encodeVarintMain(dAtA, i, uint64(m.Proof.Size()))
-		n1, err := m.Proof.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n1
-	}
-	return i, nil
-}
-
 func (m *Pong) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1685,14 +650,20 @@ func (m *Ticket) MarshalTo(dAtA []byte) (int, error) {
 		i++
 		i = encodeVarintMain(dAtA, i, uint64(m.NonceValue))
 	}
-	if len(m.Content) > 0 {
+	if len(m.KeyId) > 0 {
 		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintMain(dAtA, i, uint64(len(m.KeyId)))
+		i += copy(dAtA[i:], m.KeyId)
+	}
+	if len(m.Content) > 0 {
+		dAtA[i] = 0x22
 		i++
 		i = encodeVarintMain(dAtA, i, uint64(len(m.Content)))
 		i += copy(dAtA[i:], m.Content)
 	}
 	if len(m.Signature) > 0 {
-		dAtA[i] = 0x22
+		dAtA[i] = 0x2a
 		i++
 		i = encodeVarintMain(dAtA, i, uint64(len(m.Signature)))
 		i += copy(dAtA[i:], m.Signature)
@@ -1767,100 +738,6 @@ func encodeVarintMain(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return offset + 1
 }
-func NewPopulatedDID(r randyMain, easy bool) *DID {
-	this := &DID{}
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedDID_Service(r randyMain, easy bool) *DID_Service {
-	this := &DID_Service{}
-	this.ID = string(randStringMain(r))
-	this.Type = string(randStringMain(r))
-	this.ServiceEndpoint = string(randStringMain(r))
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedDID_PublicKey(r randyMain, easy bool) *DID_PublicKey {
-	this := &DID_PublicKey{}
-	this.ID = string(randStringMain(r))
-	this.Type = string(randStringMain(r))
-	this.Controller = string(randStringMain(r))
-	v1 := r.Intn(100)
-	this.Private = make([]byte, v1)
-	for i := 0; i < v1; i++ {
-		this.Private[i] = byte(r.Intn(256))
-	}
-	this.ValueHex = string(randStringMain(r))
-	this.ValueBase64 = string(randStringMain(r))
-	this.ValueBase58 = string(randStringMain(r))
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedDID_Proof(r randyMain, easy bool) *DID_Proof {
-	this := &DID_Proof{}
-	v2 := r.Intn(10)
-	this.Context = make([]string, v2)
-	for i := 0; i < v2; i++ {
-		this.Context[i] = string(randStringMain(r))
-	}
-	this.Type = string(randStringMain(r))
-	this.Creator = string(randStringMain(r))
-	this.Created = string(randStringMain(r))
-	this.Domain = string(randStringMain(r))
-	this.Nonce = string(randStringMain(r))
-	v3 := r.Intn(100)
-	this.ProofValue = make([]byte, v3)
-	for i := 0; i < v3; i++ {
-		this.ProofValue[i] = byte(r.Intn(256))
-	}
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedDID_Document(r randyMain, easy bool) *DID_Document {
-	this := &DID_Document{}
-	v4 := r.Intn(10)
-	this.Context = make([]string, v4)
-	for i := 0; i < v4; i++ {
-		this.Context[i] = string(randStringMain(r))
-	}
-	this.Subject = string(randStringMain(r))
-	this.Created = string(randStringMain(r))
-	this.Updated = string(randStringMain(r))
-	v5 := r.Intn(10)
-	this.Authentication = make([]string, v5)
-	for i := 0; i < v5; i++ {
-		this.Authentication[i] = string(randStringMain(r))
-	}
-	if r.Intn(10) != 0 {
-		v6 := r.Intn(5)
-		this.PublicKey = make([]*DID_PublicKey, v6)
-		for i := 0; i < v6; i++ {
-			this.PublicKey[i] = NewPopulatedDID_PublicKey(r, easy)
-		}
-	}
-	if r.Intn(10) != 0 {
-		v7 := r.Intn(5)
-		this.Service = make([]*DID_Service, v7)
-		for i := 0; i < v7; i++ {
-			this.Service[i] = NewPopulatedDID_Service(r, easy)
-		}
-	}
-	if r.Intn(10) != 0 {
-		this.Proof = NewPopulatedDID_Proof(r, easy)
-	}
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
 func NewPopulatedPong(r randyMain, easy bool) *Pong {
 	this := &Pong{}
 	this.Ok = bool(bool(r.Intn(2) == 0))
@@ -1879,14 +756,15 @@ func NewPopulatedTicket(r randyMain, easy bool) *Ticket {
 	if r.Intn(2) == 0 {
 		this.NonceValue *= -1
 	}
-	v8 := r.Intn(100)
-	this.Content = make([]byte, v8)
-	for i := 0; i < v8; i++ {
+	this.KeyId = string(randStringMain(r))
+	v1 := r.Intn(100)
+	this.Content = make([]byte, v1)
+	for i := 0; i < v1; i++ {
 		this.Content[i] = byte(r.Intn(256))
 	}
-	v9 := r.Intn(100)
-	this.Signature = make([]byte, v9)
-	for i := 0; i < v9; i++ {
+	v2 := r.Intn(100)
+	this.Signature = make([]byte, v2)
+	for i := 0; i < v2; i++ {
 		this.Signature[i] = byte(r.Intn(256))
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -1905,9 +783,9 @@ func NewPopulatedRequest(r randyMain, easy bool) *Request {
 func NewPopulatedResponse(r randyMain, easy bool) *Response {
 	this := &Response{}
 	this.Ok = bool(bool(r.Intn(2) == 0))
-	v10 := r.Intn(100)
-	this.Contents = make([]byte, v10)
-	for i := 0; i < v10; i++ {
+	v3 := r.Intn(100)
+	this.Contents = make([]byte, v3)
+	for i := 0; i < v3; i++ {
 		this.Contents[i] = byte(r.Intn(256))
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -1934,9 +812,9 @@ func randUTF8RuneMain(r randyMain) rune {
 	return rune(ru + 61)
 }
 func randStringMain(r randyMain) string {
-	v11 := r.Intn(100)
-	tmps := make([]rune, v11)
-	for i := 0; i < v11; i++ {
+	v4 := r.Intn(100)
+	tmps := make([]rune, v4)
+	for i := 0; i < v4; i++ {
 		tmps[i] = randUTF8RuneMain(r)
 	}
 	return string(tmps)
@@ -1958,11 +836,11 @@ func randFieldMain(dAtA []byte, r randyMain, fieldNumber int, wire int) []byte {
 	switch wire {
 	case 0:
 		dAtA = encodeVarintPopulateMain(dAtA, uint64(key))
-		v12 := r.Int63()
+		v5 := r.Int63()
 		if r.Intn(2) == 0 {
-			v12 *= -1
+			v5 *= -1
 		}
-		dAtA = encodeVarintPopulateMain(dAtA, uint64(v12))
+		dAtA = encodeVarintPopulateMain(dAtA, uint64(v5))
 	case 1:
 		dAtA = encodeVarintPopulateMain(dAtA, uint64(key))
 		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
@@ -1987,146 +865,6 @@ func encodeVarintPopulateMain(dAtA []byte, v uint64) []byte {
 	dAtA = append(dAtA, uint8(v))
 	return dAtA
 }
-func (m *DID) Size() (n int) {
-	var l int
-	_ = l
-	return n
-}
-
-func (m *DID_Service) Size() (n int) {
-	var l int
-	_ = l
-	l = len(m.ID)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Type)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.ServiceEndpoint)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	return n
-}
-
-func (m *DID_PublicKey) Size() (n int) {
-	var l int
-	_ = l
-	l = len(m.ID)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Type)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Controller)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Private)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.ValueHex)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.ValueBase64)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.ValueBase58)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	return n
-}
-
-func (m *DID_Proof) Size() (n int) {
-	var l int
-	_ = l
-	if len(m.Context) > 0 {
-		for _, s := range m.Context {
-			l = len(s)
-			n += 1 + l + sovMain(uint64(l))
-		}
-	}
-	l = len(m.Type)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Creator)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Created)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Domain)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Nonce)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.ProofValue)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	return n
-}
-
-func (m *DID_Document) Size() (n int) {
-	var l int
-	_ = l
-	if len(m.Context) > 0 {
-		for _, s := range m.Context {
-			l = len(s)
-			n += 1 + l + sovMain(uint64(l))
-		}
-	}
-	l = len(m.Subject)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Created)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	l = len(m.Updated)
-	if l > 0 {
-		n += 1 + l + sovMain(uint64(l))
-	}
-	if len(m.Authentication) > 0 {
-		for _, s := range m.Authentication {
-			l = len(s)
-			n += 1 + l + sovMain(uint64(l))
-		}
-	}
-	if len(m.PublicKey) > 0 {
-		for _, e := range m.PublicKey {
-			l = e.Size()
-			n += 1 + l + sovMain(uint64(l))
-		}
-	}
-	if len(m.Service) > 0 {
-		for _, e := range m.Service {
-			l = e.Size()
-			n += 1 + l + sovMain(uint64(l))
-		}
-	}
-	if m.Proof != nil {
-		l = m.Proof.Size()
-		n += 1 + l + sovMain(uint64(l))
-	}
-	return n
-}
-
 func (m *Pong) Size() (n int) {
 	var l int
 	_ = l
@@ -2144,6 +882,10 @@ func (m *Ticket) Size() (n int) {
 	}
 	if m.NonceValue != 0 {
 		n += 1 + sovMain(uint64(m.NonceValue))
+	}
+	l = len(m.KeyId)
+	if l > 0 {
+		n += 1 + l + sovMain(uint64(l))
 	}
 	l = len(m.Content)
 	if l > 0 {
@@ -2192,76 +934,6 @@ func sovMain(x uint64) (n int) {
 func sozMain(x uint64) (n int) {
 	return sovMain(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (this *DID) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DID{`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DID_Service) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DID_Service{`,
-		`ID:` + fmt.Sprintf("%v", this.ID) + `,`,
-		`Type:` + fmt.Sprintf("%v", this.Type) + `,`,
-		`ServiceEndpoint:` + fmt.Sprintf("%v", this.ServiceEndpoint) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DID_PublicKey) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DID_PublicKey{`,
-		`ID:` + fmt.Sprintf("%v", this.ID) + `,`,
-		`Type:` + fmt.Sprintf("%v", this.Type) + `,`,
-		`Controller:` + fmt.Sprintf("%v", this.Controller) + `,`,
-		`Private:` + fmt.Sprintf("%v", this.Private) + `,`,
-		`ValueHex:` + fmt.Sprintf("%v", this.ValueHex) + `,`,
-		`ValueBase64:` + fmt.Sprintf("%v", this.ValueBase64) + `,`,
-		`ValueBase58:` + fmt.Sprintf("%v", this.ValueBase58) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DID_Proof) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DID_Proof{`,
-		`Context:` + fmt.Sprintf("%v", this.Context) + `,`,
-		`Type:` + fmt.Sprintf("%v", this.Type) + `,`,
-		`Creator:` + fmt.Sprintf("%v", this.Creator) + `,`,
-		`Created:` + fmt.Sprintf("%v", this.Created) + `,`,
-		`Domain:` + fmt.Sprintf("%v", this.Domain) + `,`,
-		`Nonce:` + fmt.Sprintf("%v", this.Nonce) + `,`,
-		`ProofValue:` + fmt.Sprintf("%v", this.ProofValue) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DID_Document) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DID_Document{`,
-		`Context:` + fmt.Sprintf("%v", this.Context) + `,`,
-		`Subject:` + fmt.Sprintf("%v", this.Subject) + `,`,
-		`Created:` + fmt.Sprintf("%v", this.Created) + `,`,
-		`Updated:` + fmt.Sprintf("%v", this.Updated) + `,`,
-		`Authentication:` + fmt.Sprintf("%v", this.Authentication) + `,`,
-		`PublicKey:` + strings.Replace(fmt.Sprintf("%v", this.PublicKey), "DID_PublicKey", "DID_PublicKey", 1) + `,`,
-		`Service:` + strings.Replace(fmt.Sprintf("%v", this.Service), "DID_Service", "DID_Service", 1) + `,`,
-		`Proof:` + strings.Replace(fmt.Sprintf("%v", this.Proof), "DID_Proof", "DID_Proof", 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
 func (this *Pong) String() string {
 	if this == nil {
 		return "nil"
@@ -2279,6 +951,7 @@ func (this *Ticket) String() string {
 	s := strings.Join([]string{`&Ticket{`,
 		`Timestamp:` + fmt.Sprintf("%v", this.Timestamp) + `,`,
 		`NonceValue:` + fmt.Sprintf("%v", this.NonceValue) + `,`,
+		`KeyId:` + fmt.Sprintf("%v", this.KeyId) + `,`,
 		`Content:` + fmt.Sprintf("%v", this.Content) + `,`,
 		`Signature:` + fmt.Sprintf("%v", this.Signature) + `,`,
 		`}`,
@@ -2313,993 +986,6 @@ func valueToStringMain(v interface{}) string {
 	}
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("*%v", pv)
-}
-func (m *DID) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMain
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DID: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DID: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMain(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMain
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DID_Service) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMain
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Service: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Service: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ID = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Type = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceEndpoint", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ServiceEndpoint = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMain(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMain
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DID_PublicKey) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMain
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PublicKey: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PublicKey: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ID = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Type = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Controller", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Controller = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Private", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Private = append(m.Private[:0], dAtA[iNdEx:postIndex]...)
-			if m.Private == nil {
-				m.Private = []byte{}
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValueHex", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValueHex = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValueBase64", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValueBase64 = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValueBase58", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValueBase58 = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMain(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMain
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DID_Proof) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMain
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Proof: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Proof: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Context", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Context = append(m.Context, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Type = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Creator = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Created", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Created = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Domain = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Nonce = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ProofValue", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ProofValue = append(m.ProofValue[:0], dAtA[iNdEx:postIndex]...)
-			if m.ProofValue == nil {
-				m.ProofValue = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMain(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMain
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DID_Document) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMain
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Document: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Document: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Context", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Context = append(m.Context, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Subject", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Subject = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Created", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Created = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Updated", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Updated = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Authentication", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Authentication = append(m.Authentication, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PublicKey", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PublicKey = append(m.PublicKey, &DID_PublicKey{})
-			if err := m.PublicKey[len(m.PublicKey)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Service", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Service = append(m.Service, &DID_Service{})
-			if err := m.Service[len(m.Service)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 8:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Proof", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMain
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMain
-			}
-			postIndex := iNdEx + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Proof == nil {
-				m.Proof = &DID_Proof{}
-			}
-			if err := m.Proof.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMain(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMain
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *Pong) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -3440,6 +1126,35 @@ func (m *Ticket) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field KeyId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMain
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.KeyId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Content", wireType)
 			}
 			var byteLen int
@@ -3469,7 +1184,7 @@ func (m *Ticket) Unmarshal(dAtA []byte) error {
 				m.Content = []byte{}
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
 			}
@@ -3809,58 +1524,36 @@ var (
 func init() { proto1.RegisterFile("proto/main.proto", fileDescriptorMain) }
 
 var fileDescriptorMain = []byte{
-	// 846 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x55, 0x41, 0x8b, 0x23, 0x45,
-	0x14, 0xb6, 0x3a, 0x93, 0x74, 0xcf, 0x9b, 0xcc, 0xb8, 0xd4, 0xec, 0x8e, 0x65, 0x8f, 0x74, 0x62,
-	0x94, 0x25, 0x28, 0x76, 0xe3, 0xe8, 0xae, 0x8b, 0x17, 0x25, 0x64, 0x60, 0x07, 0x51, 0x42, 0x29,
-	0x1e, 0xbc, 0x2c, 0x9d, 0xee, 0x9a, 0x4c, 0x99, 0xa4, 0xab, 0xed, 0xae, 0x1e, 0x26, 0x88, 0x20,
-	0xe2, 0x3f, 0xf0, 0x4f, 0xf8, 0x13, 0x3c, 0x7a, 0x14, 0xbc, 0x08, 0xeb, 0xc1, 0x53, 0xd8, 0x69,
-	0x04, 0xc5, 0x93, 0x47, 0x8f, 0x52, 0xd5, 0xd5, 0x99, 0x24, 0x2a, 0xb8, 0xa7, 0xd4, 0xfb, 0xbe,
-	0xf7, 0x5e, 0xbd, 0xef, 0xbd, 0xd7, 0x15, 0xb8, 0x95, 0x66, 0x42, 0x8a, 0x60, 0x1e, 0xf2, 0xc4,
-	0xd7, 0x47, 0x0c, 0x5c, 0xf8, 0xe3, 0x6c, 0x31, 0xf5, 0x79, 0xec, 0xbe, 0x36, 0xe1, 0xf2, 0xa2,
-	0x18, 0xfb, 0x91, 0x98, 0x07, 0x13, 0x31, 0x11, 0x81, 0x76, 0x19, 0x17, 0xe7, 0xda, 0xaa, 0x42,
-	0xd5, 0xa9, 0x0a, 0x75, 0xdf, 0xda, 0x76, 0x9f, 0x08, 0x31, 0x99, 0xb1, 0x30, 0xe5, 0xb9, 0x39,
-	0x06, 0x61, 0xca, 0x83, 0x30, 0x49, 0x84, 0x0c, 0x25, 0x17, 0x49, 0x6e, 0x02, 0x8f, 0x0d, 0xbb,
-	0x4a, 0xcf, 0xe6, 0xa9, 0x5c, 0x54, 0x64, 0xef, 0xf7, 0x16, 0x34, 0x86, 0x67, 0x43, 0xf7, 0x1c,
-	0xec, 0x0f, 0x59, 0x76, 0xc9, 0x23, 0x86, 0x8f, 0xc0, 0xe2, 0x31, 0x41, 0x5d, 0xd4, 0xdf, 0x1d,
-	0xb4, 0xca, 0x65, 0xc7, 0x3a, 0x1b, 0x52, 0x8b, 0xc7, 0x18, 0xc3, 0x8e, 0x5c, 0xa4, 0x8c, 0x58,
-	0x8a, 0xa1, 0xfa, 0x8c, 0x03, 0x70, 0x58, 0x12, 0xa7, 0x82, 0x27, 0x92, 0x34, 0x74, 0xc4, 0x61,
-	0xb9, 0xec, 0x3c, 0x6b, 0x52, 0x9d, 0x1a, 0x8a, 0xae, 0x9c, 0xdc, 0x9f, 0x11, 0xec, 0x8e, 0x8a,
-	0xf1, 0x8c, 0x47, 0xef, 0xb1, 0xc5, 0x53, 0x5d, 0xe5, 0x01, 0x44, 0x22, 0x91, 0x99, 0x98, 0xcd,
-	0x58, 0x56, 0x5d, 0x46, 0xd7, 0x10, 0x4c, 0xc0, 0x4e, 0x33, 0x7e, 0x19, 0x4a, 0x46, 0x76, 0xba,
-	0xa8, 0xdf, 0xa6, 0xb5, 0x89, 0x8f, 0x61, 0xf7, 0x32, 0x9c, 0x15, 0xec, 0xd1, 0x05, 0xbb, 0x22,
-	0x4d, 0x1d, 0xe8, 0x68, 0xe0, 0x21, 0xbb, 0xc2, 0x2f, 0x42, 0xbb, 0x22, 0xc7, 0x61, 0xce, 0xee,
-	0xbf, 0x49, 0x5a, 0x9a, 0xdf, 0xd3, 0xd8, 0x40, 0x43, 0x9b, 0x2e, 0xf7, 0x1e, 0x10, 0x7b, 0xcb,
-	0xe5, 0xde, 0x03, 0xf7, 0x47, 0x04, 0xcd, 0x51, 0x26, 0xc4, 0x39, 0xbe, 0x0b, 0xb6, 0x2a, 0x8a,
-	0x5d, 0x49, 0x82, 0xba, 0x8d, 0xfe, 0xee, 0xa0, 0xfd, 0xc7, 0xb2, 0xe3, 0xbc, 0x6b, 0x30, 0x5a,
-	0x93, 0xff, 0x2a, 0x91, 0x80, 0x1d, 0x65, 0x2c, 0x94, 0xa2, 0xd6, 0x57, 0x9b, 0x2b, 0x86, 0xc5,
-	0x5a, 0x5c, 0xcd, 0xb0, 0x18, 0x1f, 0x41, 0x2b, 0x16, 0x6a, 0xc3, 0x8c, 0x32, 0x63, 0xe1, 0xdb,
-	0xd0, 0x4c, 0x44, 0x12, 0x31, 0x23, 0xa8, 0x32, 0xf0, 0xcb, 0xd0, 0xd4, 0x65, 0x6b, 0x0d, 0xed,
-	0xc1, 0x41, 0xb9, 0xec, 0x80, 0xae, 0xfb, 0x63, 0x85, 0xd2, 0x8a, 0x74, 0x1f, 0x5b, 0xe0, 0x0c,
-	0x45, 0x54, 0xcc, 0x59, 0x22, 0xff, 0xb7, 0x20, 0x02, 0x76, 0x5e, 0x8c, 0x3f, 0x65, 0x91, 0x34,
-	0x9a, 0x6a, 0x73, 0xbd, 0xf8, 0xc6, 0x66, 0xf1, 0x04, 0xec, 0x22, 0x8d, 0xd7, 0x65, 0x19, 0x13,
-	0xdf, 0x85, 0x83, 0xb0, 0x90, 0x17, 0x2c, 0x91, 0x3c, 0xd2, 0xdb, 0x4c, 0x9a, 0xea, 0x72, 0xba,
-	0x85, 0xe2, 0x33, 0xd8, 0x4b, 0xf5, 0x3a, 0x3d, 0x9a, 0xb2, 0x45, 0x4e, 0x5a, 0xdd, 0x46, 0x7f,
-	0xef, 0xe4, 0x79, 0xff, 0xe6, 0x33, 0xf3, 0x87, 0x67, 0x43, 0x7f, 0xb5, 0x71, 0x83, 0xfd, 0x72,
-	0xd9, 0xb9, 0x59, 0x40, 0x0a, 0x69, 0x7d, 0xcc, 0xf1, 0xeb, 0x60, 0xe7, 0xd5, 0xde, 0x12, 0x5b,
-	0xa7, 0x79, 0x6e, 0x3b, 0x8d, 0x59, 0x6b, 0x5a, 0xfb, 0xe1, 0x57, 0xa1, 0x99, 0xaa, 0xee, 0x11,
-	0xa7, 0x8b, 0xfa, 0x7b, 0x27, 0x77, 0xfe, 0x71, 0xaf, 0x22, 0x69, 0xe5, 0xd3, 0x3b, 0x82, 0x9d,
-	0x91, 0x48, 0x26, 0xf8, 0x00, 0x2c, 0x31, 0xd5, 0x4b, 0xef, 0x50, 0x4b, 0x4c, 0x7b, 0x5f, 0x23,
-	0x68, 0x7d, 0xc4, 0xa3, 0x29, 0x93, 0xf8, 0x05, 0xd8, 0x95, 0x7c, 0xce, 0x72, 0x19, 0xce, 0x53,
-	0xed, 0xd1, 0xa0, 0x37, 0x80, 0x1a, 0x5e, 0x35, 0x52, 0xd5, 0xdf, 0x46, 0x35, 0xbc, 0x0f, 0x14,
-	0x60, 0x86, 0x57, 0x8d, 0x98, 0x98, 0x79, 0x99, 0x2f, 0xb2, 0x4d, 0x6b, 0x53, 0x65, 0xcf, 0xf9,
-	0x24, 0x09, 0x65, 0x91, 0xd5, 0xdf, 0xc8, 0x0d, 0xd0, 0x7b, 0x09, 0x6c, 0xca, 0x3e, 0x2b, 0x58,
-	0xbe, 0x31, 0x4a, 0xb4, 0x31, 0xca, 0xde, 0x7d, 0x70, 0x28, 0xcb, 0x53, 0x91, 0xe4, 0x6c, 0x5b,
-	0x07, 0x76, 0xc1, 0x31, 0x37, 0xe5, 0xba, 0xc2, 0x36, 0x5d, 0xd9, 0x27, 0xbf, 0x21, 0x68, 0xbd,
-	0xcf, 0xe4, 0x85, 0x88, 0xf1, 0x3b, 0xb0, 0x33, 0xe2, 0xc9, 0x04, 0x1f, 0xf9, 0xd5, 0xbb, 0xe4,
-	0xd7, 0xef, 0x92, 0x7f, 0xaa, 0xde, 0x25, 0xf7, 0xd6, 0x7a, 0x13, 0x55, 0xc3, 0x7a, 0xfb, 0x5f,
-	0x3d, 0xfe, 0xf5, 0x1b, 0xcb, 0xc6, 0xcd, 0x20, 0x55, 0x81, 0x54, 0xd5, 0x20, 0x33, 0xce, 0x2e,
-	0x19, 0x3e, 0x5c, 0x77, 0x36, 0xe5, 0xbb, 0xb7, 0x37, 0xc1, 0xaa, 0xdc, 0xde, 0xb1, 0xce, 0x72,
-	0x07, 0x1f, 0x06, 0x99, 0x89, 0x0e, 0x3e, 0x37, 0xb2, 0xbe, 0xc0, 0x0f, 0xc1, 0x1e, 0x65, 0x22,
-	0x62, 0x79, 0x8e, 0xf1, 0x7a, 0x74, 0x35, 0x97, 0xff, 0xc8, 0x78, 0xa8, 0x33, 0xee, 0xf7, 0x1c,
-	0xf5, 0xb4, 0xaa, 0xd8, 0xb7, 0xd1, 0x2b, 0x83, 0xd3, 0x5f, 0xae, 0xbd, 0x67, 0x9e, 0x5c, 0x7b,
-	0xe8, 0xcf, 0x6b, 0x0f, 0xfd, 0x75, 0xed, 0xa1, 0x2f, 0x4b, 0x0f, 0x7d, 0x5b, 0x7a, 0xe8, 0xbb,
-	0xd2, 0x43, 0xdf, 0x97, 0x1e, 0xfa, 0xa1, 0xf4, 0xd0, 0x4f, 0xa5, 0x87, 0x9e, 0x94, 0x1e, 0x82,
-	0xb5, 0xff, 0x83, 0x81, 0x35, 0x1a, 0x8c, 0xd0, 0x27, 0xcd, 0xaa, 0x1d, 0x2d, 0xfd, 0xf3, 0xc6,
-	0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xe0, 0xfc, 0xa5, 0xed, 0x43, 0x06, 0x00, 0x00,
+	// 494 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0xbf, 0x8b, 0xd4, 0x40,
+	0x14, 0x76, 0xf6, 0x36, 0xfb, 0x63, 0xb8, 0x3b, 0x8e, 0x59, 0xef, 0x08, 0x39, 0x19, 0x97, 0x68,
+	0xb1, 0x08, 0x26, 0xa0, 0xa0, 0x60, 0x23, 0x2c, 0x1c, 0x68, 0xa1, 0x84, 0x41, 0x2c, 0x6c, 0x24,
+	0x9b, 0x7d, 0xe6, 0xc6, 0x5c, 0x66, 0x62, 0x66, 0x22, 0x2c, 0x22, 0x88, 0xff, 0x82, 0xa5, 0xff,
+	0x80, 0x7f, 0x82, 0xa5, 0xa5, 0xa5, 0x60, 0x63, 0x25, 0xb7, 0x41, 0xb0, 0xb5, 0xb4, 0x94, 0x99,
+	0x64, 0x6f, 0xd7, 0x83, 0xab, 0xf2, 0xde, 0xfb, 0xde, 0xf7, 0xe5, 0x9b, 0x6f, 0x06, 0xef, 0x15,
+	0xa5, 0xd4, 0x32, 0xcc, 0x63, 0x2e, 0x02, 0x5b, 0x12, 0xcc, 0x65, 0x30, 0x2b, 0x17, 0x59, 0xc0,
+	0xe7, 0xde, 0xcd, 0x94, 0xeb, 0xe3, 0x6a, 0x16, 0x24, 0x32, 0x0f, 0x53, 0x99, 0xca, 0xd0, 0xae,
+	0xcc, 0xaa, 0x17, 0xb6, 0x6b, 0xa8, 0xa6, 0x6a, 0xa8, 0xde, 0xdd, 0xf3, 0xeb, 0xa9, 0x94, 0xe9,
+	0x09, 0xc4, 0x05, 0x57, 0x6d, 0x19, 0xc6, 0x05, 0x0f, 0x63, 0x21, 0xa4, 0x8e, 0x35, 0x97, 0x42,
+	0xb5, 0xc4, 0xc3, 0x16, 0x3d, 0x93, 0x87, 0xbc, 0xd0, 0x8b, 0x06, 0xf4, 0x0f, 0x70, 0x37, 0x92,
+	0x22, 0x25, 0xbb, 0xb8, 0x23, 0x33, 0x17, 0x8d, 0xd1, 0x64, 0xc0, 0x3a, 0x32, 0xf3, 0x3f, 0x22,
+	0xdc, 0x7b, 0xc2, 0x93, 0x0c, 0x34, 0xb9, 0x82, 0x87, 0x9a, 0xe7, 0xa0, 0x74, 0x9c, 0x17, 0x76,
+	0x63, 0x8b, 0xad, 0x07, 0xe4, 0x3a, 0x76, 0x84, 0x14, 0x09, 0xb8, 0x1d, 0x83, 0x4c, 0x77, 0xeb,
+	0x9f, 0x57, 0xf1, 0x63, 0x33, 0x78, 0x1a, 0x9f, 0x54, 0xc0, 0x1a, 0x90, 0xec, 0xe3, 0x5e, 0x06,
+	0x8b, 0xe7, 0x7c, 0xee, 0x6e, 0x8d, 0xd1, 0x64, 0xc8, 0x9c, 0x0c, 0x16, 0x0f, 0xe7, 0xc4, 0xc5,
+	0xfd, 0x44, 0x0a, 0x0d, 0x42, 0xbb, 0xdd, 0x31, 0x9a, 0x6c, 0xb3, 0x55, 0x6b, 0x7e, 0xaa, 0x78,
+	0x2a, 0x62, 0x5d, 0x95, 0xe0, 0x3a, 0x16, 0x5b, 0x0f, 0xfc, 0x6b, 0xb8, 0xcf, 0xe0, 0x55, 0x05,
+	0x4a, 0x1b, 0x09, 0x55, 0xcd, 0x5e, 0x42, 0xa2, 0xad, 0xb7, 0x21, 0x5b, 0xb5, 0xfe, 0x1d, 0x3c,
+	0x60, 0xa0, 0x0a, 0x29, 0x14, 0x9c, 0x3f, 0x1e, 0xf1, 0xf0, 0xa0, 0xfd, 0x93, 0xb2, 0xc6, 0xb7,
+	0xd9, 0x59, 0x7f, 0xeb, 0x37, 0xc2, 0xbd, 0x47, 0xa0, 0x8f, 0xe5, 0x9c, 0xdc, 0xc7, 0xdd, 0x88,
+	0x8b, 0x94, 0x1c, 0x04, 0x4d, 0x86, 0xc1, 0x2a, 0xc3, 0xe0, 0xc8, 0x64, 0xe8, 0xed, 0x05, 0xeb,
+	0xfb, 0x0c, 0x4c, 0x8e, 0xfe, 0xce, 0xfb, 0xef, 0xbf, 0x3e, 0x74, 0xfa, 0xc4, 0x09, 0x0b, 0x43,
+	0x64, 0xc6, 0x83, 0x2e, 0x39, 0xbc, 0x06, 0x32, 0xda, 0x5c, 0x6e, 0xed, 0x7b, 0x97, 0xff, 0x1f,
+	0x36, 0x76, 0xfd, 0x43, 0xab, 0xb2, 0x4f, 0x46, 0x61, 0xd9, 0xb2, 0xc3, 0x37, 0xed, 0xb1, 0xde,
+	0x92, 0x07, 0xb8, 0x1f, 0x95, 0x32, 0x01, 0xa5, 0x08, 0xd9, 0x64, 0x37, 0xd7, 0x75, 0x81, 0xe2,
+	0xc8, 0x2a, 0xee, 0xf8, 0x03, 0xf3, 0x0c, 0x0c, 0xf7, 0x1e, 0xba, 0x31, 0x3d, 0xfa, 0xb1, 0xa4,
+	0x97, 0x4e, 0x97, 0x14, 0xfd, 0x59, 0x52, 0xf4, 0x77, 0x49, 0xd1, 0xbb, 0x9a, 0xa2, 0x4f, 0x35,
+	0x45, 0x9f, 0x6b, 0x8a, 0xbe, 0xd4, 0x14, 0x7d, 0xad, 0x29, 0xfa, 0x56, 0x53, 0x74, 0x5a, 0x53,
+	0x84, 0x37, 0xde, 0xee, 0xb4, 0x13, 0x4d, 0x23, 0xf4, 0xcc, 0x69, 0xe2, 0xe8, 0xd9, 0xcf, 0xed,
+	0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xfa, 0x3c, 0x8d, 0x3d, 0xef, 0x02, 0x00, 0x00,
 }

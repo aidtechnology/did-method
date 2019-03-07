@@ -59,13 +59,25 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 
 // Process an incoming request ticket
 func (h *Handler) Process(ticket *proto.Ticket) error {
-	if err := ticket.Verify(); err != nil {
+	if err := ticket.Verify(nil); err != nil {
 		return err
 	}
 	id, err := ticket.LoadDID()
 	if err != nil {
 		return err
 	}
+
+	// Update operations require another validation step using the original record
+	if r, err := h.db.Get([]byte(id.Subject())); err == nil && len(r) != 0 {
+		orig, err := h.Retrieve(id.Subject())
+		if err != nil {
+			return fmt.Errorf("failed to recover original record for update: %s", err)
+		}
+		if err := ticket.Verify(orig.Key(ticket.KeyId)); err != nil {
+			return err
+		}
+	}
+
 	data, err := id.Encode()
 	if err != nil {
 		return err

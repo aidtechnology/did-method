@@ -2,7 +2,7 @@ module github.com/bryk-io/id
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/bryk-io/x v0.0.0-20190307154553-b8ac0e6182d8
+	github.com/bryk-io/x v0.0.0-20190307214115-ddcd34328b9a
 	github.com/gogo/googleapis v1.1.0
 	github.com/gogo/protobuf v1.2.0
 	github.com/golang/protobuf v1.3.0

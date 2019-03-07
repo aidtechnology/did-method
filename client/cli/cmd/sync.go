@@ -28,9 +28,9 @@ var syncCmd = &cobra.Command{
 func init() {
 	params := []cParam{
 		{
-			name:      "proof-key",
-			usage:     "name of the key to use to generate the identifier proof",
-			flagKey:   "sync.proof",
+			name:      "key",
+			usage:     "cryptographic key to use for the sync operation",
+			flagKey:   "sync.key",
 			byDefault: "master",
 		},
 	}
@@ -63,8 +63,28 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return errors.New("failed to decode entry contents")
 	}
 
+	// Get selected key for the sync operation
+	key := id.Key(viper.GetString("sync.key"))
+	if key == nil {
+		return errors.New("invalid key selected")
+	}
+
+	// Verify the key is enabled for authentication
+	isAuth := false
+	for _, k := range id.AuthenticationKeys() {
+		if k == key.ID {
+			isAuth = true
+			break
+		}
+	}
+	if !isAuth {
+		return errors.New("the key selected is not enabled for authentication purposes")
+	}
+	fmt.Printf("Key selected for the operation: %s\n", key.ID)
+
 	// Update proof
-	if err = id.AddProof(viper.GetString("sync.proof"), didDomainValue); err != nil {
+	fmt.Println("Updating record proof...")
+	if err = id.AddProof(key.ID, didDomainValue); err != nil {
 		return fmt.Errorf("failed to generate proof: %s", err)
 	}
 
@@ -81,6 +101,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		Timestamp:  time.Now().Unix(),
 		Content:    safe,
 		NonceValue: 0,
+		KeyId:      key.ID,
 	}
 	start := time.Now()
 	challenge, err := ticket.Solve(context.TODO())
@@ -91,16 +112,12 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	fmt.Printf("Time: %s (rounds completed %d)\n", time.Since(start), ticket.Nonce())
 
 	// Sign ticket
-	key := id.Key("master")
-	if key == nil {
-		return errors.New("no master key set for the DID")
-	}
 	pvt := e.PrivateKey(key.Private)
 	ch, _ := hex.DecodeString(challenge)
 	ticket.Signature = e.Sign(pvt, ch)
 
 	// Verify on client's side
-	if err = ticket.Verify(); err != nil {
+	if err = ticket.Verify(nil); err != nil {
 		return fmt.Errorf("failed to verify ticket: %s", err)
 	}
 
@@ -123,5 +140,14 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("network return an error: %s", err)
 	}
 	fmt.Printf("Final request status: %v\n", res.Ok)
+
+	// Update local record if sync was successful
+	if res.Ok {
+		contents, err := id.Encode()
+		if err != nil {
+			return fmt.Errorf("failed to encode identifier: %s", err)
+		}
+		return st.Update(name, contents)
+	}
 	return nil
 }

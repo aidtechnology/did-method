@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -37,14 +38,17 @@ func (t *Ticket) Encode() ([]byte, error) {
 	var tc []byte
 	nb := bytes.NewBuffer(nil)
 	tb := bytes.NewBuffer(nil)
+	kb := make([]byte, hex.EncodedLen(len([]byte(t.KeyId))))
 	if err := binary.Write(nb, binary.LittleEndian, t.Nonce()); err != nil {
 		return nil, fmt.Errorf("failed to encode nonce value: %s", err)
 	}
 	if err := binary.Write(tb, binary.LittleEndian, t.GetTimestamp()); err != nil {
 		return nil, fmt.Errorf("failed to encode nonce value: %s", err)
 	}
+	hex.Encode(kb, []byte(t.KeyId))
 	tc = append(tc, tb.Bytes()...)
 	tc = append(tc, nb.Bytes()...)
+	tc = append(tc, kb...)
 	return append(tc, t.Content...), nil
 }
 
@@ -67,14 +71,14 @@ func (t *Ticket) Solve(ctx context.Context) (string, error) {
 }
 
 // Verify perform all the required validations to ensure the request ticket is
-// ready for further processing.
+// ready for further processing
 // - Challenge is valid
 // - Contents are a properly encoded DID instance
 // - DID instance’s “method” value is set to “bryk”
 // - Contents don’t include any private key, for security reasons no private keys should
 //   ever be published on the network
 // - Signature is valid
-func (t *Ticket) Verify() (err error) {
+func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 	// Challenge is valid
 	if !pow.Verify(t, sha256.New(), ticketDifficultyLevel) {
 		return errors.New("invalid ticket challenge")
@@ -98,10 +102,16 @@ func (t *Ticket) Verify() (err error) {
 		}
 	}
 
-	// Retrieve DID's master key
-	key := id.Key("master")
+	var key *did.PublicKey
+	if k != nil {
+		// Use provided key
+		key = k
+	} else {
+		// Retrieve DID's key
+		key = id.Key(t.KeyId)
+	}
 	if key == nil {
-		return errors.New("no master key available on the DID")
+		return errors.New("the selected key is not available on the DID")
 	}
 
 	// Decode public key

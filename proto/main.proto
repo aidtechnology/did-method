@@ -30,55 +30,6 @@ import "github.com/gogo/googleapis/google/api/annotations.proto";
 // vendor/github.com/gogo/protobuf/types
 import "google/protobuf/empty.proto";
 
-// Decentralized identifier elements
-message DID {
-  // List any type of service the entity wishes to advertise, including decentralized
-  // identity management services for further discovery, authentication, authorization, or interaction
-  // https://w3c-ccg.github.io/did-spec/#service-endpoints
-  message Service {
-    string id = 1 [(gogoproto.customname) = "ID"];
-    string type = 2;
-    string endpoint = 3 [(gogoproto.customname) = "ServiceEndpoint"];
-  }
-
-  // Public keys registered for the subject
-  // https://w3c-ccg.github.io/did-spec/#public-keys
-  message PublicKey {
-    string id = 1 [(gogoproto.customname) = "ID"];
-    string type = 2;
-    string controller = 3;
-    bytes private = 4;
-    string value_hex = 5;
-    string value_base64 = 6;
-    string value_base58 = 7;
-  }
-
-  // Cryptographic proof of the integrity of the document instance
-  // https://w3c-ccg.github.io/did-spec/#proof-optional
-  message Proof {
-    repeated string context = 1 [(gogoproto.jsontag) = "@context"];
-    string type = 2;
-    string creator = 3;
-    string created = 4;
-    string domain = 5;
-    string nonce = 6;
-    bytes value = 7 [(gogoproto.customname) = "ProofValue"];
-  }
-
-  // Document represents a valid DID document instance
-  // https://w3c-ccg.github.io/did-spec/#did-documents
-  message Document {
-    repeated string context = 1 [(gogoproto.jsontag) = "@context"];
-    string subject = 2;
-    string created = 3;
-    string updated = 4;
-    repeated string authentication = 5;
-    repeated DID.PublicKey public_keys = 6 [(gogoproto.customname) = "PublicKey"];
-    repeated DID.Service service = 7;
-    DID.Proof proof = 8;
-  }
-}
-
 // Generic ping response
 message Pong {
   bool ok = 1;
@@ -88,8 +39,9 @@ message Pong {
 message Ticket {
   int64 timestamp = 1;
   int64 nonce = 2 [(gogoproto.customname) = "NonceValue"];
-  bytes content = 3;
-  bytes signature = 4;
+  string key_id = 3;
+  bytes content = 4;
+  bytes signature = 5;
 }
 
 // Request the contents of a DID based on its subject string
