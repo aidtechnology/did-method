@@ -15,12 +15,12 @@ import (
 var (
 	cfgFile string
 	homeDir string
-	didDomainValue = "identity.bryk.io"
-	defaultNode    = "identity.bryk.io"
+	didDomainValue = "did.bryk.io"
+	defaultNode    = "did.bryk.io"
 )
 
 var rootCmd = &cobra.Command{
-	Use:           "bryk-id",
+	Use:           "bryk-did-client",
 	Short:         "Bryk Identity: Client",
 	SilenceErrors: true,
 	Long:          `Bryk Identity: Client
@@ -43,8 +43,8 @@ func Execute() {
 
 func init() { 
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.bryk-id/config.yaml)")
-	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.bryk-id)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.bryk-did/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.bryk-did)")
 	if err := viper.BindPFlag("home", rootCmd.PersistentFlags().Lookup("home")); err != nil {
 		log.Fatal(err)
 	}
@@ -66,13 +66,13 @@ func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		homeDir = path.Join(home, ".bryk-id")
+		homeDir = path.Join(home, ".bryk-did")
 		viper.AddConfigPath(homeDir)
 		viper.SetConfigName("config")
 	}
 
 	// ENV
-	viper.SetEnvPrefix("bryk-id")
+	viper.SetEnvPrefix("bryk-did")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()

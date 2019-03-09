@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bryk-io/id/client/store"
+	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/crypto/shamir"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
@@ -38,6 +38,12 @@ func init() {
 			usage:     "specify the number of shares and threshold value in the following format: shares,threshold",
 			flagKey:   "register.secret-sharing",
 			byDefault: "3,2",
+		},
+		{
+			name:      "tag",
+			usage:     "specify a tag value for the identifier instance",
+			flagKey:   "register.tag",
+			byDefault: "",
 		},
 	}
 	if err := setupCommandParams(registerCmd, params); err != nil {
@@ -75,7 +81,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	copy(pk, masterKey.Private[:])
 
 	// Generate base identifier instance
-	id, err := did.NewIdentifier("bryk", did.ModeUUID)
+	id, err := did.NewIdentifierWithMode("bryk", viper.GetString("register.tag"), did.ModeUUID)
 	if err != nil {
 		return err
 	}

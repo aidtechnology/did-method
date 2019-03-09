@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/bryk-io/id/client/store"
-	"github.com/bryk-io/id/proto"
+	"github.com/bryk-io/did-method/client/store"
+	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
 	"github.com/kennygrant/sanitize"

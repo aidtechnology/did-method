@@ -1,10 +1,10 @@
-package method
+package agent
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/bryk-io/id/proto"
+	"github.com/bryk-io/did-method/proto"
 	"github.com/gogo/protobuf/types"
 )
 

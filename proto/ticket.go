@@ -3,7 +3,6 @@ package proto
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -12,6 +11,7 @@ import (
 	"github.com/bryk-io/x/crypto/pow"
 	"github.com/bryk-io/x/did"
 	e "golang.org/x/crypto/ed25519"
+	"golang.org/x/crypto/sha3"
 )
 
 const ticketDifficultyLevel = 16
@@ -63,7 +63,7 @@ func (t *Ticket) LoadDID() (*did.Identifier, error) {
 
 // Solve the ticket challenge using the proof-of-work mechanism
 func (t *Ticket) Solve(ctx context.Context) (string, error) {
-	res, err := pow.Solve(ctx, t, sha256.New(), ticketDifficultyLevel)
+	res, err := pow.Solve(ctx, t, sha3.New256(), ticketDifficultyLevel)
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +80,7 @@ func (t *Ticket) Solve(ctx context.Context) (string, error) {
 // - Signature is valid
 func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 	// Challenge is valid
-	if !pow.Verify(t, sha256.New(), ticketDifficultyLevel) {
+	if !pow.Verify(t, sha3.New256(), ticketDifficultyLevel) {
 		return errors.New("invalid ticket challenge")
 	}
 
@@ -125,7 +125,7 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 	if err != nil {
 		return errors.New("failed to re-encode ticket instance")
 	}
-	digest := sha256.New()
+	digest := sha3.New256()
 	digest.Write(data)
 
 	// Verify signature

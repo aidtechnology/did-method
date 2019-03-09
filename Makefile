@@ -1,14 +1,14 @@
 .DEFAULT_GOAL := help
 FILES_LIST=`find . -iname '*.go' | grep -v 'vendor'`
 GO_PKG_LIST=`go list ./... | grep -v 'vendor'`
-BINARY_NAME=bryk-id
+BINARY_NAME=bryk-did
 VERSION_TAG=0.1.0
 
 # Custom compilation tags
 LD_FLAGS="\
--X github.com/bryk-io/id/client/cli/cmd.coreVersion=$(VERSION_TAG) \
--X github.com/bryk-io/id/client/cli/cmd.buildCode=`git log --pretty=format:'%H' -n1` \
--X github.com/bryk-io/id/client/cli/cmd.buildTimestamp=`date +'%s'` \
+-X github.com/bryk-io/did-method/client/cli/cmd.coreVersion=$(VERSION_TAG) \
+-X github.com/bryk-io/did-method/client/cli/cmd.buildCode=`git log --pretty=format:'%H' -n1` \
+-X github.com/bryk-io/did-method/client/cli/cmd.buildTimestamp=`date +'%s'` \
 "
 
 test: ## Run all tests excluding the vendor dependencies
@@ -28,11 +28,11 @@ test: ## Run all tests excluding the vendor dependencies
 	go test -race -cover -v $(GO_PKG_LIST)
 
 build: ## Build for the default architecture in use
-	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client github.com/bryk-io/id/client/cli
-	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-node github.com/bryk-io/id/method/cli
+	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client github.com/bryk-io/did-method/client/cli
+	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent github.com/bryk-io/did-method/agent/cli
 
 install: ## Install the binary to GOPATH and keep cached all compiled artifacts
-	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME)-client github.com/bryk-io/id/client/cli
+	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME)-client github.com/bryk-io/did-method/client/cli
 
 clean: ## Download and compile all dependencies and intermediary products
 	go mod tidy

@@ -1,4 +1,4 @@
-package method
+package agent
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/bryk-io/id/proto"
+	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
 	"github.com/bryk-io/x/storage/kv"

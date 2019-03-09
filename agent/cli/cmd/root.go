@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bryk-io/id/method"
+	"github.com/bryk-io/did-method/agent"
 	"github.com/bryk-io/x/net/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -51,7 +51,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	port := viper.GetInt("server.port")
 	storage := viper.GetString("server.storage")
 	fmt.Printf("Starting node. Port: %d - Storage: %s\n", port, storage)
-	handler, err := method.NewHandler(storage)
+	handler, err := agent.NewHandler(storage)
 	if err != nil {
 		return fmt.Errorf("failed to start method handler: %s", err)
 	}

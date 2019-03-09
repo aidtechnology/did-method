@@ -1,12 +1,11 @@
-module github.com/bryk-io/id
+module github.com/bryk-io/did-method
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/bryk-io/x v0.0.0-20190307214115-ddcd34328b9a
+	github.com/bryk-io/x v0.0.0-20190308202857-992b14f2aaf5
 	github.com/gogo/googleapis v1.1.0
 	github.com/gogo/protobuf v1.2.0
 	github.com/golang/protobuf v1.3.0
-	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/grpc-gateway v1.7.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4

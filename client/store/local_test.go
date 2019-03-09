@@ -17,7 +17,7 @@ func TestLocalStore(t *testing.T) {
 	defer st.Close()
 
 	// Sample entry
-	id, _ := did.NewIdentifier("bryk", did.ModeUUID)
+	id, _ := did.NewIdentifierWithMode("bryk", "", did.ModeUUID)
 	id.AddNewKey("master", did.KeyTypeEd, did.EncodingHex)
 	id.AddAuthenticationKey("master")
 	id.AddProof("master", "sample.acme.com")

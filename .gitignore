@@ -20,5 +20,4 @@ vendor/**
 *.swagger.json
 
 # Build
-bryk-id
-bryk-id-*
+bryk-did-*

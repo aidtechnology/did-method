@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/bryk-io/id/client/store"
+	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"

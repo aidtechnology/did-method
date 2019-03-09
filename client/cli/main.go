@@ -1,6 +1,6 @@
 package main
 
-import "github.com/bryk-io/id/client/cli/cmd"
+import "github.com/bryk-io/did-method/client/cli/cmd"
 
 func main() {
 	cmd.Execute()
