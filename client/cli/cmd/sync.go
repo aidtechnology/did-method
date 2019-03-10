@@ -15,7 +15,6 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	e "golang.org/x/crypto/ed25519"
 )
 
 var syncCmd = &cobra.Command{
@@ -64,21 +63,9 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get selected key for the sync operation
-	key := id.Key(viper.GetString("sync.key"))
-	if key == nil {
-		return errors.New("invalid key selected")
-	}
-
-	// Verify the key is enabled for authentication
-	isAuth := false
-	for _, k := range id.AuthenticationKeys() {
-		if k == key.ID {
-			isAuth = true
-			break
-		}
-	}
-	if !isAuth {
-		return errors.New("the key selected is not enabled for authentication purposes")
+	key, err := getSyncKey(id)
+	if err != nil {
+		return err
 	}
 	fmt.Printf("Key selected for the operation: %s\n", key.ID)
 
@@ -97,12 +84,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	// Generate request ticket
 	fmt.Printf("Publishing: %s\n", name)
 	fmt.Println("Generating request ticket...")
-	ticket := &proto.Ticket{
-		Timestamp:  time.Now().Unix(),
-		Content:    safe,
-		NonceValue: 0,
-		KeyId:      key.ID,
-	}
+	ticket := proto.NewTicket(safe, key.ID)
 	start := time.Now()
 	challenge, err := ticket.Solve(context.TODO())
 	if err != nil {
@@ -112,9 +94,11 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	fmt.Printf("Time: %s (rounds completed %d)\n", time.Since(start), ticket.Nonce())
 
 	// Sign ticket
-	pvt := e.PrivateKey(key.Private)
 	ch, _ := hex.DecodeString(challenge)
-	ticket.Signature = e.Sign(pvt, ch)
+	ticket.Signature, err = key.Sign(ch)
+	if err != nil {
+		return fmt.Errorf("failed to generate request ticket: %s", err)
+	}
 
 	// Verify on client's side
 	if err = ticket.Verify(nil); err != nil {
@@ -122,11 +106,13 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Submit request
-	fmt.Println("Establishing connection to the network")
+	node := viper.GetString("node")
+	fmt.Printf("Establishing connection to the network with node: %s\n", node)
 	var opts []rpc.ClientOption
 	opts = append(opts, rpc.WaitForReady())
 	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
-	conn, err := rpc.NewClientConnection(viper.GetString("node"), opts...)
+	opts = append(opts, rpc.WithTimeout(5 * time.Second))
+	conn, err := rpc.NewClientConnection(node, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to establish connection: %s", err)
 	}
@@ -150,4 +136,25 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return st.Update(name, contents)
 	}
 	return nil
+}
+
+func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
+	// Get selected key for the sync operation
+	key := id.Key(viper.GetString("sync.key"))
+	if key == nil {
+		return nil, errors.New("invalid key selected")
+	}
+
+	// Verify the key is enabled for authentication
+	isAuth := false
+	for _, k := range id.AuthenticationKeys() {
+		if k == key.ID {
+			isAuth = true
+			break
+		}
+	}
+	if !isAuth {
+		return nil, errors.New("the key selected is not enabled for authentication purposes")
+	}
+	return key, nil
 }
