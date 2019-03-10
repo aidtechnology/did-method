@@ -75,5 +75,5 @@ service Method {
   // Return the current state of a DID subject
   // The HTTP endpoint for this method is a custom handler function
   // on the network agent
-  rpc Retrieve(Request) returns (Response)
+  rpc Retrieve(Request) returns (Response);
 }

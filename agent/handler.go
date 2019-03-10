@@ -156,7 +156,7 @@ func (h *Handler) queryHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Retrieve entry
 	id, err := h.Retrieve(request.URL.Query().Get("subject"))
 	if err != nil {
-		writer.WriteHeader(500)
+		writer.WriteHeader(400)
 		eh["error"] = err.Error()
 		json.NewEncoder(writer).Encode(eh)
 		return
@@ -165,7 +165,7 @@ func (h *Handler) queryHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Prepare output
 	output, err := json.MarshalIndent(id.Document(), "", "  ")
 	if err != nil {
-		writer.WriteHeader(500)
+		writer.WriteHeader(400)
 		eh["error"] = err.Error()
 		json.NewEncoder(writer).Encode(eh)
 		return

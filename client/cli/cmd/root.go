@@ -15,7 +15,7 @@ var (
 	cfgFile string
 	homeDir string
 	didDomainValue = "did.bryk.io"
-	defaultNode    = "did.bryk.io"
+	defaultNode    = "rpc-did.bryk.io:80"
 )
 
 var rootCmd = &cobra.Command{
