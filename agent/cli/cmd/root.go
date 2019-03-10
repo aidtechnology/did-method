@@ -40,7 +40,7 @@ func init() {
 			name:      "storage",
 			usage:     "specify the directory to use for data storage",
 			flagKey:   "server.storage",
-			byDefault: "/var/run/bryk-id-server",
+			byDefault: "/etc/bryk-did/agent",
 		},
 	}
 	if err := setupCommandParams(rootCmd, params); err != nil {

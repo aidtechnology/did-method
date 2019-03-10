@@ -98,6 +98,7 @@ func (h *Handler) GetServer(opts ...rpc.ServerOption) (*rpc.Server, error) {
 	}
 
 	// Add RPC service handler
+	opts = append(opts, rpc.WithNetworkInterface(rpc.NetworkInterfaceAll))
 	opts = append(opts, rpc.WithService(func(s *grpc.Server) {
 		proto.RegisterMethodServer(s, &rpcHandler{handler: h})
 	}, proto.RegisterMethodHandlerFromEndpoint))
