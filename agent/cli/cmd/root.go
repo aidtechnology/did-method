@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/bryk-io/did-method/agent"
@@ -71,7 +72,10 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	fmt.Println("Waiting for requests...")
 	<-signalsHandler()
 	fmt.Println("Preparing to exit")
-	handler.Close()
+	err = handler.Close()
+	if !strings.Contains(err.Error(), "closed network connection") {
+		return err
+	}
 	return nil
 }
 

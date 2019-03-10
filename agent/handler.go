@@ -1,8 +1,10 @@
 package agent
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -48,7 +50,7 @@ func (h *Handler) Close() (err error) {
 func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 	contents, err := h.db.Get([]byte(subject))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("no information available for the subject")
 	}
 	d := &did.Identifier{}
 	if err = d.Decode(contents); err != nil {
@@ -101,9 +103,17 @@ func (h *Handler) GetServer(opts ...rpc.ServerOption) (*rpc.Server, error) {
 	}, proto.RegisterMethodHandlerFromEndpoint))
 
 	// Create server instance
-	var err error
-	h.server, err = rpc.NewServer(opts...)
-	return h.server, err
+	srv, err := rpc.NewServer(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Custom HTTP handler method for data retrieval, the response should be the JSON-LD encoded
+	// document of the requested DID instance
+	srv.HandleFunc("/v1/retrieve", h.queryHTTP)
+
+	h.server = srv
+	return h.server, nil
 }
 
 // GetConnection returns an RPC client connection to the method handler instance
@@ -112,6 +122,36 @@ func (h *Handler) GetConnection(opts ...rpc.ClientOption) (*grpc.ClientConn, err
 		return nil, errors.New("no server initialized")
 	}
 	return rpc.NewClientConnection(h.server.GetEndpoint(), opts...)
+}
+
+// Handle data queries done via HTTP. Will return the pretty formatted JSON-LD document
+// of the DID instance, if available. A simple error message otherwise.
+func (h *Handler) queryHTTP(writer http.ResponseWriter, request *http.Request) {
+	eh := map[string]interface{}{"ok": false}
+	writer.Header().Set("Content-Type", "application/json")
+
+	// Retrieve entry
+	id, err := h.Retrieve(request.URL.Query().Get("subject"))
+	if err != nil {
+		writer.WriteHeader(500)
+		eh["error"] = err.Error()
+		json.NewEncoder(writer).Encode(eh)
+		return
+	}
+
+	// Prepare output
+	output, err := json.MarshalIndent(id.Document(), "", "  ")
+	if err != nil {
+		writer.WriteHeader(500)
+		eh["error"] = err.Error()
+		json.NewEncoder(writer).Encode(eh)
+		return
+	}
+
+	// Send response
+	writer.WriteHeader(200)
+	fmt.Fprintf(writer, "%s", output)
+	return
 }
 
 // Verify the provided path exists and is a directory
