@@ -8,11 +8,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
 	"github.com/bryk-io/x/storage/kv"
+	log "github.com/sirupsen/logrus"
+	"github.com/x-cray/logrus-prefixed-formatter"
 	"google.golang.org/grpc"
 )
 
@@ -20,6 +23,7 @@ import (
 type Handler struct {
 	db     *kv.Store
 	server *rpc.Server
+	output *log.Logger
 }
 
 // NewHandler starts a new DID method handler instance
@@ -34,11 +38,15 @@ func NewHandler(home string) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Handler{db: db}, nil
+	return &Handler{
+		db:     db,
+		output: getLogger(),
+	}, nil
 }
 
 // Close the instance and safely terminate any internal processing
 func (h *Handler) Close() (err error) {
+	h.output.Info("closing agent handler")
 	err = h.db.Close()
 	if h.server != nil {
 		err = h.server.Stop()
@@ -48,6 +56,7 @@ func (h *Handler) Close() (err error) {
 
 // Retrieve an existing DID instance based on its subject string
 func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
+	h.output.WithField("subject", subject).Debug("retrieve request")
 	contents, err := h.db.Get([]byte(subject))
 	if err != nil {
 		return nil, errors.New("no information available for the subject")
@@ -62,24 +71,33 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 // Process an incoming request ticket
 func (h *Handler) Process(ticket *proto.Ticket) error {
 	if err := ticket.Verify(nil); err != nil {
+		h.output.WithField("error", err.Error()).Error("invalid ticket")
 		return err
 	}
 	id, err := ticket.LoadDID()
 	if err != nil {
+		h.output.WithField("error", err.Error()).Error("invalid DID contents")
 		return err
 	}
 
 	// Update operations require another validation step using the original record
+	isUpdate := false
 	if r, err := h.db.Get([]byte(id.Subject())); err == nil && len(r) != 0 {
 		orig, err := h.Retrieve(id.Subject())
 		if err != nil {
 			return fmt.Errorf("failed to recover original record for update: %s", err)
 		}
 		if err := ticket.Verify(orig.Key(ticket.KeyId)); err != nil {
+			h.output.WithField("error", err.Error()).Error("invalid ticket")
 			return err
 		}
+		isUpdate = true
 	}
 
+	h.output.WithFields(log.Fields{
+		"subject": id.Subject(),
+		"update":  isUpdate,
+	}).Debug("processing incoming write request")
 	data, err := id.Encode()
 	if err != nil {
 		return err
@@ -98,7 +116,6 @@ func (h *Handler) GetServer(opts ...rpc.ServerOption) (*rpc.Server, error) {
 	}
 
 	// Add RPC service handler
-	opts = append(opts, rpc.WithNetworkInterface(rpc.NetworkInterfaceAll))
 	opts = append(opts, rpc.WithService(func(s *grpc.Server) {
 		proto.RegisterMethodServer(s, &rpcHandler{handler: h})
 	}, proto.RegisterMethodHandlerFromEndpoint))
@@ -123,6 +140,11 @@ func (h *Handler) GetConnection(opts ...rpc.ClientOption) (*grpc.ClientConn, err
 		return nil, errors.New("no server initialized")
 	}
 	return rpc.NewClientConnection(h.server.GetEndpoint(), opts...)
+}
+
+// Log will print a message to the handler's output
+func (h *Handler) Log(message string) {
+	h.output.Info(message)
 }
 
 // Handle data queries done via HTTP. Will return the pretty formatted JSON-LD document
@@ -162,4 +184,18 @@ func dirExist(name string) bool {
 		return false
 	}
 	return info.IsDir()
+}
+
+func getLogger() *log.Logger {
+	output := log.New()
+	formatter := &prefixed.TextFormatter{}
+	formatter.FullTimestamp = true
+	formatter.TimestampFormat = time.StampMilli
+	formatter.SetColorScheme(&prefixed.ColorScheme{
+		DebugLevelStyle: "black",
+		TimestampStyle:  "white+h",
+	})
+	output.Formatter = formatter
+	output.SetLevel(log.DebugLevel)
+	return output
 }

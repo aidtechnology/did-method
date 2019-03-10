@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -37,7 +36,7 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(recoverKeyCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	keyCmd.AddCommand(recoverKeyCmd)
 }

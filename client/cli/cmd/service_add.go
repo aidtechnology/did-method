@@ -3,11 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
@@ -43,7 +41,7 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(addServiceCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	serviceCmd.AddCommand(addServiceCmd)
 }
@@ -57,14 +55,17 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
 	defer st.Close()
 
 	// Get identifier
+	ll := getLogger()
 	name := sanitize.Name(args[0])
+	ll.Info("adding new service")
+	ll.Debugf("retrieving entry with reference name: %s", name)
 	e := st.Get(name)
 	if e == nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
@@ -75,6 +76,7 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Validate service data
+	ll.Debug("validating parameters")
 	svc := &did.ServiceEndpoint{
 		ID:       viper.GetString("service-add.name"),
 		Type:     viper.GetString("service-add.type"),
@@ -92,11 +94,13 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Add service
+	ll.Debugf("registering service with id: %s", svc.ID)
 	if err = id.AddService(svc); err != nil {
 		return fmt.Errorf("failed to add new service: %s", err)
 	}
 
 	// Update record
+	ll.Info("updating local record")
 	contents, err := id.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to encode identifier: %s", err)

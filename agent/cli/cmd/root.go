@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,9 +14,11 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "bryk-id-node",
-	Short: "Starts a new node supporting the DID method requirements",
-	RunE:  runMethodServer,
+	Use:           "bryk-did-agent",
+	Short:         "Starts a new network agent supporting the DID method requirements",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	RunE:          runMethodServer,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately
@@ -44,21 +45,24 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(rootCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func runMethodServer(_ *cobra.Command, _ []string) error {
 	port := viper.GetInt("server.port")
 	storage := viper.GetString("server.storage")
-	fmt.Printf("Starting node. Port: %d - Storage: %s\n", port, storage)
 	handler, err := agent.NewHandler(storage)
 	if err != nil {
 		return fmt.Errorf("failed to start method handler: %s", err)
 	}
 
+	handler.Log("starting network agent")
+	handler.Log(fmt.Sprintf("TCP port: %d", port))
+	handler.Log(fmt.Sprintf("storage directory: %s", storage))
 	var opts []rpc.ServerOption
 	opts = append(opts, rpc.WithPort(port))
+	opts = append(opts, rpc.WithNetworkInterface(rpc.NetworkInterfaceAll))
 	opts = append(opts, rpc.WithHTTPGateway(rpc.HTTPGatewayOptions{
 		Port:         port,
 		EmitDefaults: false,
@@ -69,9 +73,9 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	}
 	go server.Start()
 
-	fmt.Println("Waiting for requests...")
+	handler.Log("waiting for incoming requests")
 	<-signalsHandler()
-	fmt.Println("Preparing to exit")
+	handler.Log("preparing to exit")
 	err = handler.Close()
 	if !strings.Contains(err.Error(), "closed network connection") {
 		return err

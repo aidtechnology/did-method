@@ -41,13 +41,15 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get network connection
-	conn, err := getClientConnection()
+	ll := getLogger()
+	conn, err := getClientConnection(ll)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
 	// Retrieve subject
+	ll.Debug("retrieving record")
 	client := proto.NewMethodClient(conn)
 	res, err := client.Retrieve(context.TODO(), &proto.Request{Subject:id.Subject()})
 	if err != nil {
@@ -58,6 +60,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Decode contents
+	ll.Debug("decoding contents")
 	peer := &did.Identifier{}
 	if err = peer.Decode(res.Contents); err != nil {
 		return fmt.Errorf("failed to decode DID records: %s", err)

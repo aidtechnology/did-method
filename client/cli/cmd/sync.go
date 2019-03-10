@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/bryk-io/did-method/proto"
@@ -32,7 +31,7 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(syncCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	rootCmd.AddCommand(syncCmd)
 }
@@ -43,6 +42,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
+	ll := getLogger()
 	st, err := getClientStore()
 	if err != nil {
 		return err
@@ -65,10 +65,10 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Key selected for the operation: %s\n", key.ID)
+	ll.Debugf("key selected for the operation: %s", key.ID)
 
 	// Update proof
-	fmt.Println("Updating record proof...")
+	ll.Info("updating record proof")
 	if err = id.AddProof(key.ID, didDomainValue); err != nil {
 		return fmt.Errorf("failed to generate proof: %s", err)
 	}
@@ -80,16 +80,16 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Generate request ticket
-	fmt.Printf("Publishing: %s\n", name)
-	fmt.Println("Generating request ticket...")
+	ll.Infof("publishing: %s", name)
+	ll.Info("generating request ticket")
 	ticket := proto.NewTicket(safe, key.ID)
 	start := time.Now()
 	challenge, err := ticket.Solve(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to generate request ticket: %s", err)
 	}
-	fmt.Printf("Ticket obtained: %s\n", challenge)
-	fmt.Printf("Time: %s (rounds completed %d)\n", time.Since(start), ticket.Nonce())
+	ll.Debugf("ticket obtained: %s", challenge)
+	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
 
 	// Sign ticket
 	ch, _ := hex.DecodeString(challenge)
@@ -104,20 +104,20 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get client connection
-	conn, err := getClientConnection()
+	conn, err := getClientConnection(ll)
 	if err != nil {
 		return fmt.Errorf("failed to establish connection: %s", err)
 	}
 	defer conn.Close()
 
 	// Submit request
-	fmt.Println("Submitting request to the network")
+	ll.Info("submitting request to the network")
 	client := proto.NewMethodClient(conn)
 	res, err := client.Process(context.TODO(), ticket)
 	if err != nil {
 		return fmt.Errorf("network return an error: %s", err)
 	}
-	fmt.Printf("Final request status: %v\n", res.Ok)
+	ll.Debugf("request status: %v", res.Ok)
 
 	// Update local record if sync was successful
 	if res.Ok {

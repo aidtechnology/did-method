@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strconv"
 	"strings"
 
@@ -47,25 +46,32 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(registerCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	rootCmd.AddCommand(registerCmd)
 }
 
 func runRegisterCmd(_ *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("A reference name for the DID is required")
+		return errors.New("a reference name for the DID is required")
 	}
 	name := sanitize.Name(args[0])
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	ll := getLogger()
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
 	defer st.Close()
 
+	// Check for duplicates
+	if st.Get(name) != nil {
+		return fmt.Errorf("there's already an entry with reference name: %s", name)
+	}
+
 	// Get key secret from the user
+	ll.Info("obtaining secret material for the master private key")
 	secret, err := getSecret(name)
 	if err != nil {
 		return err
@@ -81,21 +87,26 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	copy(pk, masterKey.Private[:])
 
 	// Generate base identifier instance
+	ll.Info("generating new identifier")
 	id, err := did.NewIdentifierWithMode("bryk", viper.GetString("register.tag"), did.ModeUUID)
 	if err != nil {
 		return err
 	}
+	ll.Debug("adding master key")
 	if err = id.AddExistingKey("master", pk, did.KeyTypeEd, did.EncodingHex); err != nil {
 		return err
 	}
+	ll.Debug("setting master key as authentication mechanism")
 	if err = id.AddAuthenticationKey("master"); err != nil {
 		return err
 	}
+	ll.Debug("generating initial integrity proof")
 	if err = id.AddProof("master", didDomainValue); err != nil {
 		return err
 	}
 
 	// Save instance in the store
+	ll.Info("adding entry to local store")
 	contents, err := id.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to encode DID: %s", err)

@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var didDetailsCmd = &cobra.Command{
@@ -30,7 +28,7 @@ func runDidDetailsCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}

@@ -3,10 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
@@ -42,7 +40,7 @@ func init() {
 		},
 	}
 	if err := setupCommandParams(addKeyCmd, params); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	keyCmd.AddCommand(addKeyCmd)
 }
@@ -53,7 +51,8 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	ll := getLogger()
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
@@ -61,6 +60,8 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 
 	// Get identifier
 	name := sanitize.Name(args[0])
+	ll.Info("adding new key")
+	ll.Debugf("retrieving entry with reference name: %s", name)
 	e := st.Get(name)
 	if e == nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
@@ -71,6 +72,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Set parameters
+	ll.Debug("validating parameters")
 	keyName := viper.GetString("key-add.name")
 	if strings.Count(keyName, "#") > 1 {
 		return errors.New("invalid key name")
@@ -87,16 +89,19 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Add key
+	ll.Debugf("adding new key with name: %s", keyName)
 	if err = id.AddNewKey(keyName, keyType, keyEnc); err != nil {
 		return fmt.Errorf("failed to add new key: %s", err)
 	}
 	if viper.GetBool("key-add.authentication") {
+		ll.Info("setting new key as authentication mechanism")
 		if err = id.AddAuthenticationKey(keyName); err != nil {
 			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
 		}
 	}
 
 	// Update record
+	ll.Info("updating local record")
 	contents, err := id.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to encode identifier: %s", err)

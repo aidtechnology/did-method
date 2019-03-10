@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var removeServiceCmd = &cobra.Command{
@@ -28,14 +26,17 @@ func runRemoveServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
 	defer st.Close()
 
 	// Get identifier
+	ll := getLogger()
 	name := sanitize.Name(args[0])
+	ll.Info("removing existing service")
+	ll.Debugf("retrieving entry with reference name: %s", name)
 	e := st.Get(name)
 	if e == nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
@@ -46,11 +47,14 @@ func runRemoveServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Remove service
-	if err = id.RemoveService(sanitize.Name(args[1])); err != nil {
-		return fmt.Errorf("failed to remove service: %s", name)
+	sName := sanitize.Name(args[1])
+	ll.Debugf("deleting service with name: %s", sName)
+	if err = id.RemoveService(sName); err != nil {
+		return fmt.Errorf("failed to remove service: %s", sName)
 	}
 
 	// Update record
+	ll.Info("updating local record")
 	contents, err := id.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to encode identifier: %s", err)

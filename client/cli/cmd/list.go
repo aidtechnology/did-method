@@ -5,10 +5,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var listCmd = &cobra.Command{
@@ -24,7 +22,7 @@ func init() {
 
 func runListCmd(_ *cobra.Command, _ []string) error {
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
@@ -33,7 +31,7 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 	// Get list of entries
 	list := st.List()
 	if len(list) == 0 {
-		fmt.Println("No DIDs registered for the moment")
+		fmt.Println("no DIDs registered for the moment")
 		return nil
 	}
 

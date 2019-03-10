@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var removeKeyCmd = &cobra.Command{
@@ -28,7 +26,8 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	ll := getLogger()
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
@@ -36,6 +35,9 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 
 	// Get identifier
 	name := sanitize.Name(args[0])
+	keyName := sanitize.Name(args[1])
+	ll.Info("removing existing key")
+	ll.Debugf("retrieving entry with reference name: %s", name)
 	e := st.Get(name)
 	if e == nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
@@ -46,14 +48,17 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Remove key
+	ll.Debug("validating parameters")
 	if len(id.Keys()) >= 2 {
-		_ = id.RemoveAuthenticationKey(sanitize.Name(args[1]))
+		_ = id.RemoveAuthenticationKey(keyName)
 	}
-	if err = id.RemoveKey(sanitize.Name(args[1])); err != nil {
-		return fmt.Errorf("failed to remove key: %s", name)
+	if err = id.RemoveKey(keyName); err != nil {
+		return fmt.Errorf("failed to remove key: %s", keyName)
 	}
 
 	// Update record
+	ll.Debug("key removed")
+	ll.Info("updating local record")
 	contents, err := id.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to encode identifier: %s", err)
