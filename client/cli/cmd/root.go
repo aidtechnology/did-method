@@ -6,10 +6,14 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/bryk-io/did-method/client/store"
+	"github.com/bryk-io/x/net/rpc"
 	hd "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -82,4 +86,18 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil && viper.ConfigFileUsed() != "" {
 		fmt.Println("failed to load configuration file:", viper.ConfigFileUsed())
 	}
+}
+
+func getClientStore() (*store.LocalStore, error) {
+	return store.NewLocalStore(viper.GetString("home"))
+}
+
+func getClientConnection() (*grpc.ClientConn, error) {
+	node := viper.GetString("node")
+	fmt.Printf("Establishing connection to the network with node: %s\n", node)
+	var opts []rpc.ClientOption
+	opts = append(opts, rpc.WaitForReady())
+	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
+	opts = append(opts, rpc.WithTimeout(5 * time.Second))
+	return rpc.NewClientConnection(node, opts...)
 }

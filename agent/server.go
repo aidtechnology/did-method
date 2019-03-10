@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/bryk-io/did-method/proto"
 	"github.com/gogo/protobuf/types"
@@ -27,12 +26,12 @@ func (rh *rpcHandler) Retrieve(ctx context.Context, req *proto.Request) (*proto.
 	if err != nil {
 		return nil, err
 	}
-	js, err := json.MarshalIndent(id.Document(), "", "  ")
+	data, err := id.Encode()
 	if err != nil {
 		return nil, err
 	}
 	return &proto.Response{
 		Ok:       true,
-		Contents: js,
+		Contents: data,
 	}, nil
 }

@@ -8,10 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
-	"github.com/bryk-io/x/net/rpc"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,7 +43,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	st, err := store.NewLocalStore(viper.GetString("home"))
+	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
@@ -105,14 +103,8 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to verify ticket: %s", err)
 	}
 
-	// Submit request
-	node := viper.GetString("node")
-	fmt.Printf("Establishing connection to the network with node: %s\n", node)
-	var opts []rpc.ClientOption
-	opts = append(opts, rpc.WaitForReady())
-	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
-	opts = append(opts, rpc.WithTimeout(5 * time.Second))
-	conn, err := rpc.NewClientConnection(node, opts...)
+	// Get client connection
+	conn, err := getClientConnection()
 	if err != nil {
 		return fmt.Errorf("failed to establish connection: %s", err)
 	}
