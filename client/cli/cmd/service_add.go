@@ -86,7 +86,7 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 		return errors.New("invalid service name")
 	}
 	if strings.Count(svc.ID, "#") == 1 {
-		svc.ID = strings.Replace(svc.ID, "#", fmt.Sprintf("%d", len(id.Services()) + 1), 1)
+		svc.ID = strings.Replace(svc.ID, "#", fmt.Sprintf("%d", len(id.Services())+1), 1)
 	}
 	svc.ID = sanitize.Name(svc.ID)
 	if _, err = url.ParseRequestURI(svc.Endpoint); err != nil {

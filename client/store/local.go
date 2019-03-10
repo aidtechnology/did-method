@@ -37,7 +37,7 @@ func (ls *LocalStore) Save(name string, record *Entry) error {
 		return err
 	}
 	return ls.db.Save(&kv.Item{
-		Key: []byte(name),
+		Key:   []byte(name),
 		Value: contents,
 	})
 }
@@ -82,7 +82,7 @@ func (ls *LocalStore) Update(name string, contents []byte) error {
 		return fmt.Errorf("failed to encode entry for storage: %s", err)
 	}
 	return ls.db.Update(&kv.Item{
-		Key: []byte(name),
+		Key:   []byte(name),
 		Value: data,
 	})
 }

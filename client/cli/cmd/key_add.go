@@ -78,7 +78,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 		return errors.New("invalid key name")
 	}
 	if strings.Count(keyName, "#") == 1 {
-		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys()) + 1), 1)
+		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys())+1), 1)
 	}
 	keyName = sanitize.Name(keyName)
 	keyType := did.KeyTypeEd

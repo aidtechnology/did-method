@@ -51,7 +51,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	// Retrieve subject
 	ll.Debug("retrieving record")
 	client := proto.NewMethodClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Request{Subject:id.Subject()})
+	res, err := client.Retrieve(context.TODO(), &proto.Request{Subject: id.Subject()})
 	if err != nil {
 		return fmt.Errorf("failed to retrieve DID records: %s", err)
 	}

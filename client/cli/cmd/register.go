@@ -134,7 +134,7 @@ func getSecret(name string) ([]byte, error) {
 			return nil, err
 		}
 		for i, k := range shares {
-			share := fmt.Sprintf("%s.share_%d.bin", name, i + 1)
+			share := fmt.Sprintf("%s.share_%d.bin", name, i+1)
 			if err := ioutil.WriteFile(share, k, 0400); err != nil {
 				return nil, fmt.Errorf("failed to save share '%s': %s", share, err)
 			}

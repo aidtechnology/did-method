@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	cfgFile string
-	homeDir string
+	cfgFile        string
+	homeDir        string
 	didDomainValue = "did.bryk.io"
 	defaultNode    = "rpc-did.bryk.io:80"
 )
@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 	Short:         "Bryk Identity: Client",
 	SilenceErrors: true,
 	SilenceUsage:  true,
-	Long:          `Bryk Identity: Client
+	Long: `Bryk Identity: Client
 
 Reference client implementation for the "bryk" DID method. The platform allows
 entities to fully manage Decentralized Identifiers as described on the version
@@ -42,7 +42,7 @@ func Execute() {
 	}
 }
 
-func init() { 
+func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.bryk-did/config.yaml)")
 	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.bryk-did)")

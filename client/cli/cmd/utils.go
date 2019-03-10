@@ -58,7 +58,7 @@ func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	var opts []rpc.ClientOption
 	opts = append(opts, rpc.WaitForReady())
 	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
-	opts = append(opts, rpc.WithTimeout(5 * time.Second))
+	opts = append(opts, rpc.WithTimeout(5*time.Second))
 	return rpc.NewClientConnection(node, opts...)
 }
 

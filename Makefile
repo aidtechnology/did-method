@@ -14,7 +14,7 @@ LD_FLAGS="\
 test: ## Run all tests excluding the vendor dependencies
 	# Formatting
 	go vet $(GO_PKG_LIST)
-	gofmt -s -l $(FILES_LIST)
+	gofmt -s -w $(FILES_LIST)
 	golint -set_exit_status $(GO_PKG_LIST)
 	misspell $(FILES_LIST)
 
