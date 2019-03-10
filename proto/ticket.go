@@ -7,14 +7,24 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/bryk-io/x/crypto/pow"
 	"github.com/bryk-io/x/did"
-	e "golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/sha3"
 )
 
 const ticketDifficultyLevel = 16
+
+// NewTicket returns a properly initialized new ticket instance
+func NewTicket(contents []byte, keyID string) *Ticket {
+	return &Ticket{
+		Timestamp:  time.Now().Unix(),
+		Content:    contents,
+		NonceValue: 0,
+		KeyId:      keyID,
+	}
+}
 
 // ResetNonce returns the internal nonce value back to 0
 func (t *Ticket) ResetNonce() {
@@ -114,12 +124,6 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 		return errors.New("the selected key is not available on the DID")
 	}
 
-	// Decode public key
-	pubBytes, err := key.Bytes()
-	if err != nil {
-		return fmt.Errorf("failed to decode public key: %s", err)
-	}
-
 	// Get digest
 	data, err := t.Encode()
 	if err != nil {
@@ -129,8 +133,7 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 	digest.Write(data)
 
 	// Verify signature
-	pub := e.PublicKey(pubBytes)
-	if !e.Verify(pub, digest.Sum(nil), t.Signature) {
+	if !key.Verify(digest.Sum(nil), t.Signature) {
 		return errors.New("invalid ticket signature")
 	}
 	return

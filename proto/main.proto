@@ -1,11 +1,11 @@
 syntax = "proto3";
-package io.bryk.id;
+package io.bryk.did;
 
 // Go configuration
 option go_package = "proto";
 
 // Java configuration
-option java_package = "io.bryk.id";
+option java_package = "io.bryk.did";
 option java_multiple_files = true;
 option java_outer_classname = "PB";
 
@@ -60,22 +60,20 @@ service Method {
   // Reachability test
   rpc Ping (google.protobuf.Empty) returns (Pong) {
     option (google.api.http) = {
-      get: "/ping"
-    };
-  }
-
-  // Return the current state of a DID subject
-  rpc Retrieve(Request) returns (Response) {
-    option (google.api.http) = {
-      get: "/retrieve/{subject}"
+      get: "/v1/ping"
     };
   }
 
   // Process an incoming request ticket
   rpc Process(Ticket) returns (Response) {
     option (google.api.http) = {
-      post: "/process"
+      post: "/v1/process"
       body: "*"
     };
   }
+
+  // Return the current state of a DID subject
+  // The HTTP endpoint for this method is a custom handler function
+  // on the network agent
+  rpc Retrieve(Request) returns (Response)
 }
