@@ -27,23 +27,26 @@ test: ## Run all tests excluding the vendor dependencies
 	# Unit tests
 	go test -race -cover -v $(GO_PKG_LIST)
 
-build: ## Build for the default architecture in use
+build: ## Build for the current architecture in use, intended for devevelopment
 	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client github.com/bryk-io/did-method/client/cli
 	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent github.com/bryk-io/did-method/agent/cli
 
-linux: ## Build for 64 bit Linux systems
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client_linux github.com/bryk-io/did-method/client/cli
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent_linux github.com/bryk-io/did-method/agent/cli
+release: ## Build the binaries for a new release
+	make build-for os=linux arch=amd64
+	make build-for os=darwin arch=amd64
+	make build-for os=windows arch=amd64 suffix=".exe"
+	make build-for os=windows arch=386 suffix=".exe"
 
-mac: ## Build for 64 bit MacOS systems
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client_darwin github.com/bryk-io/did-method/client/cli
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent_darwin github.com/bryk-io/did-method/agent/cli
+build-for: ## Build the availabe binaries for the specified 'os' and 'arch'
+	# Build client binary
+	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
+	go build -v -ldflags $(LD_FLAGS) \
+	-o $(BINARY_NAME)-client_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
 
-windows: ## Build for 32 and 64 bit Windows systems
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client_windows_64bit.exe github.com/bryk-io/did-method/client/cli
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent_windows_64bit.exe github.com/bryk-io/did-method/agent/cli
-	CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-client_windows_32bit.exe github.com/bryk-io/did-method/client/cli
-	CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent_windows_32bit.exe github.com/bryk-io/did-method/agent/cli
+	# Build agent binary
+	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
+	go build -v -ldflags $(LD_FLAGS) \
+	-o $(BINARY_NAME)-agent_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/agent/cli
 
 install: ## Install the binary to GOPATH and keep cached all compiled artifacts
 	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME)-client github.com/bryk-io/did-method/client/cli
