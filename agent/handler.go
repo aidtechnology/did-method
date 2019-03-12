@@ -117,8 +117,8 @@ func (h *Handler) GetServer(opts ...rpc.ServerOption) (*rpc.Server, error) {
 
 	// Add RPC service handler
 	opts = append(opts, rpc.WithService(func(s *grpc.Server) {
-		proto.RegisterMethodServer(s, &rpcHandler{handler: h})
-	}, proto.RegisterMethodHandlerFromEndpoint))
+		proto.RegisterAgentServer(s, &rpcHandler{handler: h})
+	}, proto.RegisterAgentHandlerFromEndpoint))
 
 	// Create server instance
 	srv, err := rpc.NewServer(opts...)

@@ -112,7 +112,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 
 	// Submit request
 	ll.Info("submitting request to the network")
-	client := proto.NewMethodClient(conn)
+	client := proto.NewAgentClient(conn)
 	res, err := client.Process(context.TODO(), ticket)
 	if err != nil {
 		return fmt.Errorf("network return an error: %s", err)

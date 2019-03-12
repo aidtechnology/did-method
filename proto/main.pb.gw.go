@@ -29,7 +29,7 @@ var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
 
-func request_Method_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client MethodClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Agent_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq types.Empty
 	var metadata runtime.ServerMetadata
 
@@ -38,7 +38,7 @@ func request_Method_Ping_0(ctx context.Context, marshaler runtime.Marshaler, cli
 
 }
 
-func request_Method_Process_0(ctx context.Context, marshaler runtime.Marshaler, client MethodClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Agent_Process_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Ticket
 	var metadata runtime.ServerMetadata
 
@@ -51,9 +51,9 @@ func request_Method_Process_0(ctx context.Context, marshaler runtime.Marshaler, 
 
 }
 
-// RegisterMethodHandlerFromEndpoint is same as RegisterMethodHandler but
+// RegisterAgentHandlerFromEndpoint is same as RegisterAgentHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterMethodHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterAgentHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -73,23 +73,23 @@ func RegisterMethodHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMu
 		}()
 	}()
 
-	return RegisterMethodHandler(ctx, mux, conn)
+	return RegisterAgentHandler(ctx, mux, conn)
 }
 
-// RegisterMethodHandler registers the http handlers for service Method to "mux".
+// RegisterAgentHandler registers the http handlers for service Agent to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterMethodHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterMethodHandlerClient(ctx, mux, NewMethodClient(conn))
+func RegisterAgentHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterAgentHandlerClient(ctx, mux, NewAgentClient(conn))
 }
 
-// RegisterMethodHandlerClient registers the http handlers for service Method
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "MethodClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "MethodClient"
+// RegisterAgentHandlerClient registers the http handlers for service Agent
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AgentClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AgentClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "MethodClient" to call the correct interceptors.
-func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MethodClient) error {
+// "AgentClient" to call the correct interceptors.
+func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AgentClient) error {
 
-	mux.Handle("GET", pattern_Method_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Agent_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		if cn, ok := w.(http.CloseNotifier); ok {
@@ -107,18 +107,18 @@ func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Method_Ping_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Agent_Ping_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Method_Ping_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Agent_Ping_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Method_Process_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Agent_Process_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		if cn, ok := w.(http.CloseNotifier); ok {
@@ -136,14 +136,14 @@ func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Method_Process_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Agent_Process_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Method_Process_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Agent_Process_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -151,13 +151,13 @@ func RegisterMethodHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 }
 
 var (
-	pattern_Method_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "ping"}, ""))
+	pattern_Agent_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "ping"}, ""))
 
-	pattern_Method_Process_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "process"}, ""))
+	pattern_Agent_Process_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "process"}, ""))
 )
 
 var (
-	forward_Method_Ping_0 = runtime.ForwardResponseMessage
+	forward_Agent_Ping_0 = runtime.ForwardResponseMessage
 
-	forward_Method_Process_0 = runtime.ForwardResponseMessage
+	forward_Agent_Process_0 = runtime.ForwardResponseMessage
 )

@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
@@ -17,6 +20,9 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"google.golang.org/grpc"
 )
+
+// When reading contents from standard input a maximum of 4MB is expected
+const maxPipeInputSize = 4096
 
 // Helper method to securely read data from stdin
 func secureAsk(prompt string) ([]byte, error) {
@@ -46,10 +52,12 @@ func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
 	return ed25519.Restore(seed)
 }
 
+// Accessor to the local storage handler
 func getClientStore() (*store.LocalStore, error) {
 	return store.NewLocalStore(viper.GetString("home"))
 }
 
+// Get an RPC network connection
 func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	node := viper.GetString("node")
 	if ll != nil {
@@ -62,6 +70,7 @@ func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	return rpc.NewClientConnection(node, opts...)
 }
 
+// Output handler
 func getLogger() *log.Logger {
 	// Set formatter
 	output := log.New()
@@ -75,4 +84,36 @@ func getLogger() *log.Logger {
 	output.Formatter = formatter
 	output.SetLevel(log.DebugLevel)
 	return output
+}
+
+// Read contents passed in from standard input, if any
+func getPipedInput() ([]byte, error) {
+	var input []byte
+
+	// Fail to read stdin
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		return input, err
+	}
+
+	// No input passed in
+	if info.Mode()&os.ModeCharDevice != 0 {
+		return input, errors.New("no piped input")
+	}
+
+	// Read input
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		b, err := reader.ReadByte()
+		if err != nil && err == io.EOF {
+			break
+		}
+		input = append(input, b)
+		if len(input) == maxPipeInputSize {
+			break
+		}
+	}
+
+	// Return provided input
+	return input, nil
 }

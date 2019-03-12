@@ -55,8 +55,8 @@ message Response {
   bytes contents = 2;
 }
 
-// DID Method interface
-service Method {
+// Agent protocol as detailed in the DID Method specification
+service Agent {
   // Reachability test
   rpc Ping (google.protobuf.Empty) returns (Pong) {
     option (google.api.http) = {
