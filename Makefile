@@ -32,21 +32,23 @@ build: ## Build for the current architecture in use, intended for devevelopment
 	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME)-agent github.com/bryk-io/did-method/agent/cli
 
 release: ## Build the binaries for a new release
-	make build-for os=linux arch=amd64
-	make build-for os=darwin arch=amd64
-	make build-for os=windows arch=amd64 suffix=".exe"
-	make build-for os=windows arch=386 suffix=".exe"
+	@-rm -rf release-$(VERSION_TAG)
+	mkdir release-$(VERSION_TAG)
+	make build-for os=linux arch=amd64 dest=release-$(VERSION_TAG)/
+	make build-for os=darwin arch=amd64 dest=release-$(VERSION_TAG)/
+	make build-for os=windows arch=amd64 suffix=".exe" dest=release-$(VERSION_TAG)/
+	make build-for os=windows arch=386 suffix=".exe" dest=release-$(VERSION_TAG)/
 
 build-for: ## Build the availabe binaries for the specified 'os' and 'arch'
 	# Build client binary
 	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
 	go build -v -ldflags $(LD_FLAGS) \
-	-o $(BINARY_NAME)-client_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
+	-o $(dest)$(BINARY_NAME)-client_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
 
 	# Build agent binary
 	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
 	go build -v -ldflags $(LD_FLAGS) \
-	-o $(BINARY_NAME)-agent_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/agent/cli
+	-o $(dest)$(BINARY_NAME)-agent_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/agent/cli
 
 install: ## Install the binary to GOPATH and keep cached all compiled artifacts
 	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME)-client github.com/bryk-io/did-method/client/cli
@@ -73,12 +75,12 @@ ca-roots: ## Generate the list of valid CA certificates
 	@docker stop ca-roots
 
 docker: ## Build docker image
-	@-rm bryk-did-agent_linux bryk-did-client_linux ca-roots.crt
+	@-rm bryk-did-agent_$(VERSION_TAG)_linux_amd64 bryk-did-client_$(VERSION_TAG)_linux_amd64 ca-roots.crt
 	@make ca-roots
-	@make linux
+	@make build-for os=linux arch=amd64
 	@-docker rmi $(BINARY_NAME):$(VERSION_TAG)
-	@docker build --build-arg VERSION="$(VERSION_TAG)" --rm -t $(BINARY_NAME):$(VERSION_TAG) .
-	@-rm bryk-did-agent_linux bryk-did-client_linux ca-roots.crt
+	@docker build --build-arg VERSION_TAG="$(VERSION_TAG)" --rm -t $(BINARY_NAME):$(VERSION_TAG) .
+	@-rm bryk-did-agent_$(VERSION_TAG)_linux_amd64 bryk-did-client_$(VERSION_TAG)_linux_amd64 ca-roots.crt
 
 help: ## Display available make targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-16s\033[0m %s\n", $$1, $$2}'
