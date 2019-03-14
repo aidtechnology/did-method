@@ -42,7 +42,7 @@ func (t *Ticket) Nonce() int64 {
 }
 
 // Encode returns a deterministic binary encoding for the ticket instance using a
-// concatenation of values of the form 'timestamp | nonce | content'; where both
+// byte concatenation of the form 'timestamp | nonce | key_id | content'; where both
 // timestamp and nonce are individually encoded using little endian byte order
 func (t *Ticket) Encode() ([]byte, error) {
 	var tc []byte

@@ -65,7 +65,7 @@ service Agent {
   }
 
   // Process an incoming request ticket
-  rpc Process(Ticket) returns (Response) {
+  rpc Process (Ticket) returns (Response) {
     option (google.api.http) = {
       post: "/v1/process"
       body: "*"
@@ -75,5 +75,5 @@ service Agent {
   // Return the current state of a DID subject
   // The HTTP endpoint for this method is a custom handler function
   // on the network agent
-  rpc Retrieve(Request) returns (Response);
+  rpc Retrieve (Request) returns (Response);
 }

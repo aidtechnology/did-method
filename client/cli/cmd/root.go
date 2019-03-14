@@ -30,7 +30,7 @@ entities to fully manage Decentralized Identifiers as described on the version
 v0.11 of the specification.
 
 For more information:
-https://w3c-ccg.github.io/did-spec`,
+https://github.com/bryk-io/did-method`,
 }
 
 // Execute will process the CLI invocation
