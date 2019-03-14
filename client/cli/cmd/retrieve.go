@@ -9,17 +9,29 @@ import (
 	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var retrieveCmd = &cobra.Command{
 	Use:     "retrieve",
 	Short:   "Retrieve the DID document of an existing identifier",
-	Example: "bryk-id retrieve [existing DID]",
+	Example: "bryk-did retrieve --verify [existing DID]",
 	Aliases: []string{"get", "resolve"},
 	RunE:    runRetrieveCmd,
 }
 
 func init() {
+	params := []cParam{
+		{
+			name:      "verify",
+			usage:     "Verify the proofs included in the received DID Document",
+			flagKey:   "retrieve.verify",
+			byDefault: false,
+		},
+	}
+	if err := setupCommandParams(retrieveCmd, params); err != nil {
+		panic(err)
+	}
 	rootCmd.AddCommand(retrieveCmd)
 }
 
@@ -69,6 +81,16 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to decode DID records: %s", err)
 	}
+
+	// Verify DID Document
+	if viper.GetBool("retrieve.verify") {
+		ll.Info("verifying the received DID document")
+		if err := peer.VerifyProof(nil); err != nil {
+			return err
+		}
+		ll.Info("integrity proof is valid")
+	}
+
 	fmt.Printf("%s\n", js)
 	return nil
 }
