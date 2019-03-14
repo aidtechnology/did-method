@@ -14,7 +14,7 @@ import (
 var addKeyCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Add a new cryptographic key for the DID",
-	Example: "bryk-id did key add [DID reference name] --name my-new-key --type ed --authentication",
+	Example: "bryk-did did key add [DID reference name] --name my-new-key --type ed --authentication",
 	RunE:    runAddKeyCmd,
 }
 

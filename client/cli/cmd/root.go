@@ -19,11 +19,11 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:           "bryk-did-client",
-	Short:         "Bryk Identity: Client",
+	Use:           "bryk-did",
+	Short:         "Bryk DID Method: Client",
 	SilenceErrors: true,
 	SilenceUsage:  true,
-	Long: `Bryk Identity: Client
+	Long: `Bryk DID Method: Client
 
 Reference client implementation for the "bryk" DID method. The platform allows
 entities to fully manage Decentralized Identifiers as described on the version

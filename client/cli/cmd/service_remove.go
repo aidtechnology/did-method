@@ -12,7 +12,7 @@ import (
 var removeServiceCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing service entry for the DID",
-	Example: "bryk-id did service remove [DID reference name] [service name]",
+	Example: "bryk-did did service remove [DID reference name] [service name]",
 	RunE:    runRemoveServiceCmd,
 }
 

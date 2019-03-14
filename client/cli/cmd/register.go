@@ -19,8 +19,9 @@ import (
 
 var registerCmd = &cobra.Command{
 	Use:     "register",
-	Short:   "Register a new DID with the network",
-	Example: "bryk-id register [DID reference name]",
+	Short:   "Creates a new DID locally",
+	Example: "bryk-did register [DID reference name]",
+	Aliases: []string{"create", "new"},
 	RunE:    runRegisterCmd,
 }
 

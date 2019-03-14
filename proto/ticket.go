@@ -62,15 +62,6 @@ func (t *Ticket) Encode() ([]byte, error) {
 	return append(tc, t.Content...), nil
 }
 
-// LoadDID obtain the DID instance encoded in the ticket contents
-func (t *Ticket) LoadDID() (*did.Identifier, error) {
-	id := &did.Identifier{}
-	if err := id.Decode(t.Content); err != nil {
-		return nil, errors.New("invalid ticket contents")
-	}
-	return id, nil
-}
-
 // Solve the ticket challenge using the proof-of-work mechanism
 func (t *Ticket) Solve(ctx context.Context) (string, error) {
 	res, err := pow.Solve(ctx, t, sha3.New256(), ticketDifficultyLevel)
@@ -137,4 +128,13 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 		return errors.New("invalid ticket signature")
 	}
 	return
+}
+
+// LoadDID obtain the DID instance encoded in the ticket contents
+func (t *Ticket) LoadDID() (*did.Identifier, error) {
+	id := &did.Identifier{}
+	if err := id.Decode(t.Content); err != nil {
+		return nil, errors.New("invalid ticket contents")
+	}
+	return id, nil
 }

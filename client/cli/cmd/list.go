@@ -12,7 +12,7 @@ import (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List registered DIDs",
-	Example: "bryk-id list",
+	Example: "bryk-did list",
 	RunE:    runListCmd,
 }
 

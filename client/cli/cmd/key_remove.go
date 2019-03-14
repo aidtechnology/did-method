@@ -12,7 +12,7 @@ import (
 var removeKeyCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing cryptographic key for the DID",
-	Example: "bryk-id did key remove [DID reference name] [key name]",
+	Example: "bryk-did did key remove [DID reference name] [key name]",
 	RunE:    runRemoveKeyCmd,
 }
 
