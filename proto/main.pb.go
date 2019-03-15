@@ -11,6 +11,7 @@
 		Pong
 		Ticket
 		Request
+		Query
 		Response
 */
 package proto
@@ -43,6 +44,27 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto1.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
+type Request_Task int32
+
+const (
+	Request_PUBLISH    Request_Task = 0
+	Request_DEACTIVATE Request_Task = 1
+)
+
+var Request_Task_name = map[int32]string{
+	0: "PUBLISH",
+	1: "DEACTIVATE",
+}
+var Request_Task_value = map[string]int32{
+	"PUBLISH":    0,
+	"DEACTIVATE": 1,
+}
+
+func (x Request_Task) String() string {
+	return proto1.EnumName(Request_Task_name, int32(x))
+}
+func (Request_Task) EnumDescriptor() ([]byte, []int) { return fileDescriptorMain, []int{2, 0} }
+
 // Generic ping response
 type Pong struct {
 	Ok bool `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
@@ -59,7 +81,7 @@ func (m *Pong) GetOk() bool {
 	return false
 }
 
-// Request ticket for write operations
+// Ticket required for write operations
 type Ticket struct {
 	Timestamp  int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	NonceValue int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
@@ -107,23 +129,47 @@ func (m *Ticket) GetSignature() []byte {
 	return nil
 }
 
-// Request the contents of a DID based on its subject string
+// Write operation submitted for processing
 type Request struct {
-	Subject string `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
+	Task   Request_Task `protobuf:"varint,1,opt,name=task,proto3,enum=io.bryk.did.Request_Task" json:"task,omitempty"`
+	Ticket *Ticket      `protobuf:"bytes,2,opt,name=ticket" json:"ticket,omitempty"`
 }
 
 func (m *Request) Reset()                    { *m = Request{} }
 func (*Request) ProtoMessage()               {}
 func (*Request) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{2} }
 
-func (m *Request) GetSubject() string {
+func (m *Request) GetTask() Request_Task {
+	if m != nil {
+		return m.Task
+	}
+	return Request_PUBLISH
+}
+
+func (m *Request) GetTicket() *Ticket {
+	if m != nil {
+		return m.Ticket
+	}
+	return nil
+}
+
+// Read operation; retrieve the contents of a DID based on its subject string
+type Query struct {
+	Subject string `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
+}
+
+func (m *Query) Reset()                    { *m = Query{} }
+func (*Query) ProtoMessage()               {}
+func (*Query) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{3} }
+
+func (m *Query) GetSubject() string {
 	if m != nil {
 		return m.Subject
 	}
 	return ""
 }
 
-// Generic query response
+// Generic operation response
 type Response struct {
 	Ok       bool   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
 	Contents []byte `protobuf:"bytes,2,opt,name=contents,proto3" json:"contents,omitempty"`
@@ -131,7 +177,7 @@ type Response struct {
 
 func (m *Response) Reset()                    { *m = Response{} }
 func (*Response) ProtoMessage()               {}
-func (*Response) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{3} }
+func (*Response) Descriptor() ([]byte, []int) { return fileDescriptorMain, []int{4} }
 
 func (m *Response) GetOk() bool {
 	if m != nil {
@@ -151,7 +197,9 @@ func init() {
 	proto1.RegisterType((*Pong)(nil), "io.bryk.did.Pong")
 	proto1.RegisterType((*Ticket)(nil), "io.bryk.did.Ticket")
 	proto1.RegisterType((*Request)(nil), "io.bryk.did.Request")
+	proto1.RegisterType((*Query)(nil), "io.bryk.did.Query")
 	proto1.RegisterType((*Response)(nil), "io.bryk.did.Response")
+	proto1.RegisterEnum("io.bryk.did.Request_Task", Request_Task_name, Request_Task_value)
 }
 func (this *Pong) VerboseEqual(that interface{}) error {
 	if that == nil {
@@ -310,8 +358,11 @@ func (this *Request) VerboseEqual(that interface{}) error {
 	} else if this == nil {
 		return fmt.Errorf("that is type *Request but is not nil && this == nil")
 	}
-	if this.Subject != that1.Subject {
-		return fmt.Errorf("Subject this(%v) Not Equal that(%v)", this.Subject, that1.Subject)
+	if this.Task != that1.Task {
+		return fmt.Errorf("Task this(%v) Not Equal that(%v)", this.Task, that1.Task)
+	}
+	if !this.Ticket.Equal(that1.Ticket) {
+		return fmt.Errorf("Ticket this(%v) Not Equal that(%v)", this.Ticket, that1.Ticket)
 	}
 	return nil
 }
@@ -323,6 +374,63 @@ func (this *Request) Equal(that interface{}) bool {
 	that1, ok := that.(*Request)
 	if !ok {
 		that2, ok := that.(Request)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Task != that1.Task {
+		return false
+	}
+	if !this.Ticket.Equal(that1.Ticket) {
+		return false
+	}
+	return true
+}
+func (this *Query) VerboseEqual(that interface{}) error {
+	if that == nil {
+		if this == nil {
+			return nil
+		}
+		return fmt.Errorf("that == nil && this != nil")
+	}
+
+	that1, ok := that.(*Query)
+	if !ok {
+		that2, ok := that.(Query)
+		if ok {
+			that1 = &that2
+		} else {
+			return fmt.Errorf("that is not of type *Query")
+		}
+	}
+	if that1 == nil {
+		if this == nil {
+			return nil
+		}
+		return fmt.Errorf("that is type *Query but is nil && this != nil")
+	} else if this == nil {
+		return fmt.Errorf("that is type *Query but is not nil && this == nil")
+	}
+	if this.Subject != that1.Subject {
+		return fmt.Errorf("Subject this(%v) Not Equal that(%v)", this.Subject, that1.Subject)
+	}
+	return nil
+}
+func (this *Query) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Query)
+	if !ok {
+		that2, ok := that.(Query)
 		if ok {
 			that1 = &that2
 		} else {
@@ -427,8 +535,21 @@ func (this *Request) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 5)
+	s := make([]string, 0, 6)
 	s = append(s, "&proto.Request{")
+	s = append(s, "Task: "+fmt.Sprintf("%#v", this.Task)+",\n")
+	if this.Ticket != nil {
+		s = append(s, "Ticket: "+fmt.Sprintf("%#v", this.Ticket)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *Query) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 5)
+	s = append(s, "&proto.Query{")
 	s = append(s, "Subject: "+fmt.Sprintf("%#v", this.Subject)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
@@ -467,11 +588,10 @@ type AgentClient interface {
 	// Reachability test
 	Ping(ctx context.Context, in *google_protobuf1.Empty, opts ...grpc.CallOption) (*Pong, error)
 	// Process an incoming request ticket
-	Process(ctx context.Context, in *Ticket, opts ...grpc.CallOption) (*Response, error)
+	Process(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	// Return the current state of a DID subject
-	// The HTTP endpoint for this method is a custom handler function
-	// on the network agent
-	Retrieve(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	// The HTTP endpoint for this method is a custom handler function on the network agent
+	Retrieve(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
 
 type agentClient struct {
@@ -491,7 +611,7 @@ func (c *agentClient) Ping(ctx context.Context, in *google_protobuf1.Empty, opts
 	return out, nil
 }
 
-func (c *agentClient) Process(ctx context.Context, in *Ticket, opts ...grpc.CallOption) (*Response, error) {
+func (c *agentClient) Process(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := grpc.Invoke(ctx, "/io.bryk.did.Agent/Process", in, out, c.cc, opts...)
 	if err != nil {
@@ -500,7 +620,7 @@ func (c *agentClient) Process(ctx context.Context, in *Ticket, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *agentClient) Retrieve(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+func (c *agentClient) Retrieve(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := grpc.Invoke(ctx, "/io.bryk.did.Agent/Retrieve", in, out, c.cc, opts...)
 	if err != nil {
@@ -515,11 +635,10 @@ type AgentServer interface {
 	// Reachability test
 	Ping(context.Context, *google_protobuf1.Empty) (*Pong, error)
 	// Process an incoming request ticket
-	Process(context.Context, *Ticket) (*Response, error)
+	Process(context.Context, *Request) (*Response, error)
 	// Return the current state of a DID subject
-	// The HTTP endpoint for this method is a custom handler function
-	// on the network agent
-	Retrieve(context.Context, *Request) (*Response, error)
+	// The HTTP endpoint for this method is a custom handler function on the network agent
+	Retrieve(context.Context, *Query) (*Response, error)
 }
 
 func RegisterAgentServer(s *grpc.Server, srv AgentServer) {
@@ -545,7 +664,7 @@ func _Agent_Ping_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Agent_Process_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Ticket)
+	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -557,13 +676,13 @@ func _Agent_Process_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/io.bryk.did.Agent/Process",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).Process(ctx, req.(*Ticket))
+		return srv.(AgentServer).Process(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Agent_Retrieve_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -575,7 +694,7 @@ func _Agent_Retrieve_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/io.bryk.did.Agent/Retrieve",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).Retrieve(ctx, req.(*Request))
+		return srv.(AgentServer).Retrieve(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -690,6 +809,39 @@ func (m *Request) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.Task != 0 {
+		dAtA[i] = 0x8
+		i++
+		i = encodeVarintMain(dAtA, i, uint64(m.Task))
+	}
+	if m.Ticket != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintMain(dAtA, i, uint64(m.Ticket.Size()))
+		n1, err := m.Ticket.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n1
+	}
+	return i, nil
+}
+
+func (m *Query) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Query) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
 	if len(m.Subject) > 0 {
 		dAtA[i] = 0xa
 		i++
@@ -778,6 +930,17 @@ func NewPopulatedTicket(r randyMain, easy bool) *Ticket {
 
 func NewPopulatedRequest(r randyMain, easy bool) *Request {
 	this := &Request{}
+	this.Task = Request_Task([]int32{0, 1}[r.Intn(2)])
+	if r.Intn(10) != 0 {
+		this.Ticket = NewPopulatedTicket(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedQuery(r randyMain, easy bool) *Query {
+	this := &Query{}
 	this.Subject = string(randStringMain(r))
 	if !easy && r.Intn(10) != 0 {
 	}
@@ -905,6 +1068,19 @@ func (m *Ticket) Size() (n int) {
 func (m *Request) Size() (n int) {
 	var l int
 	_ = l
+	if m.Task != 0 {
+		n += 1 + sovMain(uint64(m.Task))
+	}
+	if m.Ticket != nil {
+		l = m.Ticket.Size()
+		n += 1 + l + sovMain(uint64(l))
+	}
+	return n
+}
+
+func (m *Query) Size() (n int) {
+	var l int
+	_ = l
 	l = len(m.Subject)
 	if l > 0 {
 		n += 1 + l + sovMain(uint64(l))
@@ -967,6 +1143,17 @@ func (this *Request) String() string {
 		return "nil"
 	}
 	s := strings.Join([]string{`&Request{`,
+		`Task:` + fmt.Sprintf("%v", this.Task) + `,`,
+		`Ticket:` + strings.Replace(fmt.Sprintf("%v", this.Ticket), "Ticket", "Ticket", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *Query) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Query{`,
 		`Subject:` + fmt.Sprintf("%v", this.Subject) + `,`,
 		`}`,
 	}, "")
@@ -1270,6 +1457,108 @@ func (m *Request) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Task", wireType)
+			}
+			m.Task = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Task |= (Request_Task(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ticket", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMain
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Ticket == nil {
+				m.Ticket = &Ticket{}
+			}
+			if err := m.Ticket.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMain(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMain
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Query) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMain
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Query: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Query: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Subject", wireType)
 			}
@@ -1528,36 +1817,40 @@ var (
 func init() { proto1.RegisterFile("proto/main.proto", fileDescriptorMain) }
 
 var fileDescriptorMain = []byte{
-	// 482 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0xcd, 0x8a, 0xd4, 0x40,
-	0x10, 0xb6, 0xb3, 0x93, 0xf9, 0xe9, 0x5d, 0x96, 0xb1, 0x75, 0x87, 0x10, 0xa5, 0x1d, 0xa2, 0x87,
-	0x41, 0x30, 0x41, 0x05, 0x17, 0xbc, 0x39, 0xa2, 0xe0, 0x41, 0x09, 0x41, 0x3c, 0x78, 0x91, 0x4c,
-	0xa6, 0x6c, 0xdb, 0x6c, 0xba, 0x63, 0xba, 0xb3, 0x30, 0x37, 0xf1, 0x15, 0x3c, 0xfa, 0x02, 0x3e,
-	0x82, 0x47, 0x8f, 0x1e, 0x05, 0x3d, 0x78, 0x92, 0x9d, 0xe0, 0x03, 0x78, 0xf4, 0x28, 0xdd, 0x99,
-	0xd9, 0x9f, 0x81, 0x3d, 0xa5, 0xaa, 0xbe, 0xfa, 0xbe, 0xaa, 0xfa, 0xd2, 0x78, 0x58, 0x56, 0x52,
-	0xcb, 0xa8, 0x48, 0xb9, 0x08, 0x6d, 0x48, 0xb6, 0xb9, 0x0c, 0x67, 0xd5, 0x22, 0x0f, 0xe7, 0x7c,
-	0xee, 0xdf, 0x62, 0x5c, 0xbf, 0xa9, 0x67, 0x61, 0x26, 0x8b, 0x88, 0x49, 0x26, 0x23, 0xdb, 0x33,
-	0xab, 0x5f, 0xdb, 0xac, 0xe5, 0x9a, 0xa8, 0xe5, 0xfa, 0xfb, 0x9b, 0xed, 0x4c, 0x4a, 0x76, 0x00,
-	0x69, 0xc9, 0xd5, 0x2a, 0x8c, 0xd2, 0x92, 0x47, 0xa9, 0x10, 0x52, 0xa7, 0x9a, 0x4b, 0xa1, 0x56,
-	0xc4, 0x2b, 0x2b, 0xf4, 0x58, 0x1e, 0x8a, 0x52, 0x2f, 0x5a, 0x30, 0x18, 0xe1, 0x4e, 0x2c, 0x05,
-	0x23, 0xbb, 0xd8, 0x91, 0xb9, 0x87, 0xc6, 0x68, 0xd2, 0x4f, 0x1c, 0x99, 0x07, 0x9f, 0x10, 0xee,
-	0x3e, 0xe7, 0x59, 0x0e, 0x9a, 0x5c, 0xc5, 0x03, 0xcd, 0x0b, 0x50, 0x3a, 0x2d, 0x4a, 0xdb, 0xb1,
-	0x95, 0x9c, 0x14, 0xc8, 0x0d, 0xec, 0x0a, 0x29, 0x32, 0xf0, 0x1c, 0x83, 0x4c, 0x77, 0x9b, 0xdf,
-	0xd7, 0xf0, 0x33, 0x53, 0x78, 0x91, 0x1e, 0xd4, 0x90, 0xb4, 0x20, 0xd9, 0xc3, 0xdd, 0x1c, 0x16,
-	0xaf, 0xf8, 0xdc, 0xdb, 0x1a, 0xa3, 0xc9, 0x20, 0x71, 0x73, 0x58, 0x3c, 0x99, 0x13, 0x0f, 0xf7,
-	0x32, 0x29, 0x34, 0x08, 0xed, 0x75, 0xc6, 0x68, 0xb2, 0x93, 0xac, 0x53, 0x33, 0x54, 0x71, 0x26,
-	0x52, 0x5d, 0x57, 0xe0, 0xb9, 0x16, 0x3b, 0x29, 0x04, 0xd7, 0x71, 0x2f, 0x81, 0x77, 0x35, 0x28,
-	0x6d, 0x24, 0x54, 0x3d, 0x7b, 0x0b, 0x99, 0xb6, 0xbb, 0x0d, 0x92, 0x75, 0x1a, 0xdc, 0xc3, 0xfd,
-	0x04, 0x54, 0x29, 0x85, 0x82, 0xcd, 0xf3, 0x88, 0x8f, 0xfb, 0xab, 0x49, 0xca, 0x2e, 0xbe, 0x93,
-	0x1c, 0xe7, 0x77, 0x7e, 0x22, 0xec, 0x3e, 0x60, 0x66, 0x89, 0x87, 0xb8, 0x13, 0x73, 0xc1, 0xc8,
-	0x28, 0x6c, 0x2d, 0x0c, 0xd7, 0x16, 0x86, 0x8f, 0x8c, 0x85, 0xfe, 0xc5, 0xf0, 0xd4, 0xff, 0x0c,
-	0x8d, 0x8f, 0xc1, 0xf0, 0xc3, 0x8f, 0x3f, 0x1f, 0x1d, 0x4c, 0xfa, 0xd1, 0xe1, 0xed, 0xa8, 0x34,
-	0xe4, 0xa7, 0xb8, 0x17, 0x57, 0x32, 0x03, 0xa5, 0xc8, 0xa5, 0x33, 0xfd, 0xad, 0xbd, 0xfe, 0xde,
-	0x99, 0xe2, 0x7a, 0xe3, 0x60, 0x64, 0x85, 0x86, 0xc1, 0xb6, 0x15, 0x6a, 0x05, 0xee, 0xa3, 0x9b,
-	0x64, 0xdf, 0x5c, 0xa5, 0x2b, 0x0e, 0x87, 0x40, 0x2e, 0x6f, 0x50, 0xad, 0x23, 0xe7, 0x08, 0x4e,
-	0x1f, 0xff, 0x5a, 0xd2, 0x0b, 0x47, 0x4b, 0x8a, 0xfe, 0x2e, 0x29, 0xfa, 0xb7, 0xa4, 0xe8, 0x7d,
-	0x43, 0xd1, 0xe7, 0x86, 0xa2, 0x2f, 0x0d, 0x45, 0x5f, 0x1b, 0x8a, 0xbe, 0x35, 0x14, 0x7d, 0x6f,
-	0x28, 0x3a, 0x6a, 0x28, 0xc2, 0xa7, 0x5f, 0xea, 0xd4, 0x89, 0xa7, 0x31, 0x7a, 0xe9, 0xb6, 0xd7,
-	0x77, 0xed, 0xe7, 0xee, 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x82, 0x8a, 0x40, 0x64, 0xde, 0x02,
-	0x00, 0x00,
+	// 560 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0x3f, 0x6f, 0xd3, 0x4e,
+	0x18, 0xee, 0xa5, 0x71, 0x92, 0xbe, 0xa9, 0xa2, 0xfc, 0xee, 0x47, 0x23, 0x13, 0x90, 0x09, 0x86,
+	0x21, 0x02, 0xd5, 0x16, 0x41, 0x80, 0xc4, 0x96, 0x94, 0x20, 0x22, 0xa1, 0xca, 0x98, 0xd0, 0x81,
+	0x05, 0x39, 0xce, 0x61, 0x0e, 0x37, 0x77, 0xc6, 0x77, 0xae, 0x94, 0x0d, 0x31, 0xb2, 0x32, 0xf2,
+	0x05, 0xf8, 0x08, 0x8c, 0x8c, 0x8c, 0x48, 0x5d, 0x98, 0x50, 0x63, 0xf1, 0x01, 0x18, 0x19, 0x91,
+	0xcf, 0x4e, 0xdb, 0x44, 0x30, 0xf9, 0xfd, 0xf3, 0x3c, 0xaf, 0xdf, 0xe7, 0x79, 0x75, 0xd0, 0x8c,
+	0x62, 0x2e, 0xb9, 0x3d, 0xf3, 0x28, 0xb3, 0x54, 0x88, 0xeb, 0x94, 0x5b, 0x93, 0x78, 0x1e, 0x5a,
+	0x53, 0x3a, 0x6d, 0xef, 0x06, 0x54, 0xbe, 0x4a, 0x26, 0x96, 0xcf, 0x67, 0x76, 0xc0, 0x03, 0x6e,
+	0x2b, 0xcc, 0x24, 0x79, 0xa9, 0xb2, 0x9c, 0x9b, 0x45, 0x39, 0xb7, 0x7d, 0x6f, 0x1d, 0x1e, 0x70,
+	0x1e, 0x1c, 0x12, 0x2f, 0xa2, 0xa2, 0x08, 0x6d, 0x2f, 0xa2, 0xb6, 0xc7, 0x18, 0x97, 0x9e, 0xa4,
+	0x9c, 0x89, 0x82, 0x78, 0xa9, 0xe8, 0x9e, 0x8e, 0x27, 0xb3, 0x48, 0xce, 0xf3, 0xa6, 0xd9, 0x82,
+	0xb2, 0xc3, 0x59, 0x80, 0x1b, 0x50, 0xe2, 0xa1, 0x8e, 0x3a, 0xa8, 0x5b, 0x73, 0x4b, 0x3c, 0x34,
+	0x3f, 0x22, 0xa8, 0x8c, 0xa9, 0x1f, 0x12, 0x89, 0x2f, 0xc3, 0x96, 0xa4, 0x33, 0x22, 0xa4, 0x37,
+	0x8b, 0x14, 0x62, 0xd3, 0x3d, 0x2b, 0xe0, 0xeb, 0xa0, 0x31, 0xce, 0x7c, 0xa2, 0x97, 0xb2, 0xce,
+	0xa0, 0x91, 0xfe, 0xb8, 0x02, 0xfb, 0x59, 0xe1, 0xc0, 0x3b, 0x4c, 0x88, 0x9b, 0x37, 0xf1, 0x0e,
+	0x54, 0x42, 0x32, 0x7f, 0x41, 0xa7, 0xfa, 0x66, 0x07, 0x75, 0xb7, 0x5c, 0x2d, 0x24, 0xf3, 0xd1,
+	0x14, 0xeb, 0x50, 0xf5, 0x39, 0x93, 0x84, 0x49, 0xbd, 0xdc, 0x41, 0xdd, 0x6d, 0x77, 0x99, 0x66,
+	0x3f, 0x15, 0x34, 0x60, 0x9e, 0x4c, 0x62, 0xa2, 0x6b, 0xaa, 0x77, 0x56, 0x30, 0xdf, 0x23, 0xa8,
+	0xba, 0xe4, 0x4d, 0x42, 0x84, 0xc4, 0xbb, 0x50, 0x96, 0x9e, 0xc8, 0x77, 0x6f, 0xf4, 0x2e, 0x5a,
+	0xe7, 0x2c, 0xb6, 0x0a, 0x8c, 0x35, 0xf6, 0x44, 0xe8, 0x2a, 0x18, 0xbe, 0x09, 0x15, 0xa9, 0x74,
+	0xa9, 0x85, 0xeb, 0xbd, 0xff, 0x57, 0x08, 0xb9, 0x64, 0xb7, 0x80, 0x98, 0xd7, 0xa0, 0x9c, 0x51,
+	0x71, 0x1d, 0xaa, 0xce, 0xb3, 0xc1, 0xe3, 0xd1, 0xd3, 0x47, 0xcd, 0x0d, 0xdc, 0x00, 0x78, 0x30,
+	0xec, 0xef, 0x8d, 0x47, 0x07, 0xfd, 0xf1, 0xb0, 0x89, 0xcc, 0xab, 0xa0, 0x3d, 0x49, 0x48, 0x3c,
+	0xcf, 0xd4, 0x88, 0x64, 0xf2, 0x9a, 0xf8, 0x52, 0x2d, 0xb3, 0xe5, 0x2e, 0x53, 0xf3, 0x2e, 0xd4,
+	0x5c, 0x22, 0x22, 0xce, 0x04, 0x59, 0x77, 0x1a, 0xb7, 0xa1, 0x56, 0x88, 0x16, 0x6a, 0xa5, 0x6d,
+	0xf7, 0x34, 0xef, 0x1d, 0x23, 0xd0, 0xfa, 0x41, 0xe6, 0xc7, 0x1e, 0x94, 0x1d, 0xca, 0x02, 0xdc,
+	0xb2, 0xf2, 0x6b, 0x5a, 0xcb, 0x6b, 0x5a, 0xc3, 0xec, 0x9a, 0xed, 0xff, 0x56, 0x64, 0x64, 0x27,
+	0x35, 0x9b, 0xef, 0x8e, 0x7f, 0x7e, 0x28, 0x01, 0xae, 0xd9, 0x47, 0xb7, 0xec, 0x28, 0x23, 0xef,
+	0x43, 0xd5, 0x89, 0xb9, 0x4f, 0x84, 0xc0, 0x17, 0xfe, 0xe6, 0x53, 0x7b, 0x67, 0xad, 0x9a, 0xaf,
+	0x6c, 0xb6, 0xd4, 0xa4, 0xa6, 0x59, 0x57, 0x93, 0xf2, 0x09, 0xf7, 0xd1, 0x0d, 0x7c, 0x27, 0x93,
+	0x25, 0x63, 0x4a, 0x8e, 0x08, 0xc6, 0x2b, 0x54, 0x65, 0xc8, 0x3f, 0xc6, 0x0d, 0x1e, 0x7e, 0x5f,
+	0x18, 0x1b, 0x27, 0x0b, 0x03, 0xfd, 0x5a, 0x18, 0xe8, 0xf7, 0xc2, 0x40, 0x6f, 0x53, 0x03, 0x7d,
+	0x4a, 0x0d, 0xf4, 0x39, 0x35, 0xd0, 0x97, 0xd4, 0x40, 0x5f, 0x53, 0x03, 0x7d, 0x4b, 0x0d, 0x74,
+	0x92, 0x1a, 0x08, 0xce, 0xbf, 0x99, 0x41, 0xc9, 0x19, 0x38, 0xe8, 0xb9, 0x96, 0x8b, 0xaf, 0xa8,
+	0xcf, 0xed, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x34, 0x2b, 0x24, 0x22, 0x68, 0x03, 0x00, 0x00,
 }

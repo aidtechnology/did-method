@@ -35,7 +35,7 @@ message Pong {
   bool ok = 1;
 }
 
-// Request ticket for write operations
+// Ticket required for write operations
 message Ticket {
   int64 timestamp = 1;
   int64 nonce = 2 [(gogoproto.customname) = "NonceValue"];
@@ -44,12 +44,23 @@ message Ticket {
   bytes signature = 5;
 }
 
-// Request the contents of a DID based on its subject string
+// Write operation submitted for processing
 message Request {
+  enum Task {
+    PUBLISH = 0;
+    DEACTIVATE = 1;
+  }
+
+  Task task = 1;
+  Ticket ticket = 2;
+}
+
+// Read operation; retrieve the contents of a DID based on its subject string
+message Query {
   string subject = 1;
 }
 
-// Generic query response
+// Generic operation response
 message Response {
   bool ok = 1;
   bytes contents = 2;
@@ -65,7 +76,7 @@ service Agent {
   }
 
   // Process an incoming request ticket
-  rpc Process (Ticket) returns (Response) {
+  rpc Process (Request) returns (Response) {
     option (google.api.http) = {
       post: "/v1/process"
       body: "*"
@@ -73,7 +84,6 @@ service Agent {
   }
 
   // Return the current state of a DID subject
-  // The HTTP endpoint for this method is a custom handler function
-  // on the network agent
-  rpc Retrieve (Request) returns (Response);
+  // The HTTP endpoint for this method is a custom handler function on the network agent
+  rpc Retrieve (Query) returns (Response);
 }

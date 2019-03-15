@@ -30,6 +30,12 @@ func init() {
 			flagKey:   "sync.key",
 			byDefault: "master",
 		},
+		{
+			name:      "deactivate",
+			usage:     "instruct the network agent to deactivate the identifier",
+			flagKey:   "sync.deactivate",
+			byDefault: false,
+		},
 	}
 	if err := setupCommandParams(syncCmd, params); err != nil {
 		panic(err)
@@ -116,10 +122,19 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 	defer conn.Close()
 
+	// Build request
+	req := &proto.Request{
+		Task:   proto.Request_PUBLISH,
+		Ticket: ticket,
+	}
+	if viper.GetBool("sync.deactivate") {
+		req.Task = proto.Request_DEACTIVATE
+	}
+
 	// Submit request
 	ll.Info("submitting request to the network")
 	client := proto.NewAgentClient(conn)
-	res, err := client.Process(context.TODO(), ticket)
+	res, err := client.Process(context.TODO(), req)
 	if err != nil {
 		return fmt.Errorf("network return an error: %s", err)
 	}

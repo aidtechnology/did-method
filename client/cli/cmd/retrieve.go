@@ -63,7 +63,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	// Retrieve subject
 	ll.Debug("retrieving record")
 	client := proto.NewAgentClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Request{Subject: id.Subject()})
+	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: id.Subject()})
 	if err != nil {
 		return fmt.Errorf("failed to retrieve DID records: %s", err)
 	}
@@ -73,9 +73,13 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 
 	// Decode contents
 	ll.Debug("decoding contents")
-	peer := &did.Identifier{}
-	if err = peer.Decode(res.Contents); err != nil {
-		return fmt.Errorf("failed to decode DID records: %s", err)
+	doc := &did.Document{}
+	if err = doc.Decode(res.Contents); err != nil {
+		return fmt.Errorf("failed to decode received DID Document: %s", err)
+	}
+	peer, err := did.FromDocument(doc)
+	if err != nil {
+		return fmt.Errorf("failed to decode received DID Document: %s", err)
 	}
 	js, err := json.MarshalIndent(peer.Document(), "", "  ")
 	if err != nil {

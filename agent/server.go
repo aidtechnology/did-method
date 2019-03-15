@@ -16,17 +16,17 @@ func (rh *rpcHandler) Ping(ctx context.Context, _ *types.Empty) (*proto.Pong, er
 	return &proto.Pong{Ok: true}, nil
 }
 
-func (rh *rpcHandler) Process(ctx context.Context, ticket *proto.Ticket) (*proto.Response, error) {
-	err := rh.handler.Process(ticket)
+func (rh *rpcHandler) Process(ctx context.Context, req *proto.Request) (*proto.Response, error) {
+	err := rh.handler.Process(req)
 	return &proto.Response{Ok: err == nil}, err
 }
 
-func (rh *rpcHandler) Retrieve(ctx context.Context, req *proto.Request) (*proto.Response, error) {
+func (rh *rpcHandler) Retrieve(ctx context.Context, req *proto.Query) (*proto.Response, error) {
 	id, err := rh.handler.Retrieve(req.Subject)
 	if err != nil {
 		return nil, err
 	}
-	data, err := id.Encode()
+	data, err := id.Document().Encode()
 	if err != nil {
 		return nil, err
 	}

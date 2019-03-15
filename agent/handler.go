@@ -69,12 +69,12 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 }
 
 // Process an incoming request ticket
-func (h *Handler) Process(ticket *proto.Ticket) error {
-	if err := ticket.Verify(nil); err != nil {
+func (h *Handler) Process(req *proto.Request) error {
+	if err := req.Ticket.Verify(nil); err != nil {
 		h.output.WithField("error", err.Error()).Error("invalid ticket")
 		return err
 	}
-	id, err := ticket.LoadDID()
+	id, err := req.Ticket.LoadDID()
 	if err != nil {
 		h.output.WithField("error", err.Error()).Error("invalid DID contents")
 		return err
@@ -87,7 +87,7 @@ func (h *Handler) Process(ticket *proto.Ticket) error {
 		if err != nil {
 			return fmt.Errorf("failed to recover original record for update: %s", err)
 		}
-		if err := ticket.Verify(orig.Key(ticket.KeyId)); err != nil {
+		if err := req.Ticket.Verify(orig.Key(req.Ticket.KeyId)); err != nil {
 			h.output.WithField("error", err.Error()).Error("invalid ticket")
 			return err
 		}
@@ -97,11 +97,19 @@ func (h *Handler) Process(ticket *proto.Ticket) error {
 	h.output.WithFields(log.Fields{
 		"subject": id.Subject(),
 		"update":  isUpdate,
-	}).Debug("processing incoming write request")
-	return h.db.Update(&kv.Item{
-		Key:   []byte(id.Subject()),
-		Value: ticket.Content,
-	})
+		"task":    req.Task,
+	}).Debug("write operation")
+	switch req.Task {
+	case proto.Request_PUBLISH:
+		return h.db.Update(&kv.Item{
+			Key:   []byte(id.Subject()),
+			Value: req.Ticket.Content,
+		})
+	case proto.Request_DEACTIVATE:
+		return h.db.Delete([]byte(id.Subject()))
+	default:
+		return errors.New("invalid request task")
+	}
 }
 
 // GetServer returns a ready-to-use DID method handler RPC server

@@ -39,7 +39,7 @@ func request_Agent_Ping_0(ctx context.Context, marshaler runtime.Marshaler, clie
 }
 
 func request_Agent_Process_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Ticket
+	var protoReq Request
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
