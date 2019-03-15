@@ -9,6 +9,7 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/sha3"
 )
 
 var signCmd = &cobra.Command{
@@ -58,6 +59,11 @@ func runSignCmd(_ *cobra.Command, args []string) error {
 	}
 	if len(input) == 0 {
 		return errors.New("no input passed in to sign")
+	}
+	if len(input) > 32 {
+		digest := sha3.New256()
+		digest.Write(input)
+		input = digest.Sum(nil)
 	}
 
 	// Get store handler

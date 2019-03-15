@@ -11,6 +11,7 @@ import (
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/sha3"
 )
 
 var verifyCmd = &cobra.Command{
@@ -48,6 +49,11 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	}
 	if len(input) == 0 {
 		return errors.New("no input passed in to verify")
+	}
+	if len(input) > 32 {
+		digest := sha3.New256()
+		digest.Write(input)
+		input = digest.Sum(nil)
 	}
 
 	// Load signature file
