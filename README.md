@@ -576,7 +576,7 @@ the `get` command. To run a verification of the cryptographic integrity proof
 contained in the document you can add the `--verify` option.
 
 ```
-bryk did get --verify did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
+bryk-did get --verify did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
 ```
 
 The command will perform the required network operations and verifications.
