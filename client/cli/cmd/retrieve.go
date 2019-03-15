@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,25 +60,12 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 
 	// Retrieve subject
 	ll.Debug("retrieving record")
-	client := proto.NewAgentClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: id.Subject()})
+	peer, err := retrieveSubject(id.Subject(), ll)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve DID records: %s", err)
-	}
-	if !res.Ok {
-		return errors.New("no information available for the provided DID")
+		return err
 	}
 
-	// Decode contents
-	ll.Debug("decoding contents")
-	doc := &did.Document{}
-	if err = doc.Decode(res.Contents); err != nil {
-		return fmt.Errorf("failed to decode received DID Document: %s", err)
-	}
-	peer, err := did.FromDocument(doc)
-	if err != nil {
-		return fmt.Errorf("failed to decode received DID Document: %s", err)
-	}
+	// Get JSON formatted peer document
 	js, err := json.MarshalIndent(peer.Document(), "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to decode DID records: %s", err)

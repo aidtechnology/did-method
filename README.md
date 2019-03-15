@@ -4,10 +4,13 @@
 [![Software License](https://img.shields.io/badge/license-BSD3-red.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bryk-io/did-method?style=flat)](https://goreportcard.com/report/github.com/bryk-io/did-method)
 
-The present document describes the __"bryk"__ DID Method specification. The definitions,
-conventions and technical details included intend to provide a solid base for further
-developments while maintaining compliance with the work, still in progress, on the 
-[W3C Credentials Community Group](https://w3c-ccg.github.io/did-spec/).
+The present document describes the __"bryk"__ DID Method specification. The
+definitions, conventions and technical details included intend to provide a 
+solid base for further developments while maintaining compliance with the work,
+still in progress, on the [W3C Credentials Community Group](https://w3c-ccg.github.io/did-spec/).
+
+For more information about the origin and purpose of Decentralized Identifiers please
+refer to the original [DID Primer.](https://github.com/WebOfTrustInfo/rwot5-boston/blob/master/topics-and-advance-readings/did-primer.md)
 
 To facilitate adoption and testing, and promote open discussions about the subjects
 treated, this repository also includes an open source reference implementation for a
@@ -57,40 +60,43 @@ build a new __(3P)__ digital identity, one that is: __Private, Permanent__ and
 __Portable__.
 
 ## 2. Access Considerations
-In order to be considered open, the system must be publicly available. Any user should
-be able to freely register, publish and update as many identifiers as desired without
-the express authorization of any third party. This characteristic of the model permits
-us to classify it as __censorship resistant.__
+In order to be considered open, the system must be publicly available. Any user
+should be able to freely register, publish and update as many identifiers as
+desired without the express authorization of any third party. This characteristic
+of the model permits us to classify it as __censorship resistant.__
 
-At the same time, this level of openness makes the model vulnerable to malicious intentions
-and abuse. In such a way that a bad actor may prevent legitimate access to the system by
-consuming the available resources. This kind of cyber-attack is known as a 
-[DoS (Denial-of-Service) attack](https://en.wikipedia.org/wiki/Denial-of-service_attack).
+At the same time, this level of openness makes the model vulnerable to malicious
+intentions and abuse. In such a way that a bad actor may prevent legitimate access
+to the system by consuming the available resources. This kind of cyber-attack is
+known as a [DoS (Denial-of-Service) attack](https://en.wikipedia.org/wiki/Denial-of-service_attack).
 
-> In computing, a denial-of-service attack (DoS attack) is a cyber-attack in which the 
-  perpetrator seeks to make a machine or network resource unavailable to its intended users
-  by temporarily or indefinitely disrupting services of a host connected to the Internet.
-  Denial of service is typically accomplished by flooding the targeted machine or resource
-  with superfluous requests in an attempt to overload systems and prevent some or all
-  legitimate requests from being fulfilled.
+> In computing, a denial-of-service attack (DoS attack) is a cyber-attack in which
+  the perpetrator seeks to make a machine or network resource unavailable to its
+  intended users by temporarily or indefinitely disrupting services of a host
+  connected to the Internet. Denial of service is typically accomplished by
+  flooding the targeted machine or resource with superfluous requests in an attempt
+  to overload systems and prevent some or all legitimate requests from being
+  fulfilled.
 
-The "bryk" DID Method specification includes a __"Request Ticket"__ security mechanism
-designed to mitigate risks of abuse while ensuring open access and censorship resistance.
+The "bryk" DID Method specification includes a __"Request Ticket"__ security
+mechanism designed to mitigate risks of abuse while ensuring open access and
+censorship resistance.
 
 ## 3. DID Method Specification
 The method specification provides all the technical considerations, guidelines and
-recommendations produced for the design and deployment of the DID method implementation.
-The document is organized in 3 main sections.
+recommendations produced for the design and deployment of the DID method
+implementation. The document is organized in 3 main sections.
 
-1. __DID Schema.__ Definitions and conventions used to generate valid identifier instances.
-2. __DID Document.__ Considerations on how to generate and use the DID document associated
-   with a given identifier instance.
-3. __Network Operations.__ Technical specifications detailing how to perform basic
+1. __DID Schema.__ Definitions and conventions used to generate valid identifier
+   instances.
+2. __DID Document.__ Considerations on how to generate and use the DID document
+   associated with a given identifier instance.
+3. __Agent Protocol.__ Technical specifications detailing how to perform basic
   network operations, and the risk mitigation mechanisms in place, for tasks such as:
     - Publish a new identifier instance.
     - Update an existing identifier instance.
-    - Resolve an existing identifier and retrieve the latest published version of its DID
-    Document.
+    - Resolve an existing identifier and retrieve the latest published version of
+      its DID Document.
 
 ### 3.1 DID Schema
 
@@ -185,8 +191,8 @@ contains, among other relevant details, cryptographic material that enables
 authentication of the DID subject.
 
 The document is a Linked Data structure that ensures a high degree of flexibility
-while facilitating the process of acquiring, parsing and using the contained information.
-For the moment, the suggested encoding format for the document is
+while facilitating the process of acquiring, parsing and using the contained
+information. For the moment, the suggested encoding format for the document is
 [JSON-LD](https://www.w3.org/TR/json-ld/). Other formats could be used in the future.
 
 > The term Linked Data is used to describe a recommended best practice for exposing
@@ -227,10 +233,6 @@ are often included in a DID Document are:
   further discovery, authentication, authorization, or interaction. 
 - [Proof](https://w3c-ccg.github.io/did-spec/#proof-optional):
   Cryptographic proof of the integrity of the DID Document according its subject.
-
-Is important to note that the official specifications around service endpoints are
-still in a very early stage at this point. Where appropriate or required the present
-Method specification builds on it and introduces new considerations.
     
 Additionally, the DID Document may include any other fields deemed relevant for the
 particular use case or implementation.
@@ -287,15 +289,19 @@ Example of a more complete, and useful, DID Document.
 }
 ```
 
+Is important to note that the official specifications around service endpoints are
+still in a very early stage at this point. Where appropriate or required the present
+Method specification builds on it and introduces new considerations.
+
 #### 3.2.1 Method Requirements
-Building upon the base requirements and recommendations from the original specification,
-the "bryk" DID method introduces the following additional guidelines.
+Building upon the base requirements and recommendations from the original
+specification, the "bryk" DID method introduces the following additional guidelines.
 
 - The fields `created`, `updated`, and `proof` are required for all generated
   DID Documents.
 - All service endpoints included in the DID Document may include an additional `data`
   field. Is recommended to include all extra parameters required for the particular
-  service under these field.
+  service under this field.
 - Supported public keys and signature formats
   - [Ed25519](https://w3c-ccg.github.io/ld-cryptosuite-registry/#ed25519signature2018)
   - [RSA](https://w3c-ccg.github.io/ld-cryptosuite-registry/#rsasignature2018),
@@ -306,7 +312,7 @@ the "bryk" DID method introduces the following additional guidelines.
 More information on the official keys and signatures formats is available at
 [LD Cryptographic Suite Registry](https://w3c-ccg.github.io/ld-cryptosuite-registry/).
 
-### 3.3 Network Operations
+### 3.3 Agent Protocol
 The method implementation introduces the concept of a __network agent__. A network 
 agent is responsible for handling incoming client requests. It's very important to
 note that the agent itself adheres to an operational protocol. The protocol is
@@ -314,10 +320,11 @@ independent of the data storage and message delivery mechanisms used. The method
 protocol can be implemented using a __Distributed Ledger Platform__, as well as any
 other infrastructure applicable for the particular use case.
 
-There are two main groups of operations available, __read__ and __write__. Write operations
-are required when a user wishes to publish a new identifier record to the network, or
-update the available information on an existing one. Read operations enable resolution
-and retrieval of DID Documents, and other relevant assets, published in the network.
+There are two main groups of operations available, __read__ and __write__. Write
+operations are required when a user wishes to publish a new identifier record to
+the network, or update the available information for an existing one. Read
+operations enable resolution and retrieval of DID Documents and other relevant
+assets published in the network.
 
 #### 3.3.1 Request Ticket
 As described earlier, a security mechanism is required to prevent malicious and
@@ -339,44 +346,48 @@ A request ticket has the following structure.
 
 ```
 ticket {
-  int64 timestamp
-  int64 nonce
+  int64  timestamp
+  int64  nonce
   string key_id
-  bytes content
-  bytes signature
+  bytes  content
+  bytes  signature
 }
 ```
 
 The client generates a ticket for the request using the following algorithm.
 
-1. Let the __"bel"__ function be a method to produce a binary-encoded representation
-   of a given input value using little endian byte order.
-2. Let the __"hex"__ function be a method to produce a hexadecimal binary-encoded
-   representation of a given input value.
-3. __"timestamp"__ is set to the current UNIX time at the moment of creating the ticket.
+1. Let the __"bel"__ function be a method to produce a deterministic binary-encoded
+   representation of a given input value using little endian byte order.
+2. Let the __"hex"__ function be a method to produce a deterministic hexadecimal
+   binary-encoded representation of a given input value.
+3. __"timestamp"__ is set to the current UNIX time at the moment of creating the
+   ticket.
 4. __"nonce"__ is a randomly generated integer of 64 bit precision.
-5. __"key-id"__ is set to the identifier from the cryptographic key used to generate the
-   ticket signature, MUST be enabled as an authentication key for the DID instance.
+5. __"key_id"__ is set to the identifier from the cryptographic key used to
+   generate the ticket signature, MUST be enabled as an authentication key for the
+   DID instance.
 6. __"content"__ is set to a deterministic binary encoding of the DID Document to
-  process.
-7. A HashCash round is initiated for the ticket. The hash mechanism used MUST be SHA3-256
-   and the content submitted for each iteration of the round is a byte concatenation of
-   the form: `"bel(timestamp) | bel(nonce) | hex(key-id) | content"`.
-8. The __"nonce"__ value of the ticket is atomically increased by one for each iteration
-   of the round.
+   process.
+7. A HashCash round is initiated for the ticket. The hash mechanism used MUST be
+   SHA3-256 and the content submitted for each iteration of the round is a byte
+   concatenation of the form:
+   `"bel(timestamp) | bel(nonce) | hex(key_id) | content"`.
+8. The __"nonce"__ value of the ticket is atomically increased by one for each
+   iteration of the round.
 9. The ticket's __"challenge"__ is implicitly set to the produced hash from the
    HashCash round.
 10. The __"signature"__ for the ticket is generated using the selected key of the DID
-   and the obtained challenge value: `did.keys["key-id"].sign(challenge)`
+    and the obtained challenge value: `did.keys["key_id"].sign(challenge)`
 
-Upon receiving a new write request the network agent validates the request ticket using
-the following procedure.
+Upon receiving a new write request the network agent validates the request ticket
+using the following procedure.
 
-1. Verify the ticket's __"challenge"__ is valid by forming a HashCash verification.
-2. Validate __“contents”__ are a properly encoded DID instance.
-3. DID instance’s __“method”__ value is properly set, in this case to “bryk”
-4. Ensure __“contents”__ don’t include any private key. For security reasons no private
-   keys should ever be published on the network.
+1. Verify the ticket's __"challenge"__ is valid by performing a HashCash
+   verification.
+2. Validate __“contents”__ are a properly encoded DID Document.
+3. DID instance’s __“method”__ value is properly set; in this case to `bryk`.
+4. Ensure __“contents”__ don’t include any private key. For security reasons no
+   private keys should ever be published on the network.
 5. Verify __“signature”__ is valid.
     - For operations submitting a new entry, the key contents are obtained directly
       from the ticket contents. This ensures the user submitting the new DID instance
@@ -385,6 +396,9 @@ the following procedure.
       the previously stored record. This ensures the user submitting the request is
       the one in control of the original private key.
 6. If the request is valid, the entry will be created or updated accordingly.
+
+A sample implementation of the described __Request Ticket__ mechanism is available
+[here](https://github.com/bryk-io/did-method/blob/master/proto/ticket.go).
 
 #### 3.3.2 DID Resolution
 
@@ -398,13 +412,13 @@ The resolution and data retrieval is done by performing a __GET__ request of the
 For example:
 
 ```bash
-curl -v https://did.bryk.io/v1/retrieve?subjet=c137:eeb0c865-ce21-4ad6-baf8-5ba287ba8683
+curl -v https://did.bryk.io/v1/retrieve\?subject\=4d81bd52-2edb-4703-b8fc-b26d514a9c56
 ```
 
-If the subject is valid, and information has been published to the network the response
-will be latest version available of its corresponding DID Document encoded in JSON-LD
-with a __200__ status code. If no information is available the response will be a JSON
-encoded error message with a __400__ status code.
+If the subject is valid, and information has been published to the network, the
+response will be latest version available of its corresponding DID Document encoded
+in JSON-LD with a __200__ status code. If no information is available the response
+will be a JSON encoded error message with a __400__ status code.
 
 You can also retrieve an existing subject using the provided SDK and RPC interface.
 For example, using the Go client.
@@ -421,32 +435,417 @@ if response.Ok {
 
 #### 3.3.3 DID Publishing and Update
 
-To publish a new identifier instance or to update an existing one you can also use the
-agent's HTTP interface or the provided SDK and clients.
+To publish a new identifier instance or to update an existing one you can also use
+the agent's HTTP interface or the provided SDK and clients.
 
-When using HTTP the operation should be a __POST__ request with a properly constructed
-and JSON encoded request ticket as the request's data. Binary data should be encoded in
-standard [Base64](https://en.wikipedia.org/wiki/Base64) when transmitted using JSON.
-
-Example of publish operation.
-
-```bash
-# Binary contents redacted for brevity
-curl -v \
---header "Content-Type: application/json" \
---request POST \
---data \
-'{"timestamp":"1552226666","nonce":"36219","keyId":"master","content":"...","signature":"..."}' \
-https://did.bryk.io/v1/process
-``` 
+When using HTTP the operation should be a __POST__ request with a properly
+constructed and JSON-encoded request as the request's data. Binary data should be
+encoded in standard [Base64](https://en.wikipedia.org/wiki/Base64) when transmitted
+using JSON.
 
 You can also publish and update a DID identifier instance using the provided SDK and
 RPC interface. For example, using the Go client.
 
 ```go
 // Error handling omitted for brevity
-res, _ := client.Process(context.TODO(), ticket)
+res, _ := client.Process(context.TODO(), request)
 if res.Ok {
 	// ...
 }
+```
+
+## 4. Client Operations
+
+> To enable the full functionality of DIDs and DID Documents on a particular
+  distributed ledger or network (called the target system), a DID method
+  specification MUST specify how each of the following CRUD operations is performed
+  by a client. Each operation MUST be specified to the level of detail necessary to
+  build and test interoperable client implementations with the target system.
+
+The following sections provide detailed descriptions and examples of all required
+CRUD base operations and some more advanced use cases. As described earlier, all
+supported operations can be accessed using either the agent's HTTP interface or the
+provided SDK and CLI client tool.
+
+For brevity the following examples use the provided CLI client tool.
+
+### 4.1 CRUD Operations
+
+Basic operations enabling the users to create, read, update and delete identifier
+instances.
+
+#### 4.1.1 Create (Register)
+
+To locally create a new DID instance.
+
+```
+bryk-did create [reference name]
+```
+
+The value provided for `reference name` is an easy-to-remember alias you choose for
+the new identifier instance, __it won't have any use in the network context__.
+The CLI also performs the following tasks for the newly generated identifier.
+
+- Create a new `master` Ed25519 private key for the identifier
+- Set the `master` key as an authentication mechanism for the identifier
+- Generates a cryptographic integrity proof for the identifier using the `master` key
+
+If required, the `master` key can be recovered using the selected `recovery-mode`,
+for more information inspect the options available for the `create` command.
+
+```
+Creates a new DID locally
+
+Usage:
+  bryk-did register [flags]
+
+Aliases:
+  register, create, new
+
+Examples:
+bryk-did register [DID reference name]
+
+Flags:
+  -h, --help                    help for register
+      --recovery-mode string    choose a recovery mechanism for your primary key, 'passphrase' or 'secret-sharing' (default "secret-sharing")
+      --secret-sharing string   specify the number of shares and threshold value in the following format: shares,threshold (default "3,2")
+      --tag string              specify a tag value for the identifier instance
+``` 
+
+#### 4.1.2 Read (Verify)
+
+You can retrieve a list of all your existing identifiers using the following command.
+
+```
+bryk-did list
+```
+
+The output produced will be something like this.
+
+```
+Reference Name    Recovery Mode     DID
+dev               passphrase        did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
+sample            secret-sharing    did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a
+```
+
+To inspect the DID Document of any of your local identifiers.
+
+```
+bryk-did did info [reference name]
+```
+
+The generated document will be something similar for the following example.
+
+```json
+{
+  "@context": [
+    "https://w3id.org/did/v1",
+    "https://w3id.org/security/v1"
+  ],
+  "id": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a",
+  "created": "2019-03-14T12:02:33-04:00",
+  "updated": "2019-03-14T12:02:33-04:00",
+  "publicKey": [
+    {
+      "id": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a#master",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a",
+      "publicKeyHex": "e5271fa5208eedf6c95611320ed8c4300dcd04ab57207364a0909fc64c5e30d7"
+    }
+  ],
+  "authentication": [
+    "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a#master"
+  ],
+  "proof": {
+    "@context": [
+      "https://w3id.org/security/v1"
+    ],
+    "type": "Ed25519Signature2018",
+    "creator": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a#master",
+    "created": "2019-03-14T16:02:34Z",
+    "domain": "did.bryk.io",
+    "nonce": "7e0fda2827eec4418df4513d2d6874c5",
+    "proofValue": "cKDKBgNS6itQF1zDaOUd6bDo+5CIKoSN+lOb8PkZqvT+K3c2wvDUVqMYN8mKA0Om+B8wYM1qDz9mI0iWva0qBg=="
+  }
+}
+```
+
+If a certain DID identifier has previously been published to the network, you can
+resolve it and retrieve the latest version of its corresponding DID Document using
+the `get` command. To run a verification of the cryptographic integrity proof
+contained in the document you can add the `--verify` option.
+
+```
+bryk did get --verify did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
+```
+
+The command will perform the required network operations and verifications.
+
+```
+[Mar 14 12:15:23.674]  INFO establishing connection to the network with node: rpc-did.bryk.io:80
+[Mar 14 12:15:23.713] DEBUG retrieving record
+[Mar 14 12:15:23.721] DEBUG decoding contents
+[Mar 14 12:15:23.721]  INFO verifying the received DID document
+[Mar 14 12:15:24.277]  INFO integrity proof is valid
+{
+  "@context": [
+    "https://w3id.org/did/v1",
+    "https://w3id.org/security/v1"
+  ],
+  "id": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56",
+  "created": "2019-03-10T13:42:34-04:00",
+  "updated": "2019-03-12T10:07:55-04:00",
+  "publicKey": [
+    {
+      "id": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#master",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56",
+      "publicKeyHex": "be4db03c2f809aa79ea3055a2da8ddfd807fecd073356e337561cd0640251d9f"
+    },
+    {
+      "id": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#code-sign",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56",
+      "publicKeyHex": "e7cc93d399e467a39fca74e32795b1ab1110a7dc94e8623830cd069c1cac72b8"
+    }
+  ],
+  "authentication": [
+    "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#master"
+  ],
+  "proof": {
+    "@context": [
+      "https://w3id.org/security/v1"
+    ],
+    "type": "Ed25519Signature2018",
+    "creator": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#master",
+    "created": "2019-03-12T14:07:56Z",
+    "domain": "did.bryk.io",
+    "nonce": "09206a2a195cd14f5a6cac70279bba35",
+    "proofValue": "YdY1+GxDNwlc55alKZIJ0if55FwQsE2Gan91l+fuv+UF1UAnI10l/DelGPyBSOO2OUiTNzXC6x/jojOum/RNDg=="
+  }
+}
+```
+
+#### 4.1.3 Update (Publish)
+
+Whenever you wish to make one of your identifiers, in its current state, accessible
+to the world, you can publish it to the network.
+
+```
+bryk-did sync sample
+```
+
+The CLI tool will generate the __Request Ticket__, submit the write operation for
+processing to the network and present the final result.
+
+```
+[Mar 14 12:26:30.435] DEBUG key selected for the operation: did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a#master
+[Mar 14 12:26:30.435]  INFO updating record proof
+[Mar 14 12:26:31.075]  INFO publishing: sample
+[Mar 14 12:26:31.075]  INFO generating request ticket
+[Mar 14 12:28:00.230] DEBUG ticket obtained: 00000042186234bab7d3e39207a9fcde7c8e71c2b4e84cf528f0328b3d6e8a32
+[Mar 14 12:28:00.230] DEBUG time: 1m29.154355394s (rounds completed 21723044)
+[Mar 14 12:28:00.231]  INFO establishing connection to the network with node: rpc-did.bryk.io:80
+[Mar 14 12:28:00.232]  INFO submitting request to the network
+[Mar 14 12:28:00.234] DEBUG request status: true
+```
+
+Once an identifier is published any user can retrieve and validate your DID document.
+If you make local changes to your identifier, like adding a new cryptographic key or
+service endpoint, and you wish this adjustments to be accessible to the rest of the
+users, you'll need to publish it again.
+
+#### 4.1.4 Delete (Deactivate)
+
+If at some point you wish to prevent other users to resolve one of yours previously
+published identifiers you may submit a __deactivation__ request by adding the
+`--deactivate` option to the sync command.
+
+```
+bryk-did sync sample --deactivate
+```
+
+__No information is destroyed or lost with this operations__, the identifier and all
+its related data is safely stored on your local machine. This will only prevent other
+users from retrieving your DID Document from the network.
+
+### 4.2 DID Instance Management
+
+The CLI client also facilitates some of the tasks required to manage a DID instance.
+
+#### 4.2.1 Key Management
+
+A DID Document list all public keys in use for the referenced DID instance. Public
+keys are used for digital signatures, encryption and other cryptographic operations,
+which in turn are the basis for purposes such as authentication, secure communication,
+etc.
+
+```
+Manage cryptographic keys associated with the DID
+
+Usage:
+  bryk-did did key [command]
+
+Available Commands:
+  add         Add a new cryptographic key for the DID
+  recover     Recover a previously generated Ed25519 cryptographic key
+  remove      Remove an existing cryptographic key for the DID
+  sign        Produce a linked digital signature
+
+Flags:
+  -h, --help   help for key
+
+Global Flags:
+      --config string   config file ($HOME/.bryk-did/config.yaml)
+      --home string     home directory ($HOME/.bryk-did)
+
+Use "bryk-did did key [command] --help" for more information about a command.
+```
+
+To add a new cryptographic key to one of your identifiers you can use the `did key add`
+command.
+
+```
+Add a new cryptographic key for the DID
+
+Usage:
+  bryk-did did key add [flags]
+
+Examples:
+bryk-did did key add [DID reference name] --name my-new-key --type ed --authentication
+
+Flags:
+      --authentication   enable this key for authentication purposes
+  -h, --help             help for add
+      --name string      name to be assigned to the newly added key (default "key-#")
+      --type string      type of cryptographic key, either RSA (rsa) or Ed25519 (ed) (default "ed")
+```
+
+It will produce and properly add a public key entry. The cryptographic
+integrity proof on the DID Document will also be updated accordingly.
+
+```json
+{
+  "id": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#code-sign",
+  "type": "Ed25519VerificationKey2018",
+  "controller": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56",
+  "publicKeyHex": "e7cc93d399e467a39fca74e32795b1ab1110a7dc94e8623830cd069c1cac72b8"
+}
+```
+
+You can also safely remove an existing key from your identifier using the
+`did key remove` command.
+
+```
+did key remove [DID reference name] [key name]
+```
+
+#### 4.2.2 Linked Data Signatures
+
+The CLI client also facilitates the process of generating and validating [Linked Data
+Signatures](https://w3c-dvcg.github.io/ld-signatures/). For example, to create a new
+signature document from an existing file you can run the following command.
+
+```
+cat file_to_sign | bryk-did did key sign dev
+```
+
+The output produced will be a valid JSON-LD document containing the signature details.
+
+```json
+{
+  "@context": [
+    "https://w3id.org/security/v1"
+  ],
+  "type": "Ed25519Signature2018",
+  "creator": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56#master",
+  "created": "2019-03-15T14:05:54Z",
+  "domain": "did.bryk.io",
+  "nonce": "f14d4619a39f7deb5a382bf32b220726",
+  "signatureValue": "khqsBcnCViYm/3QFjgAQX2iOGDbNpsD5rPWsokWNLsBxhtRf79A+qV1f+9sphjVCxNP02jesOOni3t9zMCZbBw=="
+}
+```
+
+You can save and share the produced JSON output. Other users will be able to verify the
+integrity and authenticity of the signature using the `verify` command.
+
+```
+cat file_to_sign | bryk-did verify signature.json
+```
+
+The CLI will inspect the signature file, retrieve the DID Document for the creator
+and use the public key to verify the integrity and authenticity of the signature.
+
+```
+[Mar 15 10:10:22.286]  INFO verifying LD signature
+[Mar 15 10:10:22.286] DEBUG load signature file
+[Mar 15 10:10:22.286] DEBUG decoding contents
+[Mar 15 10:10:22.286] DEBUG validating signature creator
+[Mar 15 10:10:22.287]  INFO establishing connection to the network with node: rpc-did.bryk.io:80
+[Mar 15 10:10:22.458] DEBUG retrieving record
+[Mar 15 10:10:22.471] DEBUG decoding contents
+[Mar 15 10:10:22.973]  INFO signature is valid
+```
+
+#### 4.2.3 Service Management
+
+As mentioned in earlier sections, one of the more relevant aspects of a DID Document
+is its capability to list interaction mechanisms available for a particular subject.
+This is done by including information of __Service Endpoints__ in the document. Using
+the CLI client you can manage the services enabled for any of your identifiers.
+
+```
+Manage services enabled for the identifier
+
+Usage:
+  bryk-did did service [command]
+
+Available Commands:
+  add         Register a new service entry for the DID
+  remove      Remove an existing service entry for the DID
+
+Flags:
+  -h, --help   help for service
+
+Global Flags:
+      --config string   config file ($HOME/.bryk-did/config.yaml)
+      --home string     home directory ($HOME/.bryk-did)
+
+Use "bryk-did did service [command] --help" for more information about a command.
+```
+
+To add a new service you can use the `did service add` command.
+
+```
+Register a new service entry for the DID
+
+Usage:
+  bryk-did did service add [flags]
+
+Examples:
+bryk-did did service add [DID reference name] --name "service name" --endpoint https://www.agency.com/user_id
+
+Flags:
+      --endpoint string   main URL to access the service
+  -h, --help              help for add
+      --name string       service's reference name (default "external-service-#")
+      --type string       type identifier for the service handler (default "identity.bryk.io.ExternalService")
+```
+
+It will produce and properly add a service endpoint entry. The cryptographic
+integrity proof on the DID Document will also be updated accordingly.
+
+```json
+{
+  "id": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a;iadb-bonds",
+  "type": "identity.bryk.io.ExternalService",
+  "serviceEndpoint": "https://www.iadb.org/bonds"
+}
+```
+
+You can also safely remove a service from your identifier using the
+`did service remove` command.
+
+```
+did service remove [DID reference name] [service name]
 ```

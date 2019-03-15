@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 
-	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -80,34 +78,13 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("only 'bryk' DID are supported: %s", id)
 	}
 
-	// Get network connection
-	conn, err := getClientConnection(ll)
+	// Retrieve subject
+	peer, err := retrieveSubject(id.Subject(), ll)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
 
-	// Retrieve subject
-	ll.Debug("retrieving record")
-	client := proto.NewAgentClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: id.Subject()})
-	if err != nil {
-		return fmt.Errorf("failed to retrieve DID records: %s", err)
-	}
-	if !res.Ok {
-		return errors.New("no information available for the provided DID")
-	}
-
-	// Decode contents
-	ll.Debug("decoding contents")
-	doc := &did.Document{}
-	if err = doc.Decode(res.Contents); err != nil {
-		return fmt.Errorf("failed to decode received DID Document: %s", err)
-	}
-	peer, err := did.FromDocument(doc)
-	if err != nil {
-		return fmt.Errorf("failed to decode received DID Document: %s", err)
-	}
+	// Get creator's key
 	ck := peer.Key(sig.Creator)
 	if ck == nil {
 		return fmt.Errorf("creator key is not available on the DID Document: %s", sig.Creator)

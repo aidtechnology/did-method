@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -10,7 +11,9 @@ import (
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
+	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/crypto/ed25519"
+	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -116,4 +119,30 @@ func getPipedInput() ([]byte, error) {
 
 	// Return provided input
 	return input, nil
+}
+
+// Retrieve a DID instance from the network
+func retrieveSubject(subject string, ll *log.Logger) (*did.Identifier, error) {
+	// Get network connection
+	conn, err := getClientConnection(ll)
+	if err != nil {
+		return nil, err
+	}
+
+	client := proto.NewAgentClient(conn)
+	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: subject})
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve DID records: %s", err)
+	}
+	if !res.Ok {
+		return nil, errors.New("no information available for the provided DID")
+	}
+
+	// Decode contents
+	ll.Debug("decoding contents")
+	doc := &did.Document{}
+	if err = doc.Decode(res.Contents); err != nil {
+		return nil, fmt.Errorf("failed to decode received DID Document: %s", err)
+	}
+	return did.FromDocument(doc)
 }
