@@ -10,6 +10,7 @@ import (
 	"github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -81,38 +82,16 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get safe contents to synchronize with the network
-	doc := id.Document()
-	for i, k := range doc.PublicKeys {
-		k.Private = nil
-		doc.PublicKeys[i] = k
-	}
-	safe, err := doc.Encode()
+	safe, err := getSafeContents(id)
 	if err != nil {
-		return fmt.Errorf("failed to safely export identifier instance: %s", err)
+		return err
 	}
 
 	// Generate request ticket
 	ll.Infof("publishing: %s", name)
-	ll.Info("generating request ticket")
-	ticket := proto.NewTicket(safe, key.ID)
-	start := time.Now()
-	challenge, err := ticket.Solve(context.TODO())
+	ticket, err := getRequestTicket(safe, key, ll)
 	if err != nil {
-		return fmt.Errorf("failed to generate request ticket: %s", err)
-	}
-	ll.Debugf("ticket obtained: %s", challenge)
-	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
-
-	// Sign ticket
-	ch, _ := hex.DecodeString(challenge)
-	ticket.Signature, err = key.Sign(ch)
-	if err != nil {
-		return fmt.Errorf("failed to generate request ticket: %s", err)
-	}
-
-	// Verify on client's side
-	if err = ticket.Verify(nil); err != nil {
-		return fmt.Errorf("failed to verify ticket: %s", err)
+		return err
 	}
 
 	// Get client connection
@@ -139,16 +118,55 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("network return an error: %s", err)
 	}
 	ll.Debugf("request status: %v", res.Ok)
+	if !res.Ok {
+		return nil
+	}
 
 	// Update local record if sync was successful
-	if res.Ok {
-		contents, err := id.Encode()
-		if err != nil {
-			return fmt.Errorf("failed to encode identifier: %s", err)
-		}
-		return st.Update(name, contents)
+	contents, err := id.Encode()
+	if err != nil {
+		return fmt.Errorf("failed to encode identifier: %s", err)
 	}
-	return nil
+	return st.Update(name, contents)
+}
+
+func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*proto.Ticket, error) {
+	ll.Info("generating request ticket")
+	ticket := proto.NewTicket(contents, key.ID)
+	start := time.Now()
+	challenge, err := ticket.Solve(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
+	}
+	ll.Debugf("ticket obtained: %s", challenge)
+	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
+	ch, _ := hex.DecodeString(challenge)
+
+	// Sign ticket
+	ticket.Signature, err = key.Sign(ch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
+	}
+
+	// Verify on client's side
+	if err = ticket.Verify(nil); err != nil {
+		return nil, fmt.Errorf("failed to verify ticket: %s", err)
+	}
+
+	return ticket, nil
+}
+
+func getSafeContents(id *did.Identifier) ([]byte, error) {
+	doc := id.Document()
+	for i, k := range doc.PublicKeys {
+		k.Private = nil
+		doc.PublicKeys[i] = k
+	}
+	safe, err := doc.Encode()
+	if err != nil {
+		return nil, fmt.Errorf("failed to safely export identifier instance: %s", err)
+	}
+	return safe, nil
 }
 
 func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
