@@ -130,11 +130,11 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 	return
 }
 
-// LoadDID obtain the DID instance encoded in the ticket contents
+// LoadDID restore the DID instance from the ticket contents
 func (t *Ticket) LoadDID() (*did.Identifier, error) {
-	id := &did.Identifier{}
-	if err := id.Decode(t.Content); err != nil {
+	doc := &did.Document{}
+	if err := doc.Decode(t.Content); err != nil {
 		return nil, errors.New("invalid ticket contents")
 	}
-	return id, nil
+	return did.FromDocument(doc)
 }

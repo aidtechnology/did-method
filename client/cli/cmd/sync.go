@@ -75,7 +75,12 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get safe contents to synchronize with the network
-	safe, err := id.SafeEncode()
+	doc := id.Document()
+	for i, k := range doc.PublicKeys {
+		k.Private = nil
+		doc.PublicKeys[i] = k
+	}
+	safe, err := doc.Encode()
 	if err != nil {
 		return fmt.Errorf("failed to safely export identifier instance: %s", err)
 	}

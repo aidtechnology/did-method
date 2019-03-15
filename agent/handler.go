@@ -61,11 +61,11 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 	if err != nil {
 		return nil, errors.New("no information available for the subject")
 	}
-	d := &did.Identifier{}
-	if err = d.Decode(contents); err != nil {
+	doc := &did.Document{}
+	if err = doc.Decode(contents); err != nil {
 		return nil, err
 	}
-	return d, nil
+	return did.FromDocument(doc)
 }
 
 // Process an incoming request ticket
@@ -98,13 +98,9 @@ func (h *Handler) Process(ticket *proto.Ticket) error {
 		"subject": id.Subject(),
 		"update":  isUpdate,
 	}).Debug("processing incoming write request")
-	data, err := id.Encode()
-	if err != nil {
-		return err
-	}
 	return h.db.Update(&kv.Item{
 		Key:   []byte(id.Subject()),
-		Value: data,
+		Value: ticket.Content,
 	})
 }
 

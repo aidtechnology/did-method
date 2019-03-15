@@ -2,7 +2,7 @@ module github.com/bryk-io/did-method
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/bryk-io/x v0.0.0-20190314152828-b7fedebd794e
+	github.com/bryk-io/x v0.0.0-20190315114651-a5e8ae39cd02
 	github.com/gogo/googleapis v1.1.0
 	github.com/gogo/protobuf v1.2.0
 	github.com/golang/protobuf v1.3.0
