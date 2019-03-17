@@ -87,6 +87,11 @@ func (ls *LocalStore) Update(name string, contents []byte) error {
 	})
 }
 
+// Delete a previously stored entry
+func (ls *LocalStore) Delete(name string) error {
+	return ls.db.Delete([]byte(name))
+}
+
 // Close the store instance and free resources
 func (ls *LocalStore) Close() error {
 	return ls.db.Close()
