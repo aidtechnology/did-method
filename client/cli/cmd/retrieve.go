@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,15 +20,15 @@ var retrieveCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "verify",
-			usage:     "Verify the proofs included in the received DID Document",
-			flagKey:   "retrieve.verify",
-			byDefault: false,
+			Name:      "verify",
+			Usage:     "Verify the proofs included in the received DID Document",
+			FlagKey:   "retrieve.verify",
+			ByDefault: false,
 		},
 	}
-	if err := setupCommandParams(retrieveCmd, params); err != nil {
+	if err := cli.SetupCommandParams(retrieveCmd, params); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(retrieveCmd)

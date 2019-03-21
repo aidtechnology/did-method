@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/bryk-io/did-method/client/store"
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/crypto/shamir"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
@@ -26,27 +27,27 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "recovery-mode",
-			usage:     "choose a recovery mechanism for your primary key, 'passphrase' or 'secret-sharing'",
-			flagKey:   "register.recovery-mode",
-			byDefault: "secret-sharing",
+			Name:      "recovery-mode",
+			Usage:     "choose a recovery mechanism for your primary key, 'passphrase' or 'secret-sharing'",
+			FlagKey:   "register.recovery-mode",
+			ByDefault: "secret-sharing",
 		},
 		{
-			name:      "secret-sharing",
-			usage:     "specify the number of shares and threshold value in the following format: shares,threshold",
-			flagKey:   "register.secret-sharing",
-			byDefault: "3,2",
+			Name:      "secret-sharing",
+			Usage:     "specify the number of shares and threshold value in the following format: shares,threshold",
+			FlagKey:   "register.secret-sharing",
+			ByDefault: "3,2",
 		},
 		{
-			name:      "tag",
-			usage:     "specify a tag value for the identifier instance",
-			flagKey:   "register.tag",
-			byDefault: "",
+			Name:      "tag",
+			Usage:     "specify a tag value for the identifier instance",
+			FlagKey:   "register.tag",
+			ByDefault: "",
 		},
 	}
-	if err := setupCommandParams(registerCmd, params); err != nil {
+	if err := cli.SetupCommandParams(registerCmd, params); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(registerCmd)
@@ -142,11 +143,11 @@ func getSecret(name string) ([]byte, error) {
 		}
 		return secret, nil
 	case "passphrase":
-		secret, err := secureAsk("\nEnter a secure passphrase: ")
+		secret, err := cli.ReadSecure("\nEnter a secure passphrase: ")
 		if err != nil {
 			return nil, err
 		}
-		confirmation, err := secureAsk("\nConfirm the provided value: ")
+		confirmation, err := cli.ReadSecure("\nConfirm the provided value: ")
 		if err != nil {
 			return nil, err
 		}

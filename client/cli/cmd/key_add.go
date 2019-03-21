@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
@@ -19,27 +20,27 @@ var addKeyCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "name",
-			usage:     "name to be assigned to the newly added key",
-			flagKey:   "key-add.name",
-			byDefault: "key-#",
+			Name:      "name",
+			Usage:     "name to be assigned to the newly added key",
+			FlagKey:   "key-add.name",
+			ByDefault: "key-#",
 		},
 		{
-			name:      "type",
-			usage:     "type of cryptographic key, either RSA (rsa) or Ed25519 (ed)",
-			flagKey:   "key-add.type",
-			byDefault: "ed",
+			Name:      "type",
+			Usage:     "type of cryptographic key, either RSA (rsa) or Ed25519 (ed)",
+			FlagKey:   "key-add.type",
+			ByDefault: "ed",
 		},
 		{
-			name:      "authentication",
-			usage:     "enable this key for authentication purposes",
-			flagKey:   "key-add.authentication",
-			byDefault: false,
+			Name:      "authentication",
+			Usage:     "enable this key for authentication purposes",
+			FlagKey:   "key-add.authentication",
+			ByDefault: false,
 		},
 	}
-	if err := setupCommandParams(addKeyCmd, params); err != nil {
+	if err := cli.SetupCommandParams(addKeyCmd, params); err != nil {
 		panic(err)
 	}
 	keyCmd.AddCommand(addKeyCmd)

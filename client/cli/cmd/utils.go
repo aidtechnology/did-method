@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
@@ -20,18 +18,11 @@ import (
 	"github.com/x-cray/logrus-prefixed-formatter"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/sha3"
-	"golang.org/x/crypto/ssh/terminal"
 	"google.golang.org/grpc"
 )
 
 // When reading contents from standard input a maximum of 4MB is expected
 const maxPipeInputSize = 4096
-
-// Helper method to securely read data from stdin
-func secureAsk(prompt string) ([]byte, error) {
-	fmt.Print(prompt)
-	return terminal.ReadPassword(0)
-}
 
 // Securely expand the provided secret material
 func expand(secret []byte, size int, info []byte) ([]byte, error) {
@@ -87,38 +78,6 @@ func getLogger() *log.Logger {
 	output.Formatter = formatter
 	output.SetLevel(log.DebugLevel)
 	return output
-}
-
-// Read contents passed in from standard input, if any
-func getPipedInput() ([]byte, error) {
-	var input []byte
-
-	// Fail to read stdin
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		return input, err
-	}
-
-	// No input passed in
-	if info.Mode()&os.ModeCharDevice != 0 {
-		return input, errors.New("no piped input")
-	}
-
-	// Read input
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		b, err := reader.ReadByte()
-		if err != nil && err == io.EOF {
-			break
-		}
-		input = append(input, b)
-		if len(input) == maxPipeInputSize {
-			break
-		}
-	}
-
-	// Return provided input
-	return input, nil
 }
 
 // Retrieve a DID instance from the network

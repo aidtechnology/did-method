@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
@@ -20,27 +21,27 @@ var addServiceCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "name",
-			usage:     "service's reference name",
-			flagKey:   "service-add.name",
-			byDefault: "external-service-#",
+			Name:      "name",
+			Usage:     "service's reference name",
+			FlagKey:   "service-add.name",
+			ByDefault: "external-service-#",
 		},
 		{
-			name:      "type",
-			usage:     "type identifier for the service handler",
-			flagKey:   "service-add.type",
-			byDefault: "identity.bryk.io.ExternalService",
+			Name:      "type",
+			Usage:     "type identifier for the service handler",
+			FlagKey:   "service-add.type",
+			ByDefault: "identity.bryk.io.ExternalService",
 		},
 		{
-			name:      "endpoint",
-			usage:     "main URL to access the service",
-			flagKey:   "service-add.endpoint",
-			byDefault: "",
+			Name:      "endpoint",
+			Usage:     "main URL to access the service",
+			FlagKey:   "service-add.endpoint",
+			ByDefault: "",
 		},
 	}
-	if err := setupCommandParams(addServiceCmd, params); err != nil {
+	if err := cli.SetupCommandParams(addServiceCmd, params); err != nil {
 		panic(err)
 	}
 	serviceCmd.AddCommand(addServiceCmd)

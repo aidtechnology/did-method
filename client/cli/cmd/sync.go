@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bryk-io/did-method/proto"
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	log "github.com/sirupsen/logrus"
@@ -24,21 +25,21 @@ var syncCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "key",
-			usage:     "cryptographic key to use for the sync operation",
-			flagKey:   "sync.key",
-			byDefault: "master",
+			Name:      "key",
+			Usage:     "cryptographic key to use for the sync operation",
+			FlagKey:   "sync.key",
+			ByDefault: "master",
 		},
 		{
-			name:      "deactivate",
-			usage:     "instruct the network agent to deactivate the identifier",
-			flagKey:   "sync.deactivate",
-			byDefault: false,
+			Name:      "deactivate",
+			Usage:     "instruct the network agent to deactivate the identifier",
+			FlagKey:   "sync.deactivate",
+			ByDefault: false,
 		},
 	}
-	if err := setupCommandParams(syncCmd, params); err != nil {
+	if err := cli.SetupCommandParams(syncCmd, params); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(syncCmd)

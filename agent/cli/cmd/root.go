@@ -3,11 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/signal"
 	"strings"
 	"syscall"
 
 	"github.com/bryk-io/did-method/agent"
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/net/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,21 +30,21 @@ func Execute() {
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "port",
-			usage:     "TCP port to use for the server",
-			flagKey:   "server.port",
-			byDefault: 9090,
+			Name:      "port",
+			Usage:     "TCP port to use for the server",
+			FlagKey:   "server.port",
+			ByDefault: 9090,
 		},
 		{
-			name:      "storage",
-			usage:     "specify the directory to use for data storage",
-			flagKey:   "server.storage",
-			byDefault: "/etc/bryk-did/agent",
+			Name:      "storage",
+			Usage:     "specify the directory to use for data storage",
+			FlagKey:   "server.storage",
+			ByDefault: "/etc/bryk-did/agent",
 		},
 	}
-	if err := setupCommandParams(rootCmd, params); err != nil {
+	if err := cli.SetupCommandParams(rootCmd, params); err != nil {
 		panic(err)
 	}
 }
@@ -74,25 +74,16 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	go server.Start()
 
 	handler.Log("waiting for incoming requests")
-	<-signalsHandler()
+	<-cli.SignalsHandler([]os.Signal{
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	})
 	handler.Log("preparing to exit")
 	err = handler.Close()
 	if !strings.Contains(err.Error(), "closed network connection") {
 		return err
 	}
 	return nil
-}
-
-// Custom OS signals handler
-func signalsHandler() chan os.Signal {
-	signalsCh := make(chan os.Signal, 1)
-	signalList := []os.Signal{
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT,
-		os.Interrupt}
-	signal.Reset(signalList...)
-	signal.Notify(signalsCh, signalList...)
-	return signalsCh
 }

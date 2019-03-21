@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,15 +21,15 @@ var verifyCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "input",
-			usage:     "original contents to run the verification against",
-			flagKey:   "verify.input",
-			byDefault: "",
+			Name:      "input",
+			Usage:     "original contents to run the verification against",
+			FlagKey:   "verify.input",
+			ByDefault: "",
 		},
 	}
-	if err := setupCommandParams(verifyCmd, params); err != nil {
+	if err := cli.SetupCommandParams(verifyCmd, params); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(verifyCmd)
@@ -43,7 +44,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	var input []byte
 	input = []byte(viper.GetString("verify.input"))
 	if len(input) == 0 {
-		input, _ = getPipedInput()
+		input, _ = cli.ReadPipedInput(maxPipeInputSize)
 	}
 	if len(input) == 0 {
 		return errors.New("no input passed in to verify")

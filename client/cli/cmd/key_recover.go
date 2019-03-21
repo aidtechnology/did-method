@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/crypto/shamir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,21 +22,21 @@ var recoverKeyCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "passphrase",
-			usage:     "use a passphrase to recover the key",
-			flagKey:   "key-recover.passphrase",
-			byDefault: false,
+			Name:      "passphrase",
+			Usage:     "use a passphrase to recover the key",
+			FlagKey:   "key-recover.passphrase",
+			ByDefault: false,
 		},
 		{
-			name:      "shared-secret",
-			usage:     "provide a comma separated list of share files",
-			flagKey:   "key-recover.shares",
-			byDefault: "",
+			Name:      "shared-secret",
+			Usage:     "provide a comma separated list of share files",
+			FlagKey:   "key-recover.shares",
+			ByDefault: "",
 		},
 	}
-	if err := setupCommandParams(recoverKeyCmd, params); err != nil {
+	if err := cli.SetupCommandParams(recoverKeyCmd, params); err != nil {
 		panic(err)
 	}
 	keyCmd.AddCommand(recoverKeyCmd)
@@ -71,11 +72,11 @@ func runRecoverKeyCmd(_ *cobra.Command, _ []string) error {
 func recoverSecret(pp bool, shareFile []string) ([]byte, error) {
 	// Use passphrase
 	if pp {
-		secret, err := secureAsk("\nEnter the passphrase used when creating the key: ")
+		secret, err := cli.ReadSecure("\nEnter the passphrase used when creating the key: ")
 		if err != nil {
 			return nil, err
 		}
-		confirmation, err := secureAsk("\nConfirm the provided value: ")
+		confirmation, err := cli.ReadSecure("\nConfirm the provided value: ")
 		if err != nil {
 			return nil, err
 		}

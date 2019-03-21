@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
@@ -20,27 +21,27 @@ var signCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cParam{
+	params := []cli.Param{
 		{
-			name:      "input",
-			usage:     "contents to sign, if longer than 32 bytes a SHA3-256 will be generated",
-			flagKey:   "sign.input",
-			byDefault: "",
+			Name:      "input",
+			Usage:     "contents to sign, if longer than 32 bytes a SHA3-256 will be generated",
+			FlagKey:   "sign.input",
+			ByDefault: "",
 		},
 		{
-			name:      "key",
-			usage:     "key to use to produce the signature",
-			flagKey:   "sign.key",
-			byDefault: "master",
+			Name:      "key",
+			Usage:     "key to use to produce the signature",
+			FlagKey:   "sign.key",
+			ByDefault: "master",
 		},
 		{
-			name:      "domain",
-			usage:     "domain value to use when producing LD signatures",
-			flagKey:   "sign.domain",
-			byDefault: didDomainValue,
+			Name:      "domain",
+			Usage:     "domain value to use when producing LD signatures",
+			FlagKey:   "sign.domain",
+			ByDefault: didDomainValue,
 		},
 	}
-	if err := setupCommandParams(signCmd, params); err != nil {
+	if err := cli.SetupCommandParams(signCmd, params); err != nil {
 		panic(err)
 	}
 	keyCmd.AddCommand(signCmd)
@@ -55,7 +56,7 @@ func runSignCmd(_ *cobra.Command, args []string) error {
 	var input []byte
 	input = []byte(viper.GetString("sign.input"))
 	if len(input) == 0 {
-		input, _ = getPipedInput()
+		input, _ = cli.ReadPipedInput(maxPipeInputSize)
 	}
 	if len(input) == 0 {
 		return errors.New("no input passed in to sign")

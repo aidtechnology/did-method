@@ -2,7 +2,7 @@ module github.com/bryk-io/did-method
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/bryk-io/x v0.0.0-20190315114651-a5e8ae39cd02
+	github.com/bryk-io/x v0.0.0-20190321181458-cb94ffbf19af
 	github.com/gogo/googleapis v1.1.0
 	github.com/gogo/protobuf v1.2.0
 	github.com/golang/protobuf v1.3.0
@@ -16,7 +16,7 @@ require (
 	github.com/onsi/gomega v1.4.3 // indirect
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/viper v1.3.1
+	github.com/spf13/viper v1.3.2
 	github.com/vmihailenco/msgpack v4.0.2+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613
