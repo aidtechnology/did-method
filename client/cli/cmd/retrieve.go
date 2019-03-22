@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bryk-io/did-method/resolver"
 	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
@@ -40,47 +41,32 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 		return errors.New("you must specify a DID to retrieve")
 	}
 
-	// Parse input
-	id, err := did.Parse(args[0])
-	if err != nil {
-		return fmt.Errorf("the provided value is not a valid DID: %s", args[0])
-	}
-
-	// Validate method
-	if id.Method() != "bryk" {
-		return errors.New("only 'bryk' identifiers are supported")
-	}
-
-	// Get network connection
-	ll := getLogger()
-	conn, err := getClientConnection(ll)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
 	// Retrieve subject
-	ll.Debug("retrieving record")
-	peer, err := retrieveSubject(id.Subject(), ll)
+	ll := getLogger()
+	ll.Info("retrieving record")
+	response, err := resolver.Get(args[0])
 	if err != nil {
 		return err
-	}
-
-	// Get JSON formatted peer document
-	js, err := json.MarshalIndent(peer.Document(), "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to decode DID records: %s", err)
 	}
 
 	// Verify DID Document
 	if viper.GetBool("retrieve.verify") {
 		ll.Info("verifying the received DID document")
+		doc := &did.Document{}
+		if err := json.Unmarshal(response, doc); err != nil {
+			return fmt.Errorf("failed to decode received document: %s", err)
+		}
+		peer, err := did.FromDocument(doc)
+		if err != nil {
+			return fmt.Errorf("failed to restore DID document: %s", err)
+		}
 		if err := peer.VerifyProof(nil); err != nil {
 			return err
 		}
 		ll.Info("integrity proof is valid")
 	}
 
-	fmt.Printf("%s\n", js)
+	// Print out received response
+	fmt.Printf("%s\n", response)
 	return nil
 }
