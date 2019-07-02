@@ -63,12 +63,8 @@ func (t *Ticket) Encode() ([]byte, error) {
 }
 
 // Solve the ticket challenge using the proof-of-work mechanism
-func (t *Ticket) Solve(ctx context.Context) (string, error) {
-	res, err := pow.Solve(ctx, t, sha3.New256(), ticketDifficultyLevel)
-	if err != nil {
-		return "", err
-	}
-	return <-res, nil
+func (t *Ticket) Solve(ctx context.Context) string {
+	return <-pow.Solve(ctx, t, sha3.New256(), ticketDifficultyLevel)
 }
 
 // Verify perform all the required validations to ensure the request ticket is
@@ -79,7 +75,7 @@ func (t *Ticket) Solve(ctx context.Context) (string, error) {
 // - Contents don’t include any private key, for security reasons no private keys should
 //   ever be published on the network
 // - Signature is valid
-func (t *Ticket) Verify(k *did.PublicKey) (err error) {
+func (t *Ticket) Verify(k *did.PublicKey) error {
 	// Challenge is valid
 	if !pow.Verify(t, sha3.New256(), ticketDifficultyLevel) {
 		return errors.New("invalid ticket challenge")
@@ -121,13 +117,15 @@ func (t *Ticket) Verify(k *did.PublicKey) (err error) {
 		return errors.New("failed to re-encode ticket instance")
 	}
 	digest := sha3.New256()
-	digest.Write(data)
+	if _, err = digest.Write(data); err != nil {
+		return err
+	}
 
 	// Verify signature
 	if !key.Verify(digest.Sum(nil), t.Signature) {
 		return errors.New("invalid ticket signature")
 	}
-	return
+	return nil
 }
 
 // LoadDID restore the DID instance from the ticket contents

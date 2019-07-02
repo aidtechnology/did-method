@@ -56,7 +56,9 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Retrieve identifier
 	name := sanitize.Name(args[0])
@@ -100,7 +102,9 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to establish connection: %s", err)
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Build request
 	req := &proto.Request{
@@ -135,17 +139,14 @@ func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*pro
 	ll.Info("generating request ticket")
 	ticket := proto.NewTicket(contents, key.ID)
 	start := time.Now()
-	challenge, err := ticket.Solve(context.TODO())
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
-	}
+	challenge := ticket.Solve(context.TODO())
 	ll.Debugf("ticket obtained: %s", challenge)
 	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
 	ch, _ := hex.DecodeString(challenge)
 
 	// Sign ticket
-	ticket.Signature, err = key.Sign(ch)
-	if err != nil {
+	var err error
+	if ticket.Signature, err = key.Sign(ch); err != nil {
 		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
 	}
 

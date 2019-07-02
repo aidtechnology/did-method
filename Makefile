@@ -1,8 +1,7 @@
+.PHONY: proto
 .DEFAULT_GOAL := help
-FILES_LIST=`find . -iname '*.go' | grep -v 'vendor'`
-GO_PKG_LIST=`go list ./... | grep -v 'vendor'`
 BINARY_NAME=bryk-did
-VERSION_TAG=0.1.0
+VERSION_TAG=0.1.1
 
 # Custom compilation tags
 LD_FLAGS="\
@@ -13,19 +12,12 @@ LD_FLAGS="\
 
 test: ## Run all tests excluding the vendor dependencies
 	# Formatting
-	go vet $(GO_PKG_LIST)
-	gofmt -s -w $(FILES_LIST)
-	golint -set_exit_status $(GO_PKG_LIST)
-	misspell $(FILES_LIST)
-
 	# Static analysis
-	ineffassign $(FILES_LIST)
-	GO111MODULE=off gosec ./...
-	gocyclo -over 15 `find . -iname '*.go' | grep -v 'vendor' | grep -v '_test.go' | grep -v 'pb.go' | grep -v 'pb.gw.go'`
+	golangci-lint run ./...
 	go-consistent -v ./...
 
 	# Unit tests
-	go test -race -cover -v $(GO_PKG_LIST)
+	go test -race -cover -v -failfast ./...
 
 build: ## Build for the current architecture in use, intended for devevelopment
 	go build -v -ldflags $(LD_FLAGS) -o $(BINARY_NAME) github.com/bryk-io/did-method/client/cli
@@ -57,7 +49,6 @@ clean: ## Download and compile all dependencies and intermediary products
 	go mod tidy
 	go mod verify
 
-.PHONY: proto
 proto: ## Compile protocol buffers and RPC services
 	prototool lint
 	prototool generate

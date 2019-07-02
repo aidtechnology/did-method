@@ -41,8 +41,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get input, CLI takes precedence, from standard input otherwise
-	var input []byte
-	input = []byte(viper.GetString("verify.input"))
+	input := []byte(viper.GetString("verify.input"))
 	if len(input) == 0 {
 		input, _ = cli.ReadPipedInput(maxPipeInputSize)
 	}
@@ -51,7 +50,9 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	}
 	if len(input) > 32 {
 		digest := sha3.New256()
-		digest.Write(input)
+		if _, err := digest.Write(input); err != nil {
+			return err
+		}
 		input = digest.Sum(nil)
 	}
 

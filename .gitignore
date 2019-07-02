@@ -22,3 +22,6 @@ vendor/**
 # Build
 bryk-did
 bryk-did-*
+
+# Default agent data store
+data

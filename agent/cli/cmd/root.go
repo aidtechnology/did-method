@@ -67,12 +67,19 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		Port:         port,
 		EmitDefaults: false,
 	}))
+
+	// Start server and wait for it to be ready
 	server, err := handler.GetServer(opts...)
 	if err != nil {
 		return fmt.Errorf("failed to start node: %s", err)
 	}
-	go server.Start()
+	ready := make(chan bool)
+	go func() {
+		_ = server.Start(ready)
+	}()
+	<-ready
 
+	// Wait for system signals
 	handler.Log("waiting for incoming requests")
 	<-cli.SignalsHandler([]os.Signal{
 		syscall.SIGHUP,
@@ -82,7 +89,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	})
 	handler.Log("preparing to exit")
 	err = handler.Close()
-	if !strings.Contains(err.Error(), "closed network connection") {
+	if err != nil && !strings.Contains(err.Error(), "closed network connection") {
 		return err
 	}
 	return nil

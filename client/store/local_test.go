@@ -14,13 +14,21 @@ func TestLocalStore(t *testing.T) {
 	if err != nil {
 		t.Fatal("failed to create local store:", err)
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Sample entry
 	id, _ := did.NewIdentifierWithMode("bryk", "", did.ModeUUID)
-	id.AddNewKey("master", did.KeyTypeEd, did.EncodingHex)
-	id.AddAuthenticationKey("master")
-	id.AddProof("master", "sample.acme.com")
+	if err := id.AddNewKey("master", did.KeyTypeEd, did.EncodingHex); err != nil {
+		t.Error(err)
+	}
+	if err := id.AddAuthenticationKey("master"); err != nil {
+		t.Error(err)
+	}
+	if err := id.AddProof("master", "sample.acme.com"); err != nil {
+		t.Error(err)
+	}
 	contents, _ := id.Encode()
 	entry := &Entry{
 		Name:     id.Subject(),
@@ -52,8 +60,12 @@ func TestLocalStore(t *testing.T) {
 	}
 
 	// Update
-	id.AddNewKey("iadb-provider", did.KeyTypeEd, did.EncodingHex)
-	id.AddProof("master", "sample.acme.com")
+	if err := id.AddNewKey("iadb-provider", did.KeyTypeEd, did.EncodingHex); err != nil {
+		t.Error(err)
+	}
+	if err := id.AddProof("master", "sample.acme.com"); err != nil {
+		t.Error(err)
+	}
 	newContents, _ := id.Encode()
 	if err = st.Update("invalid-entry", newContents); err == nil {
 		t.Fatal("failed to catch invalid entry to update")

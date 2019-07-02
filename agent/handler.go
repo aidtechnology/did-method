@@ -70,10 +70,13 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 
 // Process an incoming request ticket
 func (h *Handler) Process(req *proto.Request) error {
+	// Validate ticket
 	if err := req.Ticket.Verify(nil); err != nil {
 		h.output.WithField("error", err.Error()).Error("invalid ticket")
 		return err
 	}
+
+	// Load DID document
 	id, err := req.Ticket.LoadDID()
 	if err != nil {
 		h.output.WithField("error", err.Error()).Error("invalid DID contents")
@@ -120,19 +123,22 @@ func (h *Handler) GetServer(opts ...rpc.ServerOption) (*rpc.Server, error) {
 	}
 
 	// Add RPC service handler
-	opts = append(opts, rpc.WithService(func(s *grpc.Server) {
-		proto.RegisterAgentServer(s, &rpcHandler{handler: h})
-	}, proto.RegisterAgentHandlerFromEndpoint))
+	opts = append(opts, rpc.WithService(&rpc.Service{
+		GatewaySetup: proto.RegisterAgentHandlerFromEndpoint,
+		Setup: func(s *grpc.Server) {
+			proto.RegisterAgentServer(s, &rpcHandler{handler: h})
+		},
+	}))
+
+	// Custom HTTP handler method for data retrieval, the response should be the JSON-LD encoded
+	// document of the requested DID instance
+	opts = append(opts, rpc.WithHandlerFunc("/v1/retrieve", h.queryHTTP))
 
 	// Create server instance
 	srv, err := rpc.NewServer(opts...)
 	if err != nil {
 		return nil, err
 	}
-
-	// Custom HTTP handler method for data retrieval, the response should be the JSON-LD encoded
-	// document of the requested DID instance
-	srv.HandleFunc("/v1/retrieve", h.queryHTTP)
 
 	h.server = srv
 	return h.server, nil
@@ -162,7 +168,7 @@ func (h *Handler) queryHTTP(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		writer.WriteHeader(400)
 		eh["error"] = err.Error()
-		json.NewEncoder(writer).Encode(eh)
+		_ = json.NewEncoder(writer).Encode(eh)
 		return
 	}
 
@@ -171,14 +177,13 @@ func (h *Handler) queryHTTP(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		writer.WriteHeader(400)
 		eh["error"] = err.Error()
-		json.NewEncoder(writer).Encode(eh)
+		_ = json.NewEncoder(writer).Encode(eh)
 		return
 	}
 
 	// Send response
 	writer.WriteHeader(200)
-	fmt.Fprintf(writer, "%s", output)
-	return
+	_, _ = fmt.Fprintf(writer, "%s", output)
 }
 
 // Verify the provided path exists and is a directory
