@@ -26,7 +26,7 @@ Alternatively you can directly download the binary from the
 [published releases](https://github.com/bryk-io/did-method/releases). 
 
 Team members.
-- Ben Cessa / [ben@aid.techonology](mailto:ben@aid.techonology)
+- Ben Cessa / [ben@aid.technology](mailto:ben@aid.technology)
 - Niall Dennehy / [niall@aid.technology](mailto:niall@aid.technology)
 
 Collaborators.
