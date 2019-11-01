@@ -13,20 +13,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-var rootCmd = &cobra.Command{
-	Use:           "bryk-did-agent",
+var agentCmd = &cobra.Command{
+	Use:           "agent",
 	Short:         "Starts a new network agent supporting the DID method requirements",
-	SilenceErrors: true,
-	SilenceUsage:  true,
+	Example:       "didctl agent --storage /var/run/didctl --port 8080",
+	Aliases:       []string{"server", "node"},
 	RunE:          runMethodServer,
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }
 
 func init() {
@@ -41,12 +33,13 @@ func init() {
 			Name:      "storage",
 			Usage:     "specify the directory to use for data storage",
 			FlagKey:   "server.storage",
-			ByDefault: "/etc/bryk-did/agent",
+			ByDefault: "/etc/didctl/agent",
 		},
 	}
-	if err := cli.SetupCommandParams(rootCmd, params); err != nil {
+	if err := cli.SetupCommandParams(agentCmd, params); err != nil {
 		panic(err)
 	}
+	rootCmd.AddCommand(agentCmd)
 }
 
 func runMethodServer(_ *cobra.Command, _ []string) error {

@@ -27,3 +27,5 @@ replace (
 	github.com/dgraph-io/badger v1.5.5 => github.com/bryk-io/badger v1.5.5
 	github.com/grpc-ecosystem/go-grpc-middleware => github.com/bryk-io/go-grpc-middleware v1.0.1-0.20190615102816-71cc94c54bbc
 )
+
+go 1.13

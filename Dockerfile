@@ -4,10 +4,11 @@ ARG VERSION_TAG
 LABEL maintainer="Ben Cessa <ben@bryk.io>"
 LABEL version=${VERSION_TAG}
 
-COPY bryk-did-agent_${VERSION_TAG}_linux_amd64 /usr/bin/agent
-COPY bryk-did_${VERSION_TAG}_linux_amd64 /usr/bin/client
+COPY didctl_${VERSION_TAG}_linux_amd64 /usr/bin/didctl
 COPY ca-roots.crt /etc/ssl/certs/ca-roots.crt
 
-VOLUME ["/tmp", "/etc/bryk-did", "/etc/bryk-did/agent"]
+VOLUME ["/tmp", "/etc/didctl", "/etc/didctl/agent"]
 
 EXPOSE 9090/tcp
+
+ENTRYPOINT ["/usr/bin/didctl"]

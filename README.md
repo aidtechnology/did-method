@@ -18,8 +18,8 @@ CLI client and network agent. You can easily install the client application loca
 using the provided install script.
 
 ```bash
-# To install v0.1.0
-curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -d v0.1.0
+# To install v0.2.0
+curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -d v0.2.0
 ```
 
 Alternatively you can directly download the binary from the
@@ -491,7 +491,7 @@ instances.
 To locally create a new DID instance.
 
 ```
-bryk-did create [reference name]
+didctl create [reference name]
 ```
 
 The value provided for `reference name` is an easy-to-remember alias you choose for
@@ -509,13 +509,13 @@ for more information inspect the options available for the `create` command.
 Creates a new DID locally
 
 Usage:
-  bryk-did register [flags]
+  didctl register [flags]
 
 Aliases:
   register, create, new
 
 Examples:
-bryk-did register [DID reference name]
+didctl register [DID reference name]
 
 Flags:
   -h, --help                    help for register
@@ -529,7 +529,7 @@ Flags:
 You can retrieve a list of all your existing identifiers using the following command.
 
 ```
-bryk-did list
+didctl list
 ```
 
 The output produced will be something like this.
@@ -543,7 +543,7 @@ sample            secret-sharing    did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0
 To inspect the DID Document of any of your local identifiers.
 
 ```
-bryk-did did info [reference name]
+didctl did info [reference name]
 ```
 
 The generated document will be something similar for the following example.
@@ -588,7 +588,7 @@ the `get` command. To run a verification of the cryptographic integrity proof
 contained in the document you can add the `--verify` option.
 
 ```
-bryk-did get --verify did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
+didctl get --verify did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56
 ```
 
 The command will perform the required network operations and verifications.
@@ -644,7 +644,7 @@ Whenever you wish to make one of your identifiers, in its current state, accessi
 to the world, you can publish it to the network.
 
 ```
-bryk-did sync sample
+didctl sync sample
 ```
 
 The CLI tool will generate the __Request Ticket__, submit the write operation for
@@ -674,7 +674,7 @@ published identifiers you may submit a __deactivation__ request by adding the
 `--deactivate` option to the sync command.
 
 ```
-bryk-did sync sample --deactivate
+didctl sync sample --deactivate
 ```
 
 __No information is destroyed or lost with this operations__, the identifier and all
@@ -696,7 +696,7 @@ etc.
 Manage cryptographic keys associated with the DID
 
 Usage:
-  bryk-did did key [command]
+  didctl did key [command]
 
 Available Commands:
   add         Add a new cryptographic key for the DID
@@ -708,10 +708,10 @@ Flags:
   -h, --help   help for key
 
 Global Flags:
-      --config string   config file ($HOME/.bryk-did/config.yaml)
-      --home string     home directory ($HOME/.bryk-did)
+      --config string   config file ($HOME/.didctl/config.yaml)
+      --home string     home directory ($HOME/.didctl)
 
-Use "bryk-did did key [command] --help" for more information about a command.
+Use "didctl did key [command] --help" for more information about a command.
 ```
 
 To add a new cryptographic key to one of your identifiers you can use the `did key add`
@@ -721,10 +721,10 @@ command.
 Add a new cryptographic key for the DID
 
 Usage:
-  bryk-did did key add [flags]
+  didctl did key add [flags]
 
 Examples:
-bryk-did did key add [DID reference name] --name my-new-key --type ed --authentication
+didctl did key add [DID reference name] --name my-new-key --type ed --authentication
 
 Flags:
       --authentication   enable this key for authentication purposes
@@ -759,7 +759,7 @@ Signatures](https://w3c-dvcg.github.io/ld-signatures/). For example, to create a
 signature document from an existing file you can run the following command.
 
 ```
-cat file_to_sign | bryk-did did key sign dev
+cat file_to_sign | didctl did key sign dev
 ```
 
 The output produced will be a valid JSON-LD document containing the signature details.
@@ -782,7 +782,7 @@ You can save and share the produced JSON output. Other users will be able to ver
 integrity and authenticity of the signature using the `verify` command.
 
 ```
-cat file_to_sign | bryk-did verify signature.json
+cat file_to_sign | didctl verify signature.json
 ```
 
 The CLI will inspect the signature file, retrieve the DID Document for the creator
@@ -810,7 +810,7 @@ the CLI client you can manage the services enabled for any of your identifiers.
 Manage services enabled for the identifier
 
 Usage:
-  bryk-did did service [command]
+  didctl did service [command]
 
 Available Commands:
   add         Register a new service entry for the DID
@@ -820,10 +820,10 @@ Flags:
   -h, --help   help for service
 
 Global Flags:
-      --config string   config file ($HOME/.bryk-did/config.yaml)
-      --home string     home directory ($HOME/.bryk-did)
+      --config string   config file ($HOME/.didctl/config.yaml)
+      --home string     home directory ($HOME/.didctl)
 
-Use "bryk-did did service [command] --help" for more information about a command.
+Use "didctl did service [command] --help" for more information about a command.
 ```
 
 To add a new service you can use the `did service add` command.
@@ -832,10 +832,10 @@ To add a new service you can use the `did service add` command.
 Register a new service entry for the DID
 
 Usage:
-  bryk-did did service add [flags]
+  didctl did service add [flags]
 
 Examples:
-bryk-did did service add [DID reference name] --name "service name" --endpoint https://www.agency.com/user_id
+didctl did service add [DID reference name] --name "service name" --endpoint https://www.agency.com/user_id
 
 Flags:
       --endpoint string   main URL to access the service

@@ -21,7 +21,7 @@ import (
 var registerCmd = &cobra.Command{
 	Use:     "register",
 	Short:   "Creates a new DID locally",
-	Example: "bryk-did register [DID reference name]",
+	Example: "didctl register [DID reference name]",
 	Aliases: []string{"create", "new"},
 	RunE:    runRegisterCmd,
 }
@@ -65,7 +65,9 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Check for duplicates
 	if st.Get(name) != nil {

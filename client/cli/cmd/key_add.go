@@ -15,7 +15,7 @@ import (
 var addKeyCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Add a new cryptographic key for the DID",
-	Example: "bryk-did did key add [DID reference name] --name my-new-key --type ed --authentication",
+	Example: "didctl did key add [DID reference name] --name my-new-key --type ed --authentication",
 	RunE:    runAddKeyCmd,
 }
 
@@ -57,7 +57,9 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Get identifier
 	name := sanitize.Name(args[0])

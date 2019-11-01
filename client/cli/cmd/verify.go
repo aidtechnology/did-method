@@ -16,7 +16,7 @@ import (
 var verifyCmd = &cobra.Command{
 	Use:     "verify",
 	Short:   "Check the validity of a SignatureLD document",
-	Example: "bryk-id verify [signature file] --input \"contents to verify\"",
+	Example: "didctl verify [signature file] --input \"contents to verify\"",
 	RunE:    runVerifyCmd,
 }
 

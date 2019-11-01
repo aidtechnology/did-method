@@ -16,7 +16,7 @@ import (
 var addServiceCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Register a new service entry for the DID",
-	Example: "bryk-did did service add [DID reference name] --name \"service name\" --endpoint https://www.agency.com/user_id",
+	Example: "didctl did service add [DID reference name] --name \"service name\" --endpoint https://www.agency.com/user_id",
 	RunE:    runAddServiceCmd,
 }
 
@@ -60,7 +60,9 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Get identifier
 	ll := getLogger()

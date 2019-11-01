@@ -19,11 +19,11 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:           "bryk-did",
+	Use:           "didctl",
 	Short:         "Bryk DID Method: Client",
 	SilenceErrors: true,
 	SilenceUsage:  true,
-	Long: `Bryk DID Method: Client
+	Long: `DID Controller
 
 Reference client implementation for the "bryk" DID method. The platform allows
 entities to fully manage Decentralized Identifiers as described on the version
@@ -44,8 +44,8 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.bryk-did/config.yaml)")
-	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.bryk-did)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.didctl/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.didctl)")
 	if err := viper.BindPFlag("home", rootCmd.PersistentFlags().Lookup("home")); err != nil {
 		panic(err)
 	}
@@ -67,13 +67,13 @@ func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		homeDir = path.Join(home, ".bryk-did")
+		homeDir = path.Join(home, ".didctl")
 		viper.AddConfigPath(homeDir)
 		viper.SetConfigName("config")
 	}
 
 	// ENV
-	viper.SetEnvPrefix("bryk-did")
+	viper.SetEnvPrefix("didctl")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()

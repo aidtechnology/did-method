@@ -15,7 +15,7 @@ import (
 var retrieveCmd = &cobra.Command{
 	Use:     "retrieve",
 	Short:   "Retrieve the DID document of an existing identifier",
-	Example: "bryk-did retrieve --verify [existing DID]",
+	Example: "didctl retrieve --verify [existing DID]",
 	Aliases: []string{"get", "resolve"},
 	RunE:    runRetrieveCmd,
 }

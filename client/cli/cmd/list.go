@@ -12,7 +12,7 @@ import (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List registered DIDs",
-	Example: "bryk-did list",
+	Example: "didctl list",
 	RunE:    runListCmd,
 }
 
@@ -26,7 +26,9 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Get list of entries
 	list := st.List()

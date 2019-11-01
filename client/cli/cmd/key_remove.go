@@ -12,7 +12,7 @@ import (
 var removeKeyCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing cryptographic key for the DID",
-	Example: "bryk-did did key remove [DID reference name] [key name]",
+	Example: "didctl did key remove [DID reference name] [key name]",
 	RunE:    runRemoveKeyCmd,
 }
 
@@ -31,7 +31,9 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Get identifier
 	name := sanitize.Name(args[0])

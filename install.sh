@@ -260,7 +260,7 @@ End of functions from https://github.com/client9/shlib
 EOF
 
 # Configuration variables
-BINARY=bryk-did
+BINARY=didctl
 OWNER=bryk-io
 REPO="did-method"
 OS=$(uname_os)

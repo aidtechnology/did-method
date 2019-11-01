@@ -16,7 +16,7 @@ import (
 var signCmd = &cobra.Command{
 	Use:     "sign",
 	Short:   "Produce a linked digital signature",
-	Example: "bryk-did did sign [DID reference name] --input \"contents to sign\"",
+	Example: "didctl did sign [DID reference name] --input \"contents to sign\"",
 	RunE:    runSignCmd,
 }
 

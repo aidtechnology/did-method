@@ -17,7 +17,7 @@ import (
 var recoverKeyCmd = &cobra.Command{
 	Use:     "recover",
 	Short:   "Recover a previously generated Ed25519 cryptographic key",
-	Example: "bryk-did did key recover --passphrase",
+	Example: "didctl did key recover --passphrase",
 	RunE:    runRecoverKeyCmd,
 }
 

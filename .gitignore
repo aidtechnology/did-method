@@ -6,6 +6,9 @@
 # Deps
 vendor/**
 
+# Build releases
+release-*/**
+
 # PKI
 *.bin
 *.crt
@@ -22,6 +25,8 @@ vendor/**
 # Build
 bryk-did
 bryk-did-*
+didctl
+didctl-*
 
 # Default agent data store
 data

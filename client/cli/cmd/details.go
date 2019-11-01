@@ -13,7 +13,7 @@ import (
 var didDetailsCmd = &cobra.Command{
 	Use:     "details",
 	Short:   "Display the current information available on an existing DID",
-	Example: "bryk-did did details [DID reference name]",
+	Example: "didctl did details [DID reference name]",
 	Aliases: []string{"info"},
 	RunE:    runDidDetailsCmd,
 }
@@ -32,7 +32,9 @@ func runDidDetailsCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Retrieve identifier
 	name := sanitize.Name(args[0])

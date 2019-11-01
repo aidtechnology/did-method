@@ -12,7 +12,7 @@ import (
 var removeServiceCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing service entry for the DID",
-	Example: "bryk-did did service remove [DID reference name] [service name]",
+	Example: "didctl did service remove [DID reference name] [service name]",
 	RunE:    runRemoveServiceCmd,
 }
 
@@ -30,7 +30,9 @@ func runRemoveServiceCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer func() {
+		_ = st.Close()
+	}()
 
 	// Get identifier
 	ll := getLogger()

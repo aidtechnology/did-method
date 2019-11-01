@@ -11,7 +11,7 @@ import (
 var deleteCmd = &cobra.Command{
 	Use:     "delete",
 	Short:   "Permanently delete a local identifier",
-	Example: "bryk-did sync [DID reference name]",
+	Example: "didctl delete [DID reference name]",
 	Aliases: []string{"rm", "remove"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -24,7 +24,9 @@ var deleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer st.Close()
+		defer func() {
+			_ = st.Close()
+		}()
 
 		// Delete identifier
 		name := sanitize.Name(args[0])
