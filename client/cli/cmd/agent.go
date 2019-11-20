@@ -35,6 +35,12 @@ func init() {
 			FlagKey:   "server.storage",
 			ByDefault: "/etc/didctl/agent",
 		},
+		{
+			Name:      "pow",
+			Usage:     "set the required request ticket difficulty level",
+			FlagKey:   "server.pow",
+			ByDefault: 24,
+		},
 	}
 	if err := cli.SetupCommandParams(agentCmd, params); err != nil {
 		panic(err)
@@ -45,7 +51,7 @@ func init() {
 func runMethodServer(_ *cobra.Command, _ []string) error {
 	port := viper.GetInt("server.port")
 	storage := viper.GetString("server.storage")
-	handler, err := agent.NewHandler(storage)
+	handler, err := agent.NewHandler(storage, uint(viper.GetInt("server.pow")))
 	if err != nil {
 		return fmt.Errorf("failed to start method handler: %s", err)
 	}
@@ -54,6 +60,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	handler.Log(fmt.Sprintf("TCP port: %d", port))
 	handler.Log(fmt.Sprintf("storage directory: %s", storage))
 	var opts []rpc.ServerOption
+	opts = append(opts, rpc.WithPanicRecovery())
 	opts = append(opts, rpc.WithPort(port))
 	opts = append(opts, rpc.WithNetworkInterface(rpc.NetworkInterfaceAll))
 	opts = append(opts, rpc.WithHTTPGateway(rpc.HTTPGatewayOptions{

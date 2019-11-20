@@ -41,32 +41,52 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 		return errors.New("you must specify a DID to retrieve")
 	}
 
-	// Retrieve subject
-	ll := getLogger()
-	ll.Info("retrieving record")
-	response, err := resolver.Get(args[0])
+	// Verify the provided value is a valid DID string
+	id, err := did.Parse(args[0])
 	if err != nil {
 		return err
 	}
 
-	// Verify DID Document
-	if viper.GetBool("retrieve.verify") {
-		ll.Info("verifying the received DID document")
+	// Retrieve subject
+	var sid *did.Identifier
+	ll := getLogger()
+	ll.Info("retrieving record")
+
+	if id.Method() == "bryk" {
+		// Use RPC client
+		sid, err = retrieveSubject(id.Subject(), ll)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Use global resolver
+		response, err := resolver.Get(args[0])
+		if err != nil {
+			return err
+		}
 		doc := &did.Document{}
 		if err := json.Unmarshal(response, doc); err != nil {
 			return fmt.Errorf("failed to decode received document: %s", err)
 		}
-		peer, err := did.FromDocument(doc)
+		sid, err = did.FromDocument(doc)
 		if err != nil {
-			return fmt.Errorf("failed to restore DID document: %s", err)
+			return err
 		}
-		if err := peer.VerifyProof(nil); err != nil {
+	}
+
+	// Verify DID Document
+	if viper.GetBool("retrieve.verify") {
+		if err := sid.VerifyProof(nil); err != nil {
 			return err
 		}
 		ll.Info("integrity proof is valid")
 	}
 
 	// Print out received response
-	fmt.Printf("%s\n", response)
+	output, err := json.MarshalIndent(sid.Document(), "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s\n", output)
 	return nil
 }

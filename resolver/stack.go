@@ -30,7 +30,9 @@ func (sr *stackResolver) Resolve(value string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	// Return response
 	return ioutil.ReadAll(res.Body)

@@ -38,6 +38,12 @@ func init() {
 			FlagKey:   "sync.deactivate",
 			ByDefault: false,
 		},
+		{
+			Name:      "pow",
+			Usage:     "set the required request ticket difficulty level",
+			FlagKey:   "sync.pow",
+			ByDefault: 24,
+		},
 	}
 	if err := cli.SetupCommandParams(syncCmd, params); err != nil {
 		panic(err)
@@ -137,9 +143,10 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 
 func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*proto.Ticket, error) {
 	ll.Info("generating request ticket")
+	diff := uint(viper.GetInt("sync.pow"))
 	ticket := proto.NewTicket(contents, key.ID)
 	start := time.Now()
-	challenge := ticket.Solve(context.TODO())
+	challenge := ticket.Solve(context.TODO(), diff)
 	ll.Debugf("ticket obtained: %s", challenge)
 	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
 	ch, _ := hex.DecodeString(challenge)
@@ -151,7 +158,7 @@ func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*pro
 	}
 
 	// Verify on client's side
-	if err = ticket.Verify(nil); err != nil {
+	if err = ticket.Verify(nil, diff); err != nil {
 		return nil, fmt.Errorf("failed to verify ticket: %s", err)
 	}
 

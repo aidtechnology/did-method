@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-const ticketDifficultyLevel = 24
+const defaultTicketDifficultyLevel = 24
 
 // NewTicket returns a properly initialized new ticket instance
 func NewTicket(contents []byte, keyID string) *Ticket {
@@ -62,9 +62,22 @@ func (t *Ticket) Encode() ([]byte, error) {
 	return append(tc, t.Content...), nil
 }
 
+// LoadDID restore the DID instance from the ticket contents
+func (t *Ticket) LoadDID() (*did.Identifier, error) {
+	doc := &did.Document{}
+	if err := doc.Decode(t.Content); err != nil {
+		return nil, errors.New("invalid ticket contents")
+	}
+	return did.FromDocument(doc)
+}
+
+
 // Solve the ticket challenge using the proof-of-work mechanism
-func (t *Ticket) Solve(ctx context.Context) string {
-	return <-pow.Solve(ctx, t, sha3.New256(), ticketDifficultyLevel)
+func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
+	if difficulty == 0 {
+		difficulty = defaultTicketDifficultyLevel
+	}
+	return <-pow.Solve(ctx, t, sha3.New256(), difficulty)
 }
 
 // Verify perform all the required validations to ensure the request ticket is
@@ -75,9 +88,12 @@ func (t *Ticket) Solve(ctx context.Context) string {
 // - Contents don’t include any private key, for security reasons no private keys should
 //   ever be published on the network
 // - Signature is valid
-func (t *Ticket) Verify(k *did.PublicKey) error {
+func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 	// Challenge is valid
-	if !pow.Verify(t, sha3.New256(), ticketDifficultyLevel) {
+	if difficulty == 0 {
+		difficulty = defaultTicketDifficultyLevel
+	}
+	if !pow.Verify(t, sha3.New256(), difficulty) {
 		return errors.New("invalid ticket challenge")
 	}
 
@@ -126,13 +142,4 @@ func (t *Ticket) Verify(k *did.PublicKey) error {
 		return errors.New("invalid ticket signature")
 	}
 	return nil
-}
-
-// LoadDID restore the DID instance from the ticket contents
-func (t *Ticket) LoadDID() (*did.Identifier, error) {
-	doc := &did.Document{}
-	if err := doc.Decode(t.Content); err != nil {
-		return nil, errors.New("invalid ticket contents")
-	}
-	return did.FromDocument(doc)
 }

@@ -39,7 +39,9 @@ func (br *brykResolver) Resolve(value string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Retrieve element
 	client := proto.NewAgentClient(conn)

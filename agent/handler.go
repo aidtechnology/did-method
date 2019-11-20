@@ -21,13 +21,14 @@ import (
 
 // Handler provides the required functionality for the DID method
 type Handler struct {
-	db     *kv.Store
-	server *rpc.Server
-	output *log.Logger
+	db         *kv.Store
+	server     *rpc.Server
+	output     *log.Logger
+	difficulty uint
 }
 
 // NewHandler starts a new DID method handler instance
-func NewHandler(home string) (*Handler, error) {
+func NewHandler(home string, difficulty uint) (*Handler, error) {
 	h := filepath.Clean(home)
 	if !dirExist(h) {
 		if err := os.Mkdir(h, 0700); err != nil {
@@ -39,8 +40,9 @@ func NewHandler(home string) (*Handler, error) {
 		return nil, err
 	}
 	return &Handler{
-		db:     db,
-		output: getLogger(),
+		db:         db,
+		output:     getLogger(),
+		difficulty: difficulty,
 	}, nil
 }
 
@@ -70,8 +72,13 @@ func (h *Handler) Retrieve(subject string) (*did.Identifier, error) {
 
 // Process an incoming request ticket
 func (h *Handler) Process(req *proto.Request) error {
+	// Empty request
+	if req == nil {
+		return errors.New("empty request")
+	}
+
 	// Validate ticket
-	if err := req.Ticket.Verify(nil); err != nil {
+	if err := req.Ticket.Verify(nil, h.difficulty); err != nil {
 		h.output.WithField("error", err.Error()).Error("invalid ticket")
 		return err
 	}
@@ -90,7 +97,7 @@ func (h *Handler) Process(req *proto.Request) error {
 		if err != nil {
 			return fmt.Errorf("failed to recover original record for update: %s", err)
 		}
-		if err := req.Ticket.Verify(orig.Key(req.Ticket.KeyId)); err != nil {
+		if err := req.Ticket.Verify(orig.Key(req.Ticket.KeyId), h.difficulty); err != nil {
 			h.output.WithField("error", err.Error()).Error("invalid ticket")
 			return err
 		}

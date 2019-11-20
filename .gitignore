@@ -8,6 +8,7 @@ vendor/**
 
 # Build releases
 release-*/**
+*.tgz
 
 # PKI
 *.bin
@@ -23,10 +24,10 @@ release-*/**
 *.swagger.json
 
 # Build
-bryk-did
-bryk-did-*
-didctl
-didctl-*
+/bryk-did
+/bryk-did-*
+/didctl
+/didctl-*
 
 # Default agent data store
 data
