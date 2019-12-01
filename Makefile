@@ -1,7 +1,8 @@
 .PHONY: proto
 .DEFAULT_GOAL := help
 BINARY_NAME=didctl
-VERSION_TAG=0.2.0
+DOCKER_IMAGE=didctl
+VERSION_TAG=0.3.0
 
 # Custom compilation tags
 LD_FLAGS="\
@@ -13,6 +14,7 @@ LD_FLAGS="\
 test: ## Run all tests excluding the vendor dependencies
 	# Formatting
 	# Static analysis
+	helm lint helm/*
 	golangci-lint run ./...
 	go-consistent -v ./...
 
@@ -42,9 +44,15 @@ clean: ## Download and compile all dependencies and intermediary products
 	go mod tidy
 	go mod verify
 
+updates: ## List available updates for direct dependencies
+	# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
+	go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
+
 proto: ## Compile protocol buffers and RPC services
-	prototool lint
-	prototool generate
+	docker run --rm -t -v `pwd`:/work proto-builder:1.9.0 prototool lint proto
+	docker run --rm -t -v `pwd`:/work proto-builder:1.9.0 prototool format -w -f proto
+	docker run --rm -t -v `pwd`:/work proto-builder:1.9.0 prototool generate
+	docker run --rm -t -v `pwd`:/work proto-builder:1.9.0 prototool descriptor-set --include-imports --include-source-info -o proto/descriptor.bin proto
 
 	# Fix gRPC-Gateway generated code
     # https://github.com/grpc-ecosystem/grpc-gateway/issues/229
@@ -62,8 +70,8 @@ docker: ## Build docker image
 	@-rm $(BINARY_NAME)_$(VERSION_TAG)_linux_amd64 ca-roots.crt
 	@make ca-roots
 	@make build-for os=linux arch=amd64
-	@-docker rmi $(BINARY_NAME):$(VERSION_TAG)
-	@docker build --build-arg VERSION_TAG="$(VERSION_TAG)" --rm -t $(BINARY_NAME):$(VERSION_TAG) .
+	@-docker rmi $(DOCKER_IMAGE):$(VERSION_TAG)
+	@docker build --build-arg VERSION_TAG="$(VERSION_TAG)" --rm -t $(DOCKER_IMAGE):$(VERSION_TAG) .
 	@-rm $(BINARY_NAME)_$(VERSION_TAG)_linux_amd64 ca-roots.crt
 
 help: ## Display available make targets

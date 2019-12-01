@@ -3,13 +3,13 @@ package cmd
 import (
 	"context"
 	"crypto/sha256"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
-	"github.com/bryk-io/did-method/proto"
+	didpb "github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/crypto/ed25519"
 	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
@@ -37,13 +37,13 @@ func expand(secret []byte, size int, info []byte) ([]byte, error) {
 
 // Restore key pair from the provided material
 func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
-	m, err := expand(material, ed25519.SeedSize, nil)
+	m, err := expand(material, 32, nil)
 	if err != nil {
 		return nil, err
 	}
-	seed := [ed25519.SeedSize]byte{}
+	seed := [32]byte{}
 	copy(seed[:], m)
-	return ed25519.Restore(seed)
+	return ed25519.FromSeed(seed[:])
 }
 
 // Accessor to the local storage handler
@@ -88,19 +88,16 @@ func retrieveSubject(subject string, ll *log.Logger) (*did.Identifier, error) {
 		return nil, err
 	}
 
-	client := proto.NewAgentClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: subject})
+	client := didpb.NewAgentAPIClient(conn)
+	res, err := client.Retrieve(context.TODO(), &didpb.Query{Subject: subject})
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve DID records: %s", err)
-	}
-	if !res.Ok {
-		return nil, errors.New("no information available for the provided DID")
 	}
 
 	// Decode contents
 	ll.Debug("decoding contents")
 	doc := &did.Document{}
-	if err = doc.Decode(res.Contents); err != nil {
+	if err = json.Unmarshal(res.Source, doc); err != nil {
 		return nil, fmt.Errorf("failed to decode received DID Document: %s", err)
 	}
 	return did.FromDocument(doc)

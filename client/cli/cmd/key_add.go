@@ -29,9 +29,15 @@ func init() {
 		},
 		{
 			Name:      "type",
-			Usage:     "type of cryptographic key, either RSA (rsa) or Ed25519 (ed)",
+			Usage:     "type of cryptographic key: RSA (rsa), Ed25519 (ed) or secp256k1 (koblitz)",
 			FlagKey:   "key-add.type",
 			ByDefault: "ed",
+		},
+		{
+			Name:      "encoding",
+			Usage:     "encoding to use for key value: hex, base58, base64",
+			FlagKey:   "key-add.encoding",
+			ByDefault: "hex",
 		},
 		{
 			Name:      "authentication",
@@ -74,7 +80,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 		return errors.New("failed to decode entry contents")
 	}
 
-	// Set parameters
+	// Sanitize key name
 	ll.Debug("validating parameters")
 	keyName := viper.GetString("key-add.name")
 	if strings.Count(keyName, "#") > 1 {
@@ -84,11 +90,31 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys())+1), 1)
 	}
 	keyName = sanitize.Name(keyName)
-	keyType := did.KeyTypeEd
-	keyEnc := did.EncodingHex
-	if viper.GetString("key-add.type") == "rsa" {
+
+	// Set key type
+	var keyType did.KeyType
+	switch viper.GetString("key-add.type") {
+	case "ed":
+		keyType = did.KeyTypeEd
+	case "rsa":
 		keyType = did.KeyTypeRSA
+	case "koblitz":
+		keyType = did.KeyTypeSecp256k1
+	default:
+		return errors.New("invalid key type")
+	}
+
+	// Set key encoding
+	var keyEnc did.KeyEncoding
+	switch viper.GetString("key-add.encoding") {
+	case "hex":
+		keyEnc = did.EncodingHex
+	case "base58":
+		keyEnc = did.EncodingBase58
+	case "base64":
 		keyEnc = did.EncodingBase64
+	default:
+		return errors.New("invalid key encoding")
 	}
 
 	// Add key

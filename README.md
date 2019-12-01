@@ -318,8 +318,7 @@ specification, the "bryk" DID method introduces the following additional guideli
   - [Ed25519](https://w3c-ccg.github.io/ld-cryptosuite-registry/#ed25519signature2018)
   - [RSA](https://w3c-ccg.github.io/ld-cryptosuite-registry/#rsasignature2018),
     with a minimum length of 4096 bits.
-  - [secp256k1](https://w3c-ccg.github.io/ld-cryptosuite-registry/#eddsasasignaturesecp256k1),
-    is __not__ supported.
+  - [secp256k1](https://w3c-ccg.github.io/ld-cryptosuite-registry/#eddsasasignaturesecp256k1)
 
 More information on the official keys and signatures formats is available at
 [LD Cryptographic Suite Registry](https://w3c-ccg.github.io/ld-cryptosuite-registry/).

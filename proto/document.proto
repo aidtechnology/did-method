@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package io.bryk.did;
+
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.gostring_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.stringer_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+// Go configuration
+option go_package = "didpb";
+option java_multiple_files = true;
+option java_outer_classname = "DocumentProto";
+// Java configuration
+option java_package = "com.io.bryk.did";
+
+// GoGo proto extensions
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+message PublicKey {
+  string id = 1;
+  string type = 2;
+  string controller = 3;
+  string value_hex = 4 [(gogoproto.jsontag) = "publicKeyHex,omitempty"];
+  string value_base58 = 5 [(gogoproto.jsontag) = "publicKeyBase58,omitempty"];
+  string value_base64 = 6 [(gogoproto.jsontag) = "publicKeyBase64,omitempty"];
+}
+
+message ServiceEndpoint {
+  string id = 1;
+  string type = 2;
+  string endpoint = 3;
+}
+
+message Proof {
+  repeated string context = 1 [(gogoproto.jsontag) = "@context"];
+  string type = 2;
+  string creator = 3;
+  string created = 4;
+  string domain = 5;
+  string nonce = 6;
+  bytes value = 7 [(gogoproto.jsontag) = "proofValue"];
+}
+
+message Document {
+  repeated string context = 1 [(gogoproto.jsontag) = "@context"];
+  string subject = 2 [(gogoproto.jsontag) = "id"];
+  string created = 3;
+  string updated = 4;
+  repeated PublicKey keys = 5 [(gogoproto.jsontag) = "publicKey,omitempty"];
+  repeated string authentication = 6 [(gogoproto.jsontag) = "authentication,omitempty"];
+  repeated ServiceEndpoint services = 7;
+  Proof proof = 8;
+}

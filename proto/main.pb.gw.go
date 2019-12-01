@@ -2,11 +2,11 @@
 // source: proto/main.proto
 
 /*
-Package proto is a reverse proxy.
+Package didpb is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package proto
+package didpb
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/utilities"
@@ -23,13 +24,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Suppress "imported and not used" errors
 var _ codes.Code
 var _ io.Reader
 var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
+var _ = descriptor.ForMessage
 
-func request_Agent_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_AgentAPI_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client AgentAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq types.Empty
 	var metadata runtime.ServerMetadata
 
@@ -38,7 +41,16 @@ func request_Agent_Ping_0(ctx context.Context, marshaler runtime.Marshaler, clie
 
 }
 
-func request_Agent_Process_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_AgentAPI_Ping_0(ctx context.Context, marshaler runtime.Marshaler, server AgentAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq types.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.Ping(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_AgentAPI_Process_0(ctx context.Context, marshaler runtime.Marshaler, client AgentAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Request
 	var metadata runtime.ServerMetadata
 
@@ -55,24 +67,24 @@ func request_Agent_Process_0(ctx context.Context, marshaler runtime.Marshaler, c
 
 }
 
-var (
-	filter_Agent_Retrieve_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_Agent_Retrieve_0(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Query
+func local_request_AgentAPI_Process_0(ctx context.Context, marshaler runtime.Marshaler, server AgentAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Request
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Agent_Retrieve_0); err != nil {
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Retrieve(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := server.Process(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Agent_Retrieve_1(ctx context.Context, marshaler runtime.Marshaler, client AgentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_AgentAPI_Retrieve_0(ctx context.Context, marshaler runtime.Marshaler, client AgentAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Query
 	var metadata runtime.ServerMetadata
 
@@ -99,9 +111,157 @@ func request_Agent_Retrieve_1(ctx context.Context, marshaler runtime.Marshaler, 
 
 }
 
-// RegisterAgentHandlerFromEndpoint is same as RegisterAgentHandler but
+func local_request_AgentAPI_Retrieve_0(ctx context.Context, marshaler runtime.Marshaler, server AgentAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Query
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["subject"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "subject")
+	}
+
+	protoReq.Subject, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "subject", err)
+	}
+
+	msg, err := server.Retrieve(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_AgentAPI_Retrieve_1 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_AgentAPI_Retrieve_1(ctx context.Context, marshaler runtime.Marshaler, client AgentAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Query
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentAPI_Retrieve_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.Retrieve(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_AgentAPI_Retrieve_1(ctx context.Context, marshaler runtime.Marshaler, server AgentAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Query
+	var metadata runtime.ServerMetadata
+
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_AgentAPI_Retrieve_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.Retrieve(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+// RegisterAgentAPIHandlerServer registers the http handlers for service AgentAPI to "mux".
+// UnaryRPC     :call AgentAPIServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterAgentAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AgentAPIServer) error {
+
+	mux.Handle("GET", pattern_AgentAPI_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentAPI_Ping_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AgentAPI_Ping_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_AgentAPI_Process_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentAPI_Process_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AgentAPI_Process_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_AgentAPI_Retrieve_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentAPI_Retrieve_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AgentAPI_Retrieve_0(ctx, mux, outboundMarshaler, w, req, response_AgentAPI_Retrieve_0{resp}, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_AgentAPI_Retrieve_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentAPI_Retrieve_1(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AgentAPI_Retrieve_1(ctx, mux, outboundMarshaler, w, req, response_AgentAPI_Retrieve_1{resp}, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+// RegisterAgentAPIHandlerFromEndpoint is same as RegisterAgentAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterAgentHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterAgentAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -121,23 +281,23 @@ func RegisterAgentHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux
 		}()
 	}()
 
-	return RegisterAgentHandler(ctx, mux, conn)
+	return RegisterAgentAPIHandler(ctx, mux, conn)
 }
 
-// RegisterAgentHandler registers the http handlers for service Agent to "mux".
+// RegisterAgentAPIHandler registers the http handlers for service AgentAPI to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAgentHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterAgentHandlerClient(ctx, mux, NewAgentClient(conn))
+func RegisterAgentAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterAgentAPIHandlerClient(ctx, mux, NewAgentAPIClient(conn))
 }
 
-// RegisterAgentHandlerClient registers the http handlers for service Agent
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AgentClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AgentClient"
+// RegisterAgentAPIHandlerClient registers the http handlers for service AgentAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AgentAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AgentAPIClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "AgentClient" to call the correct interceptors.
-func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AgentClient) error {
+// "AgentAPIClient" to call the correct interceptors.
+func RegisterAgentAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AgentAPIClient) error {
 
-	mux.Handle("GET", pattern_Agent_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_AgentAPI_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -146,18 +306,18 @@ func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Agent_Ping_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentAPI_Ping_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Agent_Ping_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentAPI_Ping_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Agent_Process_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AgentAPI_Process_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -166,18 +326,18 @@ func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Agent_Process_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentAPI_Process_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Agent_Process_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentAPI_Process_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Agent_Retrieve_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_AgentAPI_Retrieve_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -186,18 +346,18 @@ func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Agent_Retrieve_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentAPI_Retrieve_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Agent_Retrieve_0(ctx, mux, outboundMarshaler, w, req, response_Agent_Retrieve_0{resp}, mux.GetForwardResponseOptions()...)
+		forward_AgentAPI_Retrieve_0(ctx, mux, outboundMarshaler, w, req, response_AgentAPI_Retrieve_0{resp}, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Agent_Retrieve_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_AgentAPI_Retrieve_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -206,45 +366,54 @@ func RegisterAgentHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Agent_Retrieve_1(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentAPI_Retrieve_1(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Agent_Retrieve_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentAPI_Retrieve_1(ctx, mux, outboundMarshaler, w, req, response_AgentAPI_Retrieve_1{resp}, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-type response_Agent_Retrieve_0 struct {
+type response_AgentAPI_Retrieve_0 struct {
 	proto.Message
 }
 
-func (m response_Agent_Retrieve_0) XXX_ResponseBody() interface{} {
+func (m response_AgentAPI_Retrieve_0) XXX_ResponseBody() interface{} {
 	response := m.Message.(*Response)
-	return response.Contents
+	return response.Document
+}
+
+type response_AgentAPI_Retrieve_1 struct {
+	proto.Message
+}
+
+func (m response_AgentAPI_Retrieve_1) XXX_ResponseBody() interface{} {
+	response := m.Message.(*Response)
+	return response.Document
 }
 
 var (
-	pattern_Agent_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "ping"}, ""))
+	pattern_AgentAPI_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "ping"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Agent_Process_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "process"}, ""))
+	pattern_AgentAPI_Process_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "process"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Agent_Retrieve_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "retrieve"}, ""))
+	pattern_AgentAPI_Retrieve_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "retrieve", "subject"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Agent_Retrieve_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "retrieve", "subject"}, ""))
+	pattern_AgentAPI_Retrieve_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "retrieve"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_Agent_Ping_0 = runtime.ForwardResponseMessage
+	forward_AgentAPI_Ping_0 = runtime.ForwardResponseMessage
 
-	forward_Agent_Process_0 = runtime.ForwardResponseMessage
+	forward_AgentAPI_Process_0 = runtime.ForwardResponseMessage
 
-	forward_Agent_Retrieve_0 = runtime.ForwardResponseMessage
+	forward_AgentAPI_Retrieve_0 = runtime.ForwardResponseMessage
 
-	forward_Agent_Retrieve_1 = runtime.ForwardResponseMessage
+	forward_AgentAPI_Retrieve_1 = runtime.ForwardResponseMessage
 )

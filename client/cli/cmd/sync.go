@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bryk-io/did-method/proto"
+	didpb "github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/cli"
 	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
@@ -90,15 +90,9 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to generate proof: %s", err)
 	}
 
-	// Get safe contents to synchronize with the network
-	safe, err := getSafeContents(id)
-	if err != nil {
-		return err
-	}
-
 	// Generate request ticket
 	ll.Infof("publishing: %s", name)
-	ticket, err := getRequestTicket(safe, key, ll)
+	ticket, err := getRequestTicket(id, key, ll)
 	if err != nil {
 		return err
 	}
@@ -113,17 +107,17 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}()
 
 	// Build request
-	req := &proto.Request{
-		Task:   proto.Request_PUBLISH,
+	req := &didpb.Request{
+		Task:   didpb.Request_PUBLISH,
 		Ticket: ticket,
 	}
 	if viper.GetBool("sync.deactivate") {
-		req.Task = proto.Request_DEACTIVATE
+		req.Task = didpb.Request_DEACTIVATE
 	}
 
 	// Submit request
 	ll.Info("submitting request to the network")
-	client := proto.NewAgentClient(conn)
+	client := didpb.NewAgentAPIClient(conn)
 	res, err := client.Process(context.TODO(), req)
 	if err != nil {
 		return fmt.Errorf("network return an error: %s", err)
@@ -141,10 +135,10 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	return st.Update(name, contents)
 }
 
-func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*proto.Ticket, error) {
+func getRequestTicket(id *did.Identifier, key *did.PublicKey, ll *log.Logger) (*didpb.Ticket, error) {
 	ll.Info("generating request ticket")
 	diff := uint(viper.GetInt("sync.pow"))
-	ticket := proto.NewTicket(contents, key.ID)
+	ticket := didpb.NewTicket(id, key.ID)
 	start := time.Now()
 	challenge := ticket.Solve(context.TODO(), diff)
 	ll.Debugf("ticket obtained: %s", challenge)
@@ -163,19 +157,6 @@ func getRequestTicket(contents []byte, key *did.PublicKey, ll *log.Logger) (*pro
 	}
 
 	return ticket, nil
-}
-
-func getSafeContents(id *did.Identifier) ([]byte, error) {
-	doc := id.Document()
-	for i, k := range doc.PublicKeys {
-		k.Private = nil
-		doc.PublicKeys[i] = k
-	}
-	safe, err := doc.Encode()
-	if err != nil {
-		return nil, fmt.Errorf("failed to safely export identifier instance: %s", err)
-	}
-	return safe, nil
 }
 
 func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {

@@ -1,10 +1,11 @@
-package proto
+package didpb
 
 import (
 	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -17,13 +18,23 @@ import (
 const defaultTicketDifficultyLevel = 24
 
 // NewTicket returns a properly initialized new ticket instance
-func NewTicket(contents []byte, keyID string) *Ticket {
+func NewTicket(id *did.Identifier, keyID string) *Ticket {
+	contents, _ := json.Marshal(id.Document())
 	return &Ticket{
 		Timestamp:  time.Now().Unix(),
 		Content:    contents,
-		NonceValue: 0,
 		KeyId:      keyID,
+		NonceValue: 0,
 	}
+}
+
+// GetDID retrieve the DID instance from the ticket contents
+func (t *Ticket) GetDID() (*did.Identifier, error) {
+	doc := &did.Document{}
+	if err := json.Unmarshal(t.Content, doc); err != nil {
+		return nil, errors.New("invalid ticket contents")
+	}
+	return did.FromDocument(doc)
 }
 
 // ResetNonce returns the internal nonce value back to 0
@@ -62,16 +73,6 @@ func (t *Ticket) Encode() ([]byte, error) {
 	return append(tc, t.Content...), nil
 }
 
-// LoadDID restore the DID instance from the ticket contents
-func (t *Ticket) LoadDID() (*did.Identifier, error) {
-	doc := &did.Document{}
-	if err := doc.Decode(t.Content); err != nil {
-		return nil, errors.New("invalid ticket contents")
-	}
-	return did.FromDocument(doc)
-}
-
-
 // Solve the ticket challenge using the proof-of-work mechanism
 func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
 	if difficulty == 0 {
@@ -98,7 +99,7 @@ func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 	}
 
 	// Contents are a properly encoded DID instance
-	id, err := t.LoadDID()
+	id, err := t.GetDID()
 	if err != nil {
 		return err
 	}

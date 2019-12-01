@@ -59,14 +59,19 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	handler.Log("starting network agent")
 	handler.Log(fmt.Sprintf("TCP port: %d", port))
 	handler.Log(fmt.Sprintf("storage directory: %s", storage))
+
+	gw, err := rpc.NewHTTPGateway(
+		rpc.WithEncoder("application/json", rpc.MarshalerStandard(false)),
+		rpc.WithEncoder("application/json+pretty", rpc.MarshalerStandard(true)),
+		rpc.WithEncoder("*", rpc.MarshalerStandard(false)))
+	if err != nil {
+		return fmt.Errorf("failed to initialize HTTP gateway: %s", err)
+	}
 	var opts []rpc.ServerOption
 	opts = append(opts, rpc.WithPanicRecovery())
 	opts = append(opts, rpc.WithPort(port))
 	opts = append(opts, rpc.WithNetworkInterface(rpc.NetworkInterfaceAll))
-	opts = append(opts, rpc.WithHTTPGateway(rpc.HTTPGatewayOptions{
-		Port:         port,
-		EmitDefaults: false,
-	}))
+	opts = append(opts, rpc.WithHTTPGateway(gw))
 
 	// Start server and wait for it to be ready
 	server, err := handler.GetServer(opts...)

@@ -1,7 +1,7 @@
 excludes:
   - vendor
 protoc:
-  version: 3.6.1
+  version: 3.9.1
   allow_unused_imports: false
   includes:
     - vendor
@@ -15,14 +15,14 @@ lint:
       - FILE_OPTIONS_GO_PACKAGE_NOT_LONG_FORM
       - FILE_OPTIONS_GO_PACKAGE_SAME_IN_DIR
       - ENUM_FIELD_NAMES_UPPER_SNAKE_CASE
-    remove:
-      - REQUEST_RESPONSE_TYPES_UNIQUE
-      - REQUEST_RESPONSE_TYPES_IN_SAME_FILE
+      - ENUMS_NO_ALLOW_ALIAS
       - PACKAGES_SAME_IN_DIR
       - FILE_OPTIONS_EQUAL_GO_PACKAGE_PB_SUFFIX
       - FILE_OPTIONS_EQUAL_JAVA_PACKAGE_COM_PREFIX
       - FILE_OPTIONS_EQUAL_JAVA_OUTER_CLASSNAME_PROTO_SUFFIX
-      - ENUMS_NO_ALLOW_ALIAS
+    remove:
+      - REQUEST_RESPONSE_TYPES_UNIQUE
+      - REQUEST_RESPONSE_TYPES_IN_SAME_FILE
       - ENUM_FIELD_PREFIXES
       - ENUM_ZERO_VALUES_INVALID
 create:
@@ -50,8 +50,3 @@ generate:
     - name: grpc-gateway
       type: go
       output: .
-#    - name: descriptor_set
-#      file_suffix: bin
-#      include_imports: true
-#      include_source_info: true
-#      output: descriptor

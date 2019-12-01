@@ -36,15 +36,12 @@ func (ls *LocalStore) Save(name string, record *Entry) error {
 	if err != nil {
 		return err
 	}
-	return ls.db.Save(&kv.Item{
-		Key:   []byte(name),
-		Value: contents,
-	})
+	return ls.db.Create([]byte(name), contents)
 }
 
 // Get an existing entry based on its reference name
 func (ls *LocalStore) Get(name string) *Entry {
-	contents, err := ls.db.Get([]byte(name))
+	contents, err := ls.db.Read([]byte(name))
 	if err != nil {
 		return nil
 	}
@@ -81,10 +78,7 @@ func (ls *LocalStore) Update(name string, contents []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to encode entry for storage: %s", err)
 	}
-	return ls.db.Update(&kv.Item{
-		Key:   []byte(name),
-		Value: data,
-	})
+	return ls.db.Update([]byte(name), data)
 }
 
 // Delete a previously stored entry

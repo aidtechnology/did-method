@@ -3,11 +3,10 @@ package resolver
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
-	"github.com/bryk-io/did-method/proto"
+	didpb "github.com/bryk-io/did-method/proto"
 	"github.com/bryk-io/x/did"
 	"github.com/bryk-io/x/net/rpc"
 )
@@ -44,18 +43,15 @@ func (br *brykResolver) Resolve(value string) ([]byte, error) {
 	}()
 
 	// Retrieve element
-	client := proto.NewAgentClient(conn)
-	res, err := client.Retrieve(context.TODO(), &proto.Query{Subject: id.Subject()})
+	client := didpb.NewAgentAPIClient(conn)
+	res, err := client.Retrieve(context.TODO(), &didpb.Query{Subject: id.Subject()})
 	if err != nil {
 		return nil, err
-	}
-	if !res.Ok {
-		return nil, errors.New("no information available for the provided DID")
 	}
 
 	// Decode document
 	doc := &did.Document{}
-	if err = doc.Decode(res.Contents); err != nil {
+	if err = doc.Decode(res.Source); err != nil {
 		return nil, fmt.Errorf("failed to decode received DID Document: %s", err)
 	}
 	return json.MarshalIndent(doc, "", "  ")
