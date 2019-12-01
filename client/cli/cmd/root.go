@@ -75,7 +75,6 @@ func initConfig() {
 	// ENV
 	viper.SetEnvPrefix("didctl")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
 	// Read configuration file

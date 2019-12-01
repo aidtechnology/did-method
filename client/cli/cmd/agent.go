@@ -59,6 +59,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	handler.Log("starting network agent")
 	handler.Log(fmt.Sprintf("TCP port: %d", port))
 	handler.Log(fmt.Sprintf("storage directory: %s", storage))
+	handler.Log(fmt.Sprintf("difficulty level: %d", viper.GetInt("server.pow")))
 
 	gw, err := rpc.NewHTTPGateway(
 		rpc.WithEncoder("application/json", rpc.MarshalerStandard(false)),
