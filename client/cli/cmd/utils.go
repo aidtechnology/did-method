@@ -53,14 +53,21 @@ func getClientStore() (*store.LocalStore, error) {
 
 // Get an RPC network connection
 func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
-	node := viper.GetString("node")
+	node := viper.GetString("client.node")
 	if ll != nil {
 		ll.Infof("establishing connection to the network with node: %s", node)
 	}
-	var opts []rpc.ClientOption
-	opts = append(opts, rpc.WaitForReady())
-	opts = append(opts, rpc.WithUserAgent("bryk-id-client"))
-	opts = append(opts, rpc.WithTimeout(5*time.Second))
+	opts := []rpc.ClientOption{
+		rpc.WaitForReady(),
+		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", coreVersion)),
+		rpc.WithTimeout(5*time.Second),
+	}
+	if viper.GetBool("client.tls") {
+		opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs:true}))
+	}
+	if override := viper.GetString("client.override"); override != "" {
+		opts = append(opts, rpc.WithServerNameOverride(override))
+	}
 	return rpc.NewClientConnection(node, opts...)
 }
 

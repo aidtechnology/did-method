@@ -77,8 +77,11 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
+	// Set default settings
+	viper.SetDefault("client.node", defaultNode)
+	viper.SetDefault("client.tls", true)
+
 	// Read configuration file
-	viper.SetDefault("node", defaultNode)
 	if err := viper.ReadInConfig(); err != nil && viper.ConfigFileUsed() != "" {
 		fmt.Println("failed to load configuration file:", viper.ConfigFileUsed())
 	}
