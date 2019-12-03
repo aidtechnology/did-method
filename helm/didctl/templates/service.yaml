@@ -8,8 +8,8 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: rpc
       protocol: TCP
-      name: http
+      name: rpc
   selector:
     {{- include "didctl.selectorLabels" . | nindent 4 }}

@@ -1,7 +1,8 @@
+{{- $fullName := include "didctl.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "didctl.fullname" . }}
+  name: {{ $fullName }}
   labels:
     {{- include "didctl.labels" . | nindent 4 }}
 spec:
@@ -18,31 +19,82 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: {{ include "didctl.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if or .Values.agent.tls.enabled .Values.agent.storage.enabled }}
+      volumes:
+        {{- if .Values.agent.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.agent.tls.secret }}
+        {{- end }}
+        {{- if .Values.agent.storage.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ printf "%s-storage" $fullName }}
+        {{- end }}
+      {{- end }}
       containers:
         - name: main
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if or .Values.agent.tls.enabled .Values.agent.storage.enabled }}
+          volumeMounts:
+            {{- if .Values.agent.tls.enabled }}
+            - name: tls
+              mountPath: /tmp
+              readOnly: true
+            {{- end }}
+            {{- if .Values.agent.storage.enabled }}
+            - name: storage
+              mountPath: /etc/didctl/agent
+            {{- end }}
+          {{- end }}
           args:
             - "agent"
+            - "--http"
+            {{- if .Values.agent.tls.enabled }}
+            - "--tls"
+            {{- end }}
           ports:
-            - name: http
+            - name: rpc
               containerPort: 9090
               protocol: TCP
+          env:
+            - name: DIDCTL_SERVER_POW
+              value: "{{ .Values.agent.pow }}"
+            {{- if .Values.agent.tls.enabled }}
+            - name: DIDCTL_SERVER_TLS_CERT
+              value: "/tmp/tls.crt"
+            - name: DIDCTL_SERVER_TLS_KEY
+              value: "/tmp/tls.key"
+            {{- end }}
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
+              {{- if .Values.agent.tls.enabled }}
+              scheme: HTTPS
+              {{- end }}
               path: /v1/ping
-              port: http
+              port: rpc
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
+              {{- if .Values.agent.tls.enabled }}
+              scheme: HTTPS
+              {{- end }}
               path: /v1/ping
-              port: http
+              port: rpc
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -1,0 +1,18 @@
+{{- if .Values.agent.storage.enabled -}}
+{{- $fullName := include "didctl.fullname" . -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-storage" $fullName }}
+  labels:
+    {{- include "didctl.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  storageClassName: {{ .Values.agent.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.agent.storage.size }}
+{{- end -}}

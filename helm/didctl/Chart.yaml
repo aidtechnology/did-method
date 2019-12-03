@@ -1,10 +1,10 @@
 apiVersion: v2
 home: https://github.com/bryk-io/did-method
 name: didctl
-description: A Helm chart for Kubernetes
+description: Network agent deployment for the "bryk" DID method
 type: application
-version: 0.2.0
-appVersion: 0.2.0
+version: 0.3.0
+appVersion: 0.3.0
 maintainers:
   - name: Ben Cessa
     email: ben@pixative.com
