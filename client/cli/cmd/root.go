@@ -80,6 +80,7 @@ func initConfig() {
 	// Set default settings
 	viper.SetDefault("client.node", defaultNode)
 	viper.SetDefault("client.tls", true)
+	viper.SetDefault("client.timeout", 5)
 
 	// Read configuration file
 	if err := viper.ReadInConfig(); err != nil && viper.ConfigFileUsed() != "" {

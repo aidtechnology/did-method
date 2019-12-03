@@ -57,10 +57,11 @@ func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	if ll != nil {
 		ll.Infof("establishing connection to the network with node: %s", node)
 	}
+	timeout := viper.GetInt("client.timeout")
 	opts := []rpc.ClientOption{
 		rpc.WaitForReady(),
 		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", coreVersion)),
-		rpc.WithTimeout(5*time.Second),
+		rpc.WithTimeout(time.Duration(timeout)*time.Second),
 	}
 	if viper.GetBool("client.tls") {
 		opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs:true}))
@@ -94,6 +95,9 @@ func retrieveSubject(subject string, ll *log.Logger) (*did.Identifier, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	client := didpb.NewAgentAPIClient(conn)
 	res, err := client.Retrieve(context.TODO(), &didpb.Query{Subject: subject})
