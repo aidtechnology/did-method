@@ -361,8 +361,8 @@ execute() {
   log_debug "verifying checksum"
   hash_sha256_verify "${tmpdir}/${target_bin}" "${tmpdir}/${target_bin}.sha256sum"
   log_debug "verifying digital signature"
-  chmod 755 ${srcdir}/${target_bin}
-  cat "${srcdir}/${target_bin}.sha256sum" | ./${srcdir}/${target_bin} verify "${srcdir}/${target_bin}.sig.json"
+  chmod 755 "${srcdir}/${target_bin}"
+  "${srcdir}/${target_bin}" verify "${srcdir}/${target_bin}".'sig.json' < "${srcdir}/${target_bin}.sha256sum"
 
   # Install
   install -d "${BINDIR}"
@@ -371,7 +371,7 @@ execute() {
 
   # Clean-up
   log_debug "cleaning temporary files"
-  rm -rf ${srcdir}
+  rm -rf "${srcdir}"
 }
 
 # Setup
@@ -383,4 +383,4 @@ tag_to_version
 log_info "found: ${TAG} for ${OS}_${ARCH}"
 
 # Run
-execute ${BINARY}_${VERSION}_${OS}_${ARCH}
+execute "${BINARY}_${VERSION}_${OS}_${ARCH}"

@@ -18,8 +18,8 @@ CLI client and network agent. You can easily install the client application loca
 using the provided install script.
 
 ```bash
-# To install v0.2.0
-curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -d v0.2.0
+# To install v0.3.0
+curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -d v0.3.0
 ```
 
 Alternatively you can directly download the binary from the
