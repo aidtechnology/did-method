@@ -7,13 +7,13 @@ import (
 	"time"
 
 	didpb "github.com/bryk-io/did-method/proto"
-	"github.com/bryk-io/x/did"
-	"github.com/bryk-io/x/net/rpc"
+	"go.bryk.io/x/did"
+	"go.bryk.io/x/net/rpc"
 )
 
 func init() {
 	catalog["bryk"] = &brykResolver{
-		endpoint: "rpc-did.bryk.io:80",
+		endpoint: "did.bryk.io:443",
 	}
 }
 

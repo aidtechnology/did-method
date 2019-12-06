@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bryk-io/x/crypto/pow"
-	"github.com/bryk-io/x/did"
+	"go.bryk.io/x/crypto/pow"
+	"go.bryk.io/x/did"
 	"golang.org/x/crypto/sha3"
 )
 

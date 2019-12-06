@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/x/cli"
-	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/cli"
+	"go.bryk.io/x/did"
 	"golang.org/x/crypto/sha3"
 )
 

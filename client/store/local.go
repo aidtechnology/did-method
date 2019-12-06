@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/bryk-io/x/storage/kv"
+	"go.bryk.io/x/storage/kv"
 )
 
 // LocalStore provides a filesystem-backed store

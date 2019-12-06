@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/bryk-io/did-method/resolver"
-	"github.com/bryk-io/x/cli"
-	"github.com/bryk-io/x/did"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/cli"
+	"go.bryk.io/x/did"
 )
 
 var retrieveCmd = &cobra.Command{

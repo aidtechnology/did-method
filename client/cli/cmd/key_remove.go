@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
+	"go.bryk.io/x/did"
 )
 
 var removeKeyCmd = &cobra.Command{

@@ -1,7 +1,8 @@
 module github.com/bryk-io/did-method
 
+go 1.13
+
 require (
-	github.com/bryk-io/x v0.0.0-20191201183948-176f35bef721
 	github.com/gogo/googleapis v1.3.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.2
@@ -16,13 +17,9 @@ require (
 	github.com/spf13/viper v1.5.0
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
+	go.bryk.io/x v0.0.0-20191206191545-f9a10f6a12ad
 	golang.org/x/crypto v0.0.0-20190927123631-a832865fa7ad
 	google.golang.org/grpc v1.23.0
 )
 
-replace (
-	github.com/dgraph-io/badger v1.5.5 => github.com/bryk-io/badger v1.5.5
-	github.com/grpc-ecosystem/go-grpc-middleware => github.com/bryk-io/go-grpc-middleware v1.0.1-0.20190615102816-71cc94c54bbc
-)
-
-go 1.13
+replace github.com/dgraph-io/badger v1.5.5 => github.com/bryk-io/badger v1.5.5

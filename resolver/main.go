@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/x/did"
+	"go.bryk.io/x/did"
 )
 
 type methodHandler interface {

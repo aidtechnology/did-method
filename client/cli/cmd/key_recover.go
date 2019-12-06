@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bryk-io/x/cli"
-	"github.com/bryk-io/x/crypto/shamir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/cli"
+	"go.bryk.io/x/crypto/shamir"
 )
 
 var recoverKeyCmd = &cobra.Command{

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/bryk-io/x/did"
+	"go.bryk.io/x/did"
 )
 
 func TestLocalStore(t *testing.T) {

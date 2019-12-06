@@ -43,6 +43,7 @@ install: ## Install the binary to GOPATH and keep cached all compiled artifacts
 clean: ## Download and compile all dependencies and intermediary products
 	go mod tidy
 	go mod verify
+	go mod vendor
 
 updates: ## List available updates for direct dependencies
 	# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies

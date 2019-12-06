@@ -2,7 +2,7 @@ package agent
 
 import (
 	didpb "github.com/bryk-io/did-method/proto"
-	"github.com/bryk-io/x/did"
+	"go.bryk.io/x/did"
 )
 
 func populateDocument(id *did.Identifier) *didpb.Document {

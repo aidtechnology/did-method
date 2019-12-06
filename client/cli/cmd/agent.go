@@ -8,10 +8,10 @@ import (
 	"syscall"
 
 	"github.com/bryk-io/did-method/agent"
-	"github.com/bryk-io/x/cli"
-	"github.com/bryk-io/x/net/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/cli"
+	"go.bryk.io/x/net/rpc"
 )
 
 var agentCmd = &cobra.Command{

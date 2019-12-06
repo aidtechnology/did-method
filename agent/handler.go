@@ -10,11 +10,11 @@ import (
 	"time"
 
 	didpb "github.com/bryk-io/did-method/proto"
-	"github.com/bryk-io/x/did"
-	"github.com/bryk-io/x/net/rpc"
-	"github.com/bryk-io/x/storage/kv"
 	log "github.com/sirupsen/logrus"
 	"github.com/x-cray/logrus-prefixed-formatter"
+	"go.bryk.io/x/did"
+	"go.bryk.io/x/net/rpc"
+	"go.bryk.io/x/storage/kv"
 	"google.golang.org/grpc"
 )
 

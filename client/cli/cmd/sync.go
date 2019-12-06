@@ -8,12 +8,12 @@ import (
 	"time"
 
 	didpb "github.com/bryk-io/did-method/proto"
-	"github.com/bryk-io/x/cli"
-	"github.com/bryk-io/x/did"
 	"github.com/kennygrant/sanitize"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/cli"
+	"go.bryk.io/x/did"
 )
 
 var syncCmd = &cobra.Command{
