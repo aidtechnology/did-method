@@ -34,7 +34,7 @@ func NewHandler(home string, difficulty uint) (*Handler, error) {
 			return nil, fmt.Errorf("failed to create new home directory: %s", err)
 		}
 	}
-	db, err := kv.Open(path.Join(h, "data"), false)
+	db, err := kv.Open(path.Join(h, "data"), false, true)
 	if err != nil {
 		return nil, err
 	}

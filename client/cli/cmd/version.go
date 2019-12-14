@@ -19,8 +19,9 @@ var buildCode string
 var buildTimestamp string
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version information",
+	Use:     "version",
+	Short:   "Display version information",
+	Aliases: []string{"info"},
 	Run: func(cmd *cobra.Command, args []string) {
 		var components = map[string]string{
 			"Version":    coreVersion,

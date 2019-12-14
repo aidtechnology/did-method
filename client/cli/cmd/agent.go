@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
+	"runtime/pprof"
 	"strings"
 	"syscall"
 
@@ -49,6 +51,18 @@ func init() {
 			ByDefault: false,
 		},
 		{
+			Name:      "monitoring",
+			Usage:     "publish metrics for instrumentation and monitoring",
+			FlagKey:   "server.monitoring",
+			ByDefault: false,
+		},
+		{
+			Name:      "debug",
+			Usage:     "run agent in debug mode to generate profiling information",
+			FlagKey:   "server.debug",
+			ByDefault: false,
+		},
+		{
 			Name:      "tls",
 			Usage:     "enable secure communications using TLS with provided credentials",
 			FlagKey:   "server.tls.enable",
@@ -86,6 +100,23 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to start method handler: %s", err)
 	}
+	handler.Log(fmt.Sprintf("storage directory: %s", storage))
+
+	// CPU profile
+	if viper.GetBool("server.debug") {
+		cpu, err := ioutil.TempFile("", "didctl_cpu_")
+		if err != nil {
+			return err
+		}
+		if err := pprof.StartCPUProfile(cpu); err != nil {
+			return err
+		}
+		defer func() {
+			handler.Log(fmt.Sprintf("CPU profile saved at %s", cpu.Name()))
+			pprof.StopCPUProfile()
+			_ = cpu.Close()
+		}()
+	}
 
 	// Base server configuration
 	opts := []rpc.ServerOption{
@@ -96,6 +127,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 
 	// TLS configuration
 	if viper.GetBool("server.tls.enable") {
+		handler.Log("TLS enabled")
 		opt, err := loadAgentCredentials()
 		if err != nil {
 			return err
@@ -105,6 +137,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 
 	// Initialize HTTP gateway
 	if viper.GetBool("server.http") {
+		handler.Log("HTTP gateway available")
 		gw, err := getAgentGateway()
 		if err != nil {
 			return err
@@ -112,13 +145,20 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		opts = append(opts, rpc.WithHTTPGateway(gw))
 	}
 
+	// Monitoring
+	if viper.GetBool("server.http") && viper.GetBool("server.monitoring") {
+		handler.Log("monitoring enabled")
+		opts = append(opts, rpc.WithMonitoring(rpc.MonitoringOptions{
+			IncludeHistograms:   true,
+			UseProcessCollector: true,
+			UseGoCollector:      true,
+		}))
+	}
+
 	// Start server and wait for it to be ready
-	handler.Log("starting network agent")
-	handler.Log(fmt.Sprintf("storage directory: %s", storage))
 	handler.Log(fmt.Sprintf("difficulty level: %d", viper.GetInt("server.pow")))
 	handler.Log(fmt.Sprintf("TCP port: %d", viper.GetInt("server.port")))
-	handler.Log(fmt.Sprintf("HTTP gateway available: %v", viper.GetBool("server.http")))
-	handler.Log(fmt.Sprintf("TLS enabled: %v", viper.GetBool("server.tls.enable")))
+	handler.Log("starting network agent")
 	if viper.GetBool("server.tls.enable") {
 		handler.Log(fmt.Sprintf("certificate: %s", viper.GetString("server.tls.cert")))
 		handler.Log(fmt.Sprintf("private key: %s", viper.GetString("server.tls.key")))
@@ -140,11 +180,28 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		syscall.SIGINT,
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
+		syscall.SIGUSR1,
 	})
+
+	// Close handler
 	handler.Log("preparing to exit")
-	err = handler.Close()
-	if err != nil && !strings.Contains(err.Error(), "closed network connection") {
+	if err = handler.Close(); err != nil && !strings.Contains(err.Error(), "closed network connection") {
 		return err
+	}
+
+	// Dump memory profile and exit
+	if viper.GetBool("server.debug") {
+		// Memory profile
+		mem, err := ioutil.TempFile("", "didctl_mem_")
+		if err != nil {
+			return err
+		}
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(mem); err != nil {
+			return err
+		}
+		handler.Log(fmt.Sprintf("memory profile saved at %s", mem.Name()))
+		_ = mem.Close()
 	}
 	return nil
 }
