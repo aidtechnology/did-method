@@ -180,7 +180,6 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		syscall.SIGINT,
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
-		syscall.SIGUSR1,
 	})
 
 	// Close handler
