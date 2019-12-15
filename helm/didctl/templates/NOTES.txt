@@ -21,7 +21,7 @@ Release name: {{ $fullName }}
   echo "Visit http://127.0.0.1:8080 to use your application"
    kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:80
 {{- end }}
-{{- if .Values.agent.storage.enabled }}
+{{- if .Values.persistence.enabled }}
 2. Persistent storage is enabled. The PVC "{{ printf "%s-storage" $fullName }}" wont be deleted when
    uninstalling the release.
 {{- end }}

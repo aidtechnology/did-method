@@ -23,14 +23,14 @@ spec:
       serviceAccountName: {{ include "didctl.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if or .Values.agent.tls.enabled .Values.agent.storage.enabled }}
+      {{- if or .Values.agent.tls.enabled .Values.persistence.enabled }}
       volumes:
         {{- if .Values.agent.tls.enabled }}
         - name: tls
           secret:
             secretName: {{ .Values.agent.tls.secret }}
         {{- end }}
-        {{- if .Values.agent.storage.enabled }}
+        {{- if .Values.persistence.enabled }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ printf "%s-storage" $fullName }}
@@ -42,14 +42,14 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if or .Values.agent.tls.enabled .Values.agent.storage.enabled }}
+          {{- if or .Values.agent.tls.enabled .Values.persistence.enabled }}
           volumeMounts:
             {{- if .Values.agent.tls.enabled }}
             - name: tls
               mountPath: /tmp
               readOnly: true
             {{- end }}
-            {{- if .Values.agent.storage.enabled }}
+            {{- if .Values.persistence.enabled }}
             - name: storage
               mountPath: /etc/didctl/agent
             {{- end }}

@@ -3,10 +3,19 @@ agent:
   tls:
     enabled: false
     secret: "tls-secret-name-goes-here"
-  storage:
-    enabled: true
-    size: "1Gi"
-    className: "default"
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  ## If not define the default storage provision mechanism will be used,
+  storageClass: "default"
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: ""
 
 nameOverride: ""
 fullnameOverride: ""

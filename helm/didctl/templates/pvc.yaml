@@ -1,4 +1,4 @@
-{{- if .Values.agent.storage.enabled -}}
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
 {{- $fullName := include "didctl.fullname" . -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -6,13 +6,11 @@ metadata:
   name: {{ printf "%s-storage" $fullName }}
   labels:
     {{- include "didctl.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/resource-policy": keep
 spec:
-  storageClassName: {{ .Values.agent.storage.className }}
+  storageClassName: {{ .Values.persistence.storageClass }}
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.persistence.accessMode | quote }}
   resources:
     requests:
-      storage: {{ .Values.agent.storage.size }}
+      storage: {{ .Values.persistence.size | quote }}
 {{- end -}}
