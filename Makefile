@@ -30,7 +30,6 @@ release: ## Build the binaries for a new release
 	make build-for os=linux arch=amd64 dest=release-$(VERSION_TAG)/
 	make build-for os=darwin arch=amd64 dest=release-$(VERSION_TAG)/
 	make build-for os=windows arch=amd64 suffix=".exe" dest=release-$(VERSION_TAG)/
-	make build-for os=windows arch=386 suffix=".exe" dest=release-$(VERSION_TAG)/
 
 build-for: ## Build the availabe binaries for the specified 'os' and 'arch'
 	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
