@@ -18,8 +18,8 @@ CLI client and network agent. You can easily install the client application loca
 using the provided install script.
 
 ```bash
-# To install v0.3.0
-curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -d v0.3.0
+# To install latest version
+curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -b /usr/local/bin
 ```
 
 Alternatively you can directly download the binary from the
@@ -429,7 +429,7 @@ curl -v https://did.bryk.io/v1/retrieve\?subject\=4d81bd52-2edb-4703-b8fc-b26d51
 If the subject is valid, and information has been published to the network, the
 response will be latest version available of its corresponding DID Document encoded
 in JSON-LD with a __200__ status code. If no information is available the response
-will be a JSON encoded error message with a __400__ status code.
+will be a JSON encoded error message with a __404__ status code.
 
 You can also retrieve an existing subject using the provided SDK and RPC interface.
 For example, using the Go client.

@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 BINARY_NAME=didctl
 DOCKER_IMAGE=didctl
-VERSION_TAG=0.3.0
+VERSION_TAG=0.4.0
 
 # Custom compilation tags
 LD_FLAGS="\

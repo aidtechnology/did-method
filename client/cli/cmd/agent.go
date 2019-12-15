@@ -243,11 +243,22 @@ func getAgentGateway() (*rpc.HTTPGateway, error) {
 		gwCl = append(gwCl, rpc.WithClientTLS(tlsConf))
 		gwCl = append(gwCl, rpc.WithInsecureSkipVerify()) // Internally the gateway proxy accept any certificate
 	}
+
+	// Properly adjust outgoing headers
+	headersMatcher := func(h string) (string, bool) {
+		if strings.HasPrefix(strings.ToLower(h),"x-") {
+			return h, true
+		} else {
+			return "x-rpc-metadata-" + h, true
+		}
+	}
+
 	gwOpts := []rpc.HTTPGatewayOption{
 		rpc.WithEncoder("application/json", rpc.MarshalerStandard(false)),
 		rpc.WithEncoder("application/json+pretty", rpc.MarshalerStandard(true)),
 		rpc.WithEncoder("*", rpc.MarshalerStandard(false)),
 		rpc.WithClientOptions(gwCl),
+		rpc.WithOutgoingHeaderMatcher(headersMatcher),
 	}
 	gw, err := rpc.NewHTTPGateway(gwOpts...)
 	if err != nil {
