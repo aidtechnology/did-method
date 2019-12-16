@@ -1,0 +1,41 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  pull: if-not-exists
+  image: golang:1.13.4
+  commands:
+  - echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+  - mkdir /root/.ssh
+  - ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
+  - ssh-keyscan github.com >> ~/.ssh/known_hosts
+  - echo $SSH_KEY | base64 -d > /root/.ssh/id_ed25519
+  - chmod 400 /root/.ssh/id_ed25519
+  - git config --global url."ssh://git@bitbucket.org/".insteadOf "https://bitbucket.org/"
+  - git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
+  - go mod download
+  - go test -race -cover -v -failfast ./...
+  environment:
+    GOARCH: amd64
+    GOOS: linux
+    GOPRIVATE: go.bryk.io/x
+    SSH_KEY:
+      from_secret: ssh-key
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+---
+kind: signature
+hmac: 44dee2a810af9d4cd67a0d895f77c87cf6767df2b6864bcfd815affba7c966eb
+
+...

@@ -1,5 +1,5 @@
 # DID Method
-[![Build Status](https://travis-ci.org/bryk-io/did-method.svg?branch=master)](https://travis-ci.org/bryk-io/did-method)
+[![Build Status](https://drone.bryk.io/api/badges/bryk-io/did-method/status.svg)](https://drone.bryk.io/bryk-io/did-method)
 [![Version](https://img.shields.io/github/tag/bryk-io/did-method.svg)](https://github.com/bryk-io/did-method/releases)
 [![Software License](https://img.shields.io/badge/license-BSD3-red.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bryk-io/did-method?style=flat)](https://goreportcard.com/report/github.com/bryk-io/did-method)
