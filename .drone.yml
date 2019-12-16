@@ -12,7 +12,6 @@ steps:
   pull: if-not-exists
   image: golang:1.13.4
   commands:
-  - echo "nameserver 8.8.8.8" >> /etc/resolv.conf
   - mkdir /root/.ssh
   - ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
   - ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -36,6 +35,6 @@ trigger:
   - push
 ---
 kind: signature
-hmac: 44dee2a810af9d4cd67a0d895f77c87cf6767df2b6864bcfd815affba7c966eb
+hmac: 9ac02fc28067d18349e095a9189427014d3195cb458b952a2113b0bc379e99cc
 
 ...
