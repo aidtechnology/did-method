@@ -8,10 +8,14 @@ platform:
   arch: amd64
 
 steps:
-- name: test
+- name: setup
   pull: if-not-exists
-  image: golang:1.13.4
+  image: alpine:3.10
+  volumes:
+  - name: root
+    path: /root
   commands:
+  - apk add --no-cache openssh git
   - mkdir /root/.ssh
   - ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
   - ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -19,22 +23,35 @@ steps:
   - chmod 400 /root/.ssh/id_ed25519
   - git config --global url."ssh://git@bitbucket.org/".insteadOf "https://bitbucket.org/"
   - git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
-  - go mod download
+  environment:
+    SSH_KEY:
+      from_secret: ssh-key
+
+- name: test
+  pull: if-not-exists
+  image: golang:1.13.4
+  volumes:
+  - name: root
+    path: /root
+  commands:
   - go test -race -cover -v -failfast ./...
   environment:
     GOARCH: amd64
     GOOS: linux
     GOPRIVATE: go.bryk.io/x
-    SSH_KEY:
-      from_secret: ssh-key
 
 trigger:
   branch:
   - master
   event:
   - push
+
+volumes:
+  - name: root
+    temp: {}
+
 ---
 kind: signature
-hmac: 9ac02fc28067d18349e095a9189427014d3195cb458b952a2113b0bc379e99cc
+hmac: 7dbd016445656b3b6e7099aa2f9ee1c5a78a3c8c58aa847a81bc1a554026c319
 
 ...
