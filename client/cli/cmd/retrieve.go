@@ -62,7 +62,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 		// Use global resolver
 		response, err := resolver.Get(args[0])
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to resolve DID: %s", err)
 		}
 		doc := &did.Document{}
 		if err := json.Unmarshal(response, doc); err != nil {
@@ -70,7 +70,8 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 		}
 		sid, err = did.FromDocument(doc)
 		if err != nil {
-			return err
+			fmt.Printf("%s", response)
+			return fmt.Errorf("failed to decode received document: %s", err)
 		}
 	}
 

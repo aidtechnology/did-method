@@ -34,6 +34,7 @@ func (br *brykResolver) Resolve(value string) ([]byte, error) {
 	var opts []rpc.ClientOption
 	opts = append(opts, rpc.WaitForReady())
 	opts = append(opts, rpc.WithTimeout(5*time.Second))
+	opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs:true}))
 	conn, err := rpc.NewClientConnection(br.endpoint, opts...)
 	if err != nil {
 		return nil, err
@@ -51,7 +52,7 @@ func (br *brykResolver) Resolve(value string) ([]byte, error) {
 
 	// Decode document
 	doc := &did.Document{}
-	if err = doc.Decode(res.Source); err != nil {
+	if err = json.Unmarshal(res.Source, doc); err != nil {
 		return nil, fmt.Errorf("failed to decode received DID Document: %s", err)
 	}
 	return json.MarshalIndent(doc, "", "  ")
