@@ -11,15 +11,15 @@ import (
 )
 
 var didDetailsCmd = &cobra.Command{
-	Use:     "details",
+	Use:     "info",
 	Short:   "Display the current information available on an existing DID",
-	Example: "didctl did details [DID reference name]",
-	Aliases: []string{"info"},
+	Example: "didctl info [DID reference name]",
+	Aliases: []string{"details", "inspect", "view", "doc"},
 	RunE:    runDidDetailsCmd,
 }
 
 func init() {
-	didCmd.AddCommand(didDetailsCmd)
+	rootCmd.AddCommand(didDetailsCmd)
 }
 
 func runDidDetailsCmd(_ *cobra.Command, args []string) error {

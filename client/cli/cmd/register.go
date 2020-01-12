@@ -33,18 +33,21 @@ func init() {
 			Usage:     "choose a recovery mechanism for your primary key, 'passphrase' or 'secret-sharing'",
 			FlagKey:   "register.recovery-mode",
 			ByDefault: "secret-sharing",
+			Short:     "r",
 		},
 		{
 			Name:      "secret-sharing",
 			Usage:     "specify the number of shares and threshold value in the following format: shares,threshold",
 			FlagKey:   "register.secret-sharing",
 			ByDefault: "3,2",
+			Short:     "s",
 		},
 		{
 			Name:      "tag",
 			Usage:     "specify a tag value for the identifier instance",
 			FlagKey:   "register.tag",
 			ByDefault: "",
+			Short:     "t",
 		},
 	}
 	if err := cli.SetupCommandParams(registerCmd, params); err != nil {
@@ -97,7 +100,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 	ll.Debug("adding master key")
-	if err = id.AddExistingKey("master", pk, did.KeyTypeEd, did.EncodingHex); err != nil {
+	if err = id.AddExistingKey("master", pk, did.KeyTypeEd, did.EncodingBase58); err != nil {
 		return err
 	}
 	ll.Debug("setting master key as authentication mechanism")

@@ -26,24 +26,28 @@ func init() {
 			Usage:     "name to be assigned to the newly added key",
 			FlagKey:   "key-add.name",
 			ByDefault: "key-#",
+			Short:     "n",
 		},
 		{
 			Name:      "type",
 			Usage:     "type of cryptographic key: RSA (rsa), Ed25519 (ed) or secp256k1 (koblitz)",
 			FlagKey:   "key-add.type",
 			ByDefault: "ed",
+			Short:     "t",
 		},
 		{
 			Name:      "encoding",
 			Usage:     "encoding to use for key value: hex, base58, base64",
 			FlagKey:   "key-add.encoding",
-			ByDefault: "hex",
+			ByDefault: "base58",
+			Short:     "e",
 		},
 		{
 			Name:      "authentication",
 			Usage:     "enable this key for authentication purposes",
 			FlagKey:   "key-add.authentication",
 			ByDefault: false,
+			Short:     "a",
 		},
 	}
 	if err := cli.SetupCommandParams(addKeyCmd, params); err != nil {

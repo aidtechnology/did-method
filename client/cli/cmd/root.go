@@ -27,7 +27,7 @@ var rootCmd = &cobra.Command{
 
 Reference client implementation for the "bryk" DID method. The platform allows
 entities to fully manage Decentralized Identifiers as described on the version
-v0.11 of the specification.
+v1.0 of the specification.
 
 For more information:
 https://github.com/bryk-io/did-method`,

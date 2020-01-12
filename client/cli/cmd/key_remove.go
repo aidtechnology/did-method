@@ -13,6 +13,7 @@ var removeKeyCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing cryptographic key for the DID",
 	Example: "didctl did key remove [DID reference name] [key name]",
+	Aliases: []string{"rm"},
 	RunE:    runRemoveKeyCmd,
 }
 

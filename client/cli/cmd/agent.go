@@ -31,12 +31,14 @@ func init() {
 			Usage:     "TCP port to use for the server",
 			FlagKey:   "server.port",
 			ByDefault: 9090,
+			Short:     "p",
 		},
 		{
 			Name:      "storage",
 			Usage:     "specify the directory to use for data storage",
 			FlagKey:   "server.storage",
 			ByDefault: "/etc/didctl/agent",
+			Short:     "s",
 		},
 		{
 			Name:      "pow",

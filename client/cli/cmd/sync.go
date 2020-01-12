@@ -31,18 +31,21 @@ func init() {
 			Usage:     "cryptographic key to use for the sync operation",
 			FlagKey:   "sync.key",
 			ByDefault: "master",
+			Short:     "k",
 		},
 		{
 			Name:      "deactivate",
 			Usage:     "instruct the network agent to deactivate the identifier",
 			FlagKey:   "sync.deactivate",
 			ByDefault: false,
+			Short:     "d",
 		},
 		{
 			Name:      "pow",
 			Usage:     "set the required request ticket difficulty level",
 			FlagKey:   "sync.pow",
 			ByDefault: 24,
+			Short:     "p",
 		},
 	}
 	if err := cli.SetupCommandParams(syncCmd, params); err != nil {

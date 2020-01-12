@@ -27,18 +27,21 @@ func init() {
 			Usage:     "service's reference name",
 			FlagKey:   "service-add.name",
 			ByDefault: "external-service-#",
+			Short:     "n",
 		},
 		{
 			Name:      "type",
 			Usage:     "type identifier for the service handler",
 			FlagKey:   "service-add.type",
 			ByDefault: "identity.bryk.io.ExternalService",
+			Short:     "t",
 		},
 		{
 			Name:      "endpoint",
 			Usage:     "main URL to access the service",
 			FlagKey:   "service-add.endpoint",
 			ByDefault: "",
+			Short:     "e",
 		},
 	}
 	if err := cli.SetupCommandParams(addServiceCmd, params); err != nil {

@@ -27,6 +27,7 @@ func init() {
 			Usage:     "original contents to run the verification against",
 			FlagKey:   "verify.input",
 			ByDefault: "",
+			Short:     "i",
 		},
 	}
 	if err := cli.SetupCommandParams(verifyCmd, params); err != nil {

@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 BINARY_NAME=didctl
 DOCKER_IMAGE=didctl
-VERSION_TAG=0.4.0
+VERSION_TAG=0.4.1
 
 # Custom compilation tags
 LD_FLAGS="\
@@ -25,6 +25,11 @@ test:
 
 	# Unit tests
 	go test -race -cover -v -failfast ./...
+
+## scan: Look for knonwn vulnerabilities in the project dependencies
+# https://github.com/sonatype-nexus-community/nancy
+scan:
+	@nancy -quiet go.sum
 
 ## release: Prepare assets for a new tagged release
 release:
@@ -57,9 +62,9 @@ clean:
 	go mod vendor
 
 ## updates: List available updates for direct dependencies
+# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
 updates:
-	# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
-	go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
+	@go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
 
 ## proto: Compile protocol buffers and RPC services
 proto:

@@ -27,18 +27,21 @@ func init() {
 			Usage:     "contents to sign, if longer than 32 bytes a SHA3-256 will be generated",
 			FlagKey:   "sign.input",
 			ByDefault: "",
+			Short:     "i",
 		},
 		{
 			Name:      "key",
 			Usage:     "key to use to produce the signature",
 			FlagKey:   "sign.key",
 			ByDefault: "master",
+			Short:     "k",
 		},
 		{
 			Name:      "domain",
 			Usage:     "domain value to use when producing LD signatures",
 			FlagKey:   "sign.domain",
 			ByDefault: didDomainValue,
+			Short:     "d",
 		},
 	}
 	if err := cli.SetupCommandParams(signCmd, params); err != nil {

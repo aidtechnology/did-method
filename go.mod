@@ -3,7 +3,7 @@ module github.com/bryk-io/did-method
 go 1.13
 
 require (
-	github.com/gogo/googleapis v1.3.0
+	github.com/gogo/googleapis v1.3.2
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/grpc-gateway v1.12.1
@@ -17,7 +17,7 @@ require (
 	github.com/spf13/viper v1.6.1
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
-	go.bryk.io/x v0.0.0-20191214162130-8a2dd183e3c9
+	go.bryk.io/x v0.0.0-20200112145239-9ac4ce6207cc
 	golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
-	google.golang.org/grpc v1.25.1
+	google.golang.org/grpc v1.26.0
 )

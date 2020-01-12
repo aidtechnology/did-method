@@ -115,16 +115,21 @@ implementation. The document is organized in 3 main sections.
 A Decentralized Identifier is defined as a [RFC3986](https://tools.ietf.org/html/rfc3986)
 Uniform Resource Identifier, with a format based on the generic DID schema. Fore more
 information you can refer to the
-[original documentation](https://w3c-ccg.github.io/did-spec/#decentralized-identifiers-dids).
+[original documentation](https://w3c.github.io/did-core/#generic-did-syntax).
 
 ```abnf
-did-reference      = did [ "/" did-path ] [ "#" did-fragment ]
-did                = "did:" method ":" specific-idstring
-method             = 1*methodchar
-methodchar         = %x61-7A / DIGIT
-specific-idstring  = idstring *( ":" idstring )
-idstring           = 1*idchar
-idchar             = ALPHA / DIGIT / "." / "-"
+did                = "did:" method-name ":" method-specific-id
+method-name        = 1*method-char
+method-char        = %x61-7A / DIGIT
+method-specific-id = *idchar *( ":" *idchar )
+idchar             = ALPHA / DIGIT / "." / "-" / "_"
+did-url            = did *( ";" param ) path-abempty [ "?" query ]
+                     [ "#" fragment ]
+param              = param-name [ "=" param-value ]
+param-name         = 1*param-char
+param-value        = *param-char
+param-char         = ALPHA / DIGIT / "." / "-" / "_" / ":" /
+                     pct-encoded
 ```
 
 Example of a simple Decentralized Identifier (DID).
@@ -218,7 +223,7 @@ At the very least, the document must include the DID subject it's referring to u
 
 ```json
 {
-  "@context": "https://w3id.org/did/v1",
+  "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:bryk:c137:b616fca9-ad86-4be5-bc9c-0e3f8e27dc8d"
 }
 ```
@@ -253,7 +258,7 @@ Example of a more complete, and useful, DID Document.
 ```json
 {
   "@context": [
-    "https://w3id.org/did/v1",
+    "https://www.w3.org/ns/did/v1",
     "https://w3id.org/security/v1"
   ],
   "id": "did:bryk:c137:eeb0c865-ce21-4ad6-baf8-5ba287ba8683",
@@ -550,7 +555,7 @@ The generated document will be something similar for the following example.
 ```json
 {
   "@context": [
-    "https://w3id.org/did/v1",
+    "https://www.w3.org/ns/did/v1",
     "https://w3id.org/security/v1"
   ],
   "id": "did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a",
@@ -600,7 +605,7 @@ The command will perform the required network operations and verifications.
 [Mar 14 12:15:24.277]  INFO integrity proof is valid
 {
   "@context": [
-    "https://w3id.org/did/v1",
+    "https://www.w3.org/ns/did/v1",
     "https://w3id.org/security/v1"
   ],
   "id": "did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c56",

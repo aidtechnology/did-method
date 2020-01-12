@@ -39,7 +39,7 @@ func init() {
 	if err := cli.SetupCommandParams(recoverKeyCmd, params); err != nil {
 		panic(err)
 	}
-	keyCmd.AddCommand(recoverKeyCmd)
+	// keyCmd.AddCommand(recoverKeyCmd)
 }
 
 func runRecoverKeyCmd(_ *cobra.Command, _ []string) error {

@@ -13,6 +13,7 @@ var listCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List registered DIDs",
 	Example: "didctl list",
+	Aliases: []string{"ls"},
 	RunE:    runListCmd,
 }
 
