@@ -3,8 +3,8 @@ home: https://github.com/bryk-io/did-method
 name: didctl
 description: Network agent deployment for the "bryk" DID method
 type: application
-version: 0.4.0
-appVersion: 0.4.0
+version: 0.4.1
+appVersion: 0.4.1
 maintainers:
   - name: Ben Cessa
     email: ben@pixative.com

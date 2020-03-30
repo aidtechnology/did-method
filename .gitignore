@@ -9,6 +9,7 @@ vendor/**
 # Build releases
 release-*/**
 *.tgz
+*-install.yaml
 
 # PKI
 *.bin
