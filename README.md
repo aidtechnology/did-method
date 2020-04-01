@@ -25,11 +25,9 @@ curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh
 Alternatively you can directly download the binary from the
 [published releases](https://github.com/bryk-io/did-method/releases). 
 
-Team members.
-- Ben Cessa / [ben@aid.technology](mailto:ben@aid.technology)
-- Niall Dennehy / [niall@aid.technology](mailto:niall@aid.technology)
-
 Collaborators.
+
+- Ben Cessa / [ben@pixative.com](mailto:ben@pixative.com)
 - Sandra Murcia / [smurcia@iadb.org](mailto:smurcia@iadb.org)
 - Marcos Allende / [marcosal@iadb.org](mailto:marcosal@iadb.org)
 - Flavia Munhoso / [flaviamu@iadb.org](mailto:flaviamu@iadb.org)

@@ -6,10 +6,12 @@
 # Deps
 vendor/**
 
+# Temporary files
+tmp/
+
 # Build releases
 release-*/**
 *.tgz
-*-install.yaml
 
 # PKI
 *.bin
