@@ -34,7 +34,7 @@ func (br *brykResolver) Resolve(value string) ([]byte, error) {
 	var opts []rpc.ClientOption
 	opts = append(opts, rpc.WaitForReady())
 	opts = append(opts, rpc.WithTimeout(5*time.Second))
-	opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs:true}))
+	opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs: true}))
 	conn, err := rpc.NewClientConnection(br.endpoint, opts...)
 	if err != nil {
 		return nil, err

@@ -16,7 +16,7 @@ import (
 var addServiceCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Register a new service entry for the DID",
-	Example: "didctl did service add [DID reference name] --name \"service name\" --endpoint https://www.agency.com/user_id",
+	Example: "didctl did service add [DID] --name my-service --endpoint https://www.agency.com/user_id",
 	RunE:    runAddServiceCmd,
 }
 

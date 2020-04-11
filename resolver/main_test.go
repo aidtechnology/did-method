@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestGet(t *testing.T)  {
+func TestGet(t *testing.T) {
 	t.Run("bryk", func(t *testing.T) {
 		t.Skip()
 		contents, err := Get("did:bryk:7889c965-4644-44ff-b760-f396f1d11444")

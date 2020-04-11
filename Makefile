@@ -16,14 +16,13 @@ help:
 	@echo "Commands available"
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /' | sort
 
-## test: Run all tests excluding the vendor dependencies
-test:
-	# Formatting and static analysis
+## lint: Static analysis
+lint:
 	helm lint helm/*
-	golangci-lint run ./...
-	go-consistent -v ./...
+	golangci-lint run -v ./...
 
-	# Unit tests
+## test: Run unit tests excluding the vendor dependencies
+test:
 	go test -race -cover -v -failfast ./...
 
 ## scan: Look for knonwn vulnerabilities in the project dependencies
@@ -92,3 +91,7 @@ docker:
 	@-docker rmi $(DOCKER_IMAGE):$(VERSION_TAG)
 	@docker build --build-arg VERSION_TAG="$(VERSION_TAG)" --rm -t $(DOCKER_IMAGE):$(VERSION_TAG) .
 	@-rm $(BINARY_NAME)_$(VERSION_TAG)_linux_amd64
+
+## ci-update: Update the signature on the CI configuration file
+ci-update:
+	drone sign bryk-io/did-method --save

@@ -23,6 +23,9 @@ release-*/**
 !**/testdata/*.cer
 !**/testdata/*.pem
 
+# Secret data
+secret*
+
 # protobuf / RPC
 *.swagger.json
 

@@ -12,7 +12,7 @@ import (
 	didpb "github.com/bryk-io/did-method/proto"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/x-cray/logrus-prefixed-formatter"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"go.bryk.io/x/crypto/ed25519"
 	"go.bryk.io/x/did"
 	"go.bryk.io/x/net/rpc"
@@ -61,10 +61,10 @@ func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	opts := []rpc.ClientOption{
 		rpc.WaitForReady(),
 		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", coreVersion)),
-		rpc.WithTimeout(time.Duration(timeout)*time.Second),
+		rpc.WithTimeout(time.Duration(timeout) * time.Second),
 	}
 	if viper.GetBool("client.tls") {
-		opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs:true}))
+		opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs: true}))
 	}
 	if override := viper.GetString("client.override"); override != "" {
 		opts = append(opts, rpc.WithServerNameOverride(override))

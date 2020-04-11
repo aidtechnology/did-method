@@ -54,8 +54,9 @@ func (ls *LocalStore) Get(name string) *Entry {
 
 // List currently registered entries
 func (ls *LocalStore) List() []*Entry {
-	var err error
+	// nolint: prealloc
 	var list []*Entry
+	var err error
 	cursor := ls.db.Iterate(context.TODO(), &kv.CursorOptions{KeysOnly: false})
 	for i := range cursor {
 		rec := &Entry{}

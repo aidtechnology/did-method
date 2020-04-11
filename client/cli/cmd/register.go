@@ -182,7 +182,7 @@ func splitSecret(secret []byte, conf string) ([][]byte, error) {
 		return nil, fmt.Errorf("invalid threshold value: %s", sssConf[1])
 	}
 	if threshold >= shares {
-		return nil, fmt.Errorf("threshold value (%d) should be smaller than the total number of shares (%d)", threshold, shares)
+		return nil, fmt.Errorf("threshold '(%d)' should be smaller than shares '(%d)'", threshold, shares)
 	}
 
 	// Split secret

@@ -88,7 +88,7 @@ func recoverSecret(pp bool, shareFile []string) ([]byte, error) {
 	}
 
 	// Use secret sharing
-	var parts [][]byte
+	parts := make([][]byte, len(shareFile))
 	for _, s := range shareFile {
 		c, err := ioutil.ReadFile(filepath.Clean(s))
 		if err != nil {

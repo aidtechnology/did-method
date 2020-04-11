@@ -17,11 +17,11 @@ import (
 )
 
 var agentCmd = &cobra.Command{
-	Use:           "agent",
-	Short:         "Starts a new network agent supporting the DID method requirements",
-	Example:       "didctl agent --storage /var/run/didctl --port 8080",
-	Aliases:       []string{"server", "node"},
-	RunE:          runMethodServer,
+	Use:     "agent",
+	Short:   "Starts a new network agent supporting the DID method requirements",
+	Example: "didctl agent --storage /var/run/didctl --port 8080",
+	Aliases: []string{"server", "node"},
+	RunE:    runMethodServer,
 }
 
 func init() {
@@ -247,11 +247,10 @@ func getAgentGateway() (*rpc.HTTPGateway, error) {
 
 	// Properly adjust outgoing headers
 	headersMatcher := func(h string) (string, bool) {
-		if strings.HasPrefix(strings.ToLower(h),"x-") {
+		if strings.HasPrefix(strings.ToLower(h), "x-") {
 			return h, true
-		} else {
-			return "x-rpc-metadata-" + h, true
 		}
+		return "x-rpc-metadata-" + h, true
 	}
 
 	gwOpts := []rpc.HTTPGatewayOption{

@@ -56,6 +56,7 @@ func init() {
 	keyCmd.AddCommand(addKeyCmd)
 }
 
+// nolint: gocyclo
 func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("you must specify a DID reference name")

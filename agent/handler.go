@@ -11,7 +11,7 @@ import (
 
 	didpb "github.com/bryk-io/did-method/proto"
 	log "github.com/sirupsen/logrus"
-	"github.com/x-cray/logrus-prefixed-formatter"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"go.bryk.io/x/did"
 	"go.bryk.io/x/net/rpc"
 	"go.bryk.io/x/storage/kv"
