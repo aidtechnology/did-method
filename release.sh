@@ -6,6 +6,6 @@ for binary in "$(pwd)"/*; do
   name=$(basename "${binary}")
   shasum -a 256 "${name}" > "${name}".'sha256sum'
   shasum -a 256 -c "${name}".'sha256sum'
-  didctl did key sign dev --key 'code-sign' > "${name}".'sig.json' < "${name}".'sha256sum'
+  didctl sign dev --key 'code-sign' > "${name}".'sig.json' < "${name}".'sha256sum'
   didctl verify "${name}".'sig.json' < "${name}".'sha256sum'
 done
