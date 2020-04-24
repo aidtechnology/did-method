@@ -134,11 +134,11 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		rpc.WithNetworkInterface(rpc.NetworkInterfaceAll),
 		rpc.WithService(handler.ServiceDefinition()),
 		rpc.WithLogger(rpc.LoggingOptions{
-		 	Logger: log,
-		 	IncludePayload: false,
-		 	FilterMethods: []string{
-		 		"bryk.did.proto.v1.AgentAPI/Ping",
-		  },
+			Logger:         log,
+			IncludePayload: false,
+			FilterMethods: []string{
+				"bryk.did.proto.v1.AgentAPI/Ping",
+			},
 		}),
 	}
 
