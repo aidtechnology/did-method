@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package bryk.did.proto.v1;
+
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.gostring_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.stringer_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option csharp_namespace = "Bryk.Did.Proto.V1";
+option go_package = "protov1";
+option java_multiple_files = true;
+option java_outer_classname = "MainProto";
+option java_package = "io.bryk.did.proto.v1";
+option objc_class_prefix = "BDP";
+option php_namespace = "Bryk\\Did\\Proto\\V1";
+
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+
+// Ticket required for write operations.
+message Ticket {
+  int64 timestamp = 1;
+  int64 nonce = 2 [(gogoproto.customname) = "NonceValue"];
+  string key_id = 3;
+  bytes content = 4;
+  bytes signature = 5;
+}

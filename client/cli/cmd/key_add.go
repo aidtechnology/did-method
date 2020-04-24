@@ -8,14 +8,14 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
 )
 
 var addKeyCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Add a new cryptographic key for the DID",
-	Example: "didctl did key add [DID reference name] --name my-new-key --type ed --authentication",
+	Example: "didctl edit key add [DID reference name] --name my-new-key --type ed --authentication",
 	RunE:    runAddKeyCmd,
 }
 
@@ -63,30 +63,22 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	ll := getLogger()
 	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Get identifier
 	name := sanitize.Name(args[0])
-	ll.Info("adding new key")
-	ll.Debugf("retrieving entry with reference name: %s", name)
-	e := st.Get(name)
-	if e == nil {
+	log.Info("adding new key")
+	log.Debugf("retrieving entry with reference name: %s", name)
+	id, err := st.Get(name)
+	if err != nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
-	}
-	id := &did.Identifier{}
-	if err = id.Decode(e.Contents); err != nil {
-		return errors.New("failed to decode entry contents")
 	}
 
 	// Sanitize key name
-	ll.Debug("validating parameters")
+	log.Debug("validating parameters")
 	keyName := viper.GetString("key-add.name")
 	if strings.Count(keyName, "#") > 1 {
 		return errors.New("invalid key name")
@@ -123,22 +115,18 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Add key
-	ll.Debugf("adding new key with name: %s", keyName)
+	log.Debugf("adding new key with name: %s", keyName)
 	if err = id.AddNewKey(keyName, keyType, keyEnc); err != nil {
 		return fmt.Errorf("failed to add new key: %s", err)
 	}
 	if viper.GetBool("key-add.authentication") {
-		ll.Info("setting new key as authentication mechanism")
+		log.Info("setting new key as authentication mechanism")
 		if err = id.AddAuthenticationKey(keyName); err != nil {
 			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
 		}
 	}
 
 	// Update record
-	ll.Info("updating local record")
-	contents, err := id.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode identifier: %s", err)
-	}
-	return st.Update(name, contents)
+	log.Info("updating local record")
+	return st.Update(name, id)
 }

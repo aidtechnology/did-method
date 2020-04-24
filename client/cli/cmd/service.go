@@ -8,5 +8,5 @@ var serviceCmd = &cobra.Command{
 }
 
 func init() {
-	didCmd.AddCommand(serviceCmd)
+	editCmd.AddCommand(serviceCmd)
 }

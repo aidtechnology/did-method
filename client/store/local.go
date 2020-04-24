@@ -1,18 +1,18 @@
 package store
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 
-	"go.bryk.io/x/storage/kv"
+	"go.bryk.io/x/ccg/did"
 )
 
 // LocalStore provides a filesystem-backed store
 type LocalStore struct {
-	db *kv.Store
+	home string
 }
 
 // NewLocalStore returns a local store handler
@@ -23,73 +23,59 @@ func NewLocalStore(home string) (*LocalStore, error) {
 			return nil, fmt.Errorf("failed to create new home directory: %s", err)
 		}
 	}
-	db, err := kv.Open(path.Join(h, "data"), false, true)
-	if err != nil {
-		return nil, err
-	}
-	return &LocalStore{db: db}, nil
+	return &LocalStore{home: h}, nil
 }
 
 // Save add a new entry to the store
-func (ls *LocalStore) Save(name string, record *Entry) error {
-	contents, err := record.Encode()
+func (ls *LocalStore) Save(name string, id *did.Identifier) error {
+	data, err := json.Marshal(id.Document())
 	if err != nil {
 		return err
 	}
-	return ls.db.Create([]byte(name), contents)
+	return ioutil.WriteFile(filepath.Join(ls.home, name), data, 0600)
 }
 
 // Get an existing entry based on its reference name
-func (ls *LocalStore) Get(name string) *Entry {
-	contents, err := ls.db.Read([]byte(name))
+func (ls *LocalStore) Get(name string) (*did.Identifier, error) {
+	data, err := ioutil.ReadFile(filepath.Clean(filepath.Join(ls.home, name)))
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	rec := &Entry{}
-	if err = rec.Decode(contents); err != nil {
-		return nil
+	doc := &did.Document{}
+	if err := json.Unmarshal(data, doc); err != nil {
+		return nil, err
 	}
-	return rec
+	return did.FromDocument(doc)
 }
 
 // List currently registered entries
-func (ls *LocalStore) List() []*Entry {
+func (ls *LocalStore) List() map[string]*did.Identifier {
 	// nolint: prealloc
-	var list []*Entry
-	var err error
-	cursor := ls.db.Iterate(context.TODO(), &kv.CursorOptions{KeysOnly: false})
-	for i := range cursor {
-		rec := &Entry{}
-		if err = rec.Decode(i.Value); err != nil {
-			continue
+	var list = make(map[string]*did.Identifier)
+	_ = filepath.Walk(ls.home, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-		list = append(list, rec)
-	}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		id, err := ls.Get(info.Name())
+		if err == nil {
+			list[info.Name()] = id
+		}
+		return nil
+	})
 	return list
 }
 
 // Update the contents of an existing entry
-func (ls *LocalStore) Update(name string, contents []byte) error {
-	rec := ls.Get(name)
-	if rec == nil {
-		return fmt.Errorf("no entry for the id: %s", name)
-	}
-	rec.Contents = contents
-	data, err := rec.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode entry for storage: %s", err)
-	}
-	return ls.db.Update([]byte(name), data)
+func (ls *LocalStore) Update(name string, id *did.Identifier) error {
+	return ls.Save(name, id)
 }
 
 // Delete a previously stored entry
 func (ls *LocalStore) Delete(name string) error {
-	return ls.db.Delete([]byte(name))
-}
-
-// Close the store instance and free resources
-func (ls *LocalStore) Close() error {
-	return ls.db.Close()
+	return os.Remove(filepath.Join(ls.home, name))
 }
 
 // Verify the provided path exists and is a directory

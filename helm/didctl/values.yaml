@@ -1,13 +1,29 @@
-agent:
-  pow: 24
-  tls:
-    enabled: false
-    secret: "tls-secret-name-goes-here"
+# Full configmap settings
+configuration:
+  server:
+    pow: 24
+    http: true
+    tls:
+      enabled: false
+  resolver:
+    - method: bryk
+      endpoint: "https://did.bryk.io/v1/retrieve/{{.Method}}/{{.Subject}}"
+      protocol: http
+    - method: ccp
+      endpoint: https://did.baidu.com/v1/did/resolve/{{.DID}}
+      protocol: http
+    - method: stack
+      endpoint: https://core.blockstack.org/v1/dids/{{.DID}}
+      protocol: http
+
+# Specify an existing TLS secret to load the certificate from
+# when enabled.
+tlsSecretName: "tls-secret-name-goes-here"
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 persistence:
-  enabled: true
+  enabled: false
   accessMode: ReadWriteOnce
   size: 1Gi
   ## If not define the default storage provision mechanism will be used,
@@ -29,7 +45,7 @@ image:
 
 serviceAccount:
   create: false
-  name:
+  name: ""
 
 service:
   type: ClusterIP
@@ -52,20 +68,20 @@ ingress:
 podSecurityContext: {}
 
 securityContext: {}
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-  # capabilities:
-  #   drop:
-  #   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+# limits:
+#   cpu: 250m
+#   memory: 256Mi
 
 nodeSelector: {}
 

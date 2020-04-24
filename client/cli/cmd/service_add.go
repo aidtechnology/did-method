@@ -9,14 +9,14 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
 )
 
 var addServiceCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Register a new service entry for the DID",
-	Example: "didctl did service add [DID] --name my-service --endpoint https://www.agency.com/user_id",
+	Example: "didctl edit service add [DID] --name my-service --endpoint https://www.agency.com/user_id",
 	RunE:    runAddServiceCmd,
 }
 
@@ -63,26 +63,18 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Get identifier
-	ll := getLogger()
 	name := sanitize.Name(args[0])
-	ll.Info("adding new service")
-	ll.Debugf("retrieving entry with reference name: %s", name)
-	e := st.Get(name)
-	if e == nil {
+	log.Info("adding new service")
+	log.Debugf("retrieving entry with reference name: %s", name)
+	id, err := st.Get(name)
+	if err != nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
-	}
-	id := &did.Identifier{}
-	if err = id.Decode(e.Contents); err != nil {
-		return errors.New("failed to decode entry contents")
 	}
 
 	// Validate service data
-	ll.Debug("validating parameters")
+	log.Debug("validating parameters")
 	svc := &did.ServiceEndpoint{
 		ID:       viper.GetString("service-add.name"),
 		Type:     viper.GetString("service-add.type"),
@@ -100,16 +92,12 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Add service
-	ll.Debugf("registering service with id: %s", svc.ID)
+	log.Debugf("registering service with id: %s", svc.ID)
 	if err = id.AddService(svc); err != nil {
 		return fmt.Errorf("failed to add new service: %s", err)
 	}
 
 	// Update record
-	ll.Info("updating local record")
-	contents, err := id.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode identifier: %s", err)
-	}
-	return st.Update(name, contents)
+	log.Info("updating local record")
+	return st.Update(name, id)
 }

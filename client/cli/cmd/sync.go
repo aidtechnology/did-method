@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	didpb "github.com/bryk-io/did-method/proto"
+	protov1 "github.com/bryk-io/did-method/proto/v1"
 	"github.com/kennygrant/sanitize"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
+	xlog "go.bryk.io/x/log"
 )
 
 var syncCmd = &cobra.Command{
@@ -60,24 +60,16 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	ll := getLogger()
 	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Retrieve identifier
 	name := sanitize.Name(args[0])
-	record := st.Get(name)
-	if record == nil {
+	id, err := st.Get(name)
+	if err != nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
-	}
-	id := &did.Identifier{}
-	if err = id.Decode(record.Contents); err != nil {
-		return errors.New("failed to decode entry contents")
 	}
 
 	// Get selected key for the sync operation
@@ -85,23 +77,23 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	ll.Debugf("key selected for the operation: %s", key.ID)
+	log.Debugf("key selected for the operation: %s", key.ID)
 
 	// Update proof
-	ll.Info("updating record proof")
+	log.Info("updating record proof")
 	if err = id.AddProof(key.ID, didDomainValue); err != nil {
 		return fmt.Errorf("failed to generate proof: %s", err)
 	}
 
 	// Generate request ticket
-	ll.Infof("publishing: %s", name)
-	ticket, err := getRequestTicket(id, key, ll)
+	log.Infof("publishing: %s", name)
+	ticket, err := getRequestTicket(id, key)
 	if err != nil {
 		return err
 	}
 
 	// Get client connection
-	conn, err := getClientConnection(ll)
+	conn, err := getClientConnection()
 	if err != nil {
 		return fmt.Errorf("failed to establish connection: %s", err)
 	}
@@ -110,42 +102,38 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}()
 
 	// Build request
-	req := &didpb.Request{
-		Task:   didpb.Request_PUBLISH,
+	req := &protov1.ProcessRequest{
+		Task:   protov1.ProcessRequest_TASK_PUBLISH,
 		Ticket: ticket,
 	}
 	if viper.GetBool("sync.deactivate") {
-		req.Task = didpb.Request_DEACTIVATE
+		req.Task = protov1.ProcessRequest_TASK_DEACTIVATE
 	}
 
 	// Submit request
-	ll.Info("submitting request to the network")
-	client := didpb.NewAgentAPIClient(conn)
+	log.Info("submitting request to the network")
+	client := protov1.NewAgentAPIClient(conn)
 	res, err := client.Process(context.TODO(), req)
 	if err != nil {
 		return fmt.Errorf("network return an error: %s", err)
 	}
-	ll.Debugf("request status: %v", res.Ok)
+	log.Debugf("request status: %v", res.Ok)
 	if !res.Ok {
 		return nil
 	}
 
 	// Update local record if sync was successful
-	contents, err := id.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode identifier: %s", err)
-	}
-	return st.Update(name, contents)
+	return st.Update(name, id)
 }
 
-func getRequestTicket(id *did.Identifier, key *did.PublicKey, ll *log.Logger) (*didpb.Ticket, error) {
-	ll.Info("generating request ticket")
+func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, error) {
 	diff := uint(viper.GetInt("sync.pow"))
-	ticket := didpb.NewTicket(id, key.ID)
+	log.WithFields(xlog.Fields{"pow": diff}).Info("generating request ticket")
+	ticket := protov1.NewTicket(id, key.ID)
 	start := time.Now()
 	challenge := ticket.Solve(context.TODO(), diff)
-	ll.Debugf("ticket obtained: %s", challenge)
-	ll.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
+	log.Debugf("ticket obtained: %s", challenge)
+	log.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
 	ch, _ := hex.DecodeString(challenge)
 
 	// Sign ticket

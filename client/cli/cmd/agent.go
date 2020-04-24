@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/bryk-io/did-method/agent"
+	"github.com/bryk-io/did-method/agent/storage"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.bryk.io/x/cli"
@@ -18,8 +20,8 @@ import (
 
 var agentCmd = &cobra.Command{
 	Use:     "agent",
-	Short:   "Starts a new network agent supporting the DID method requirements",
-	Example: "didctl agent --storage /var/run/didctl --port 8080",
+	Short:   "Start a network agent supporting the DID method requirements",
+	Example: "didctl agent --port 8080",
 	Aliases: []string{"server", "node"},
 	RunE:    runMethodServer,
 }
@@ -32,13 +34,6 @@ func init() {
 			FlagKey:   "server.port",
 			ByDefault: 9090,
 			Short:     "p",
-		},
-		{
-			Name:      "storage",
-			Usage:     "specify the directory to use for data storage",
-			FlagKey:   "server.storage",
-			ByDefault: "/etc/didctl/agent",
-			Short:     "s",
 		},
 		{
 			Name:      "pow",
@@ -67,7 +62,7 @@ func init() {
 		{
 			Name:      "tls",
 			Usage:     "enable secure communications using TLS with provided credentials",
-			FlagKey:   "server.tls.enable",
+			FlagKey:   "server.tls.enabled",
 			ByDefault: false,
 		},
 		{
@@ -80,13 +75,27 @@ func init() {
 			Name:      "tls-cert",
 			Usage:     "TLS certificate (path to PEM file)",
 			FlagKey:   "server.tls.cert",
-			ByDefault: "",
+			ByDefault: "/etc/didctl/agent/tls.crt",
 		},
 		{
 			Name:      "tls-key",
 			Usage:     "TLS private key (path to PEM file)",
 			FlagKey:   "server.tls.key",
+			ByDefault: "/etc/didctl/agent/tls.key",
+		},
+		{
+			Name:      "method",
+			Usage:     "specify a supported DID method (can be provided multiple times)",
+			FlagKey:   "server.method",
+			ByDefault: []string{"bryk"},
+			Short:     "m",
+		},
+		{
+			Name:      "storage",
+			Usage:     "specify storage mechanism to use",
+			FlagKey:   "server.storage",
 			ByDefault: "",
+			Short:     "s",
 		},
 	}
 	if err := cli.SetupCommandParams(agentCmd, params); err != nil {
@@ -97,12 +106,10 @@ func init() {
 
 func runMethodServer(_ *cobra.Command, _ []string) error {
 	// Prepare API handler
-	storage := viper.GetString("server.storage")
-	handler, err := agent.NewHandler(storage, uint(viper.GetInt("server.pow")))
+	handler, err := getAgentHandler()
 	if err != nil {
-		return fmt.Errorf("failed to start method handler: %s", err)
+		return err
 	}
-	handler.Log(fmt.Sprintf("storage directory: %s", storage))
 
 	// CPU profile
 	if viper.GetBool("server.debug") {
@@ -114,7 +121,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 			return err
 		}
 		defer func() {
-			handler.Log(fmt.Sprintf("CPU profile saved at %s", cpu.Name()))
+			log.Infof("CPU profile saved at %s", cpu.Name())
 			pprof.StopCPUProfile()
 			_ = cpu.Close()
 		}()
@@ -125,11 +132,19 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		rpc.WithPanicRecovery(),
 		rpc.WithPort(viper.GetInt("server.port")),
 		rpc.WithNetworkInterface(rpc.NetworkInterfaceAll),
+		rpc.WithService(handler.ServiceDefinition()),
+		rpc.WithLogger(rpc.LoggingOptions{
+		 	Logger: log,
+		 	IncludePayload: false,
+		 	FilterMethods: []string{
+		 		"bryk.did.proto.v1.AgentAPI/Ping",
+		  },
+		}),
 	}
 
 	// TLS configuration
-	if viper.GetBool("server.tls.enable") {
-		handler.Log("TLS enabled")
+	if viper.GetBool("server.tls.enabled") {
+		log.Info("TLS enabled")
 		opt, err := loadAgentCredentials()
 		if err != nil {
 			return err
@@ -139,8 +154,8 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 
 	// Initialize HTTP gateway
 	if viper.GetBool("server.http") {
-		handler.Log("HTTP gateway available")
-		gw, err := getAgentGateway()
+		log.Info("HTTP gateway available")
+		gw, err := getAgentGateway(handler)
 		if err != nil {
 			return err
 		}
@@ -149,7 +164,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 
 	// Monitoring
 	if viper.GetBool("server.http") && viper.GetBool("server.monitoring") {
-		handler.Log("monitoring enabled")
+		log.Info("monitoring enabled")
 		opts = append(opts, rpc.WithMonitoring(rpc.MonitoringOptions{
 			IncludeHistograms:   true,
 			UseProcessCollector: true,
@@ -158,14 +173,14 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	}
 
 	// Start server and wait for it to be ready
-	handler.Log(fmt.Sprintf("difficulty level: %d", viper.GetInt("server.pow")))
-	handler.Log(fmt.Sprintf("TCP port: %d", viper.GetInt("server.port")))
-	handler.Log("starting network agent")
-	if viper.GetBool("server.tls.enable") {
-		handler.Log(fmt.Sprintf("certificate: %s", viper.GetString("server.tls.cert")))
-		handler.Log(fmt.Sprintf("private key: %s", viper.GetString("server.tls.key")))
+	log.Infof("difficulty level: %d", viper.GetInt("server.pow"))
+	log.Infof("TCP port: %d", viper.GetInt("server.port"))
+	log.Info("starting network agent")
+	if viper.GetBool("server.tls.enabled") {
+		log.Infof("certificate: %s", viper.GetString("server.tls.cert"))
+		log.Infof("private key: %s", viper.GetString("server.tls.key"))
 	}
-	server, err := handler.GetServer(opts...)
+	server, err := rpc.NewServer(opts...)
 	if err != nil {
 		return fmt.Errorf("failed to start node: %s", err)
 	}
@@ -176,7 +191,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	<-ready
 
 	// Wait for system signals
-	handler.Log("waiting for incoming requests")
+	log.Info("waiting for incoming requests")
 	<-cli.SignalsHandler([]os.Signal{
 		syscall.SIGHUP,
 		syscall.SIGINT,
@@ -185,7 +200,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	})
 
 	// Close handler
-	handler.Log("preparing to exit")
+	log.Info("preparing to exit")
 	if err = handler.Close(); err != nil && !strings.Contains(err.Error(), "closed network connection") {
 		return err
 	}
@@ -201,10 +216,28 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		if err := pprof.WriteHeapProfile(mem); err != nil {
 			return err
 		}
-		handler.Log(fmt.Sprintf("memory profile saved at %s", mem.Name()))
+		log.Infof("memory profile saved at %s", mem.Name())
 		_ = mem.Close()
 	}
 	return nil
+}
+
+func getAgentHandler() (*agent.Handler, error) {
+	// Get handler settings
+	methods := viper.GetStringSlice("server.method")
+	pow := uint(viper.GetInt("server.pow"))
+	store, err := getStorage(viper.GetString("server.storage"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepare API handler
+	handler, err := agent.NewHandler(log, methods, pow, store)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start method handler: %s", err)
+	}
+	log.Infof("storage: %s", store.Description())
+	return handler, nil
 }
 
 func loadAgentCredentials() (rpc.ServerOption, error) {
@@ -230,9 +263,9 @@ func loadAgentCredentials() (rpc.ServerOption, error) {
 	return rpc.WithTLS(tlsConf), nil
 }
 
-func getAgentGateway() (*rpc.HTTPGateway, error) {
+func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 	gwCl := []rpc.ClientOption{rpc.WaitForReady()}
-	if viper.GetBool("server.tls.enable") {
+	if viper.GetBool("server.tls.enabled") {
 		tlsConf := rpc.ClientTLSConfig{IncludeSystemCAs: true}
 		if viper.GetString("server.tls.ca") != "" {
 			caPEM, err := ioutil.ReadFile(viper.GetString("server.tls.ca"))
@@ -250,7 +283,7 @@ func getAgentGateway() (*rpc.HTTPGateway, error) {
 		if strings.HasPrefix(strings.ToLower(h), "x-") {
 			return h, true
 		}
-		return "x-rpc-metadata-" + h, true
+		return "x-rpc-" + h, true
 	}
 
 	gwOpts := []rpc.HTTPGatewayOption{
@@ -259,10 +292,27 @@ func getAgentGateway() (*rpc.HTTPGateway, error) {
 		rpc.WithEncoder("*", rpc.MarshalerStandard(false)),
 		rpc.WithClientOptions(gwCl),
 		rpc.WithOutgoingHeaderMatcher(headersMatcher),
+		rpc.WithFilter(handler.QueryResponseFilter()),
 	}
 	gw, err := rpc.NewHTTPGateway(gwOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize HTTP gateway: %s", err)
 	}
 	return gw, nil
+}
+
+// Return the proper storage handler instance based on the connection
+// details provided.
+func getStorage(info string) (agent.Storage, error) {
+	switch {
+	case info == "":
+		store := &storage.Ephemeral{}
+		_ = store.Open("no-op")
+		return store, nil
+	case strings.HasPrefix(info, "mongodb://"):
+		store := &storage.MongoStore{}
+		return store, store.Open(info)
+	default:
+		return nil, errors.New("non supported storage")
+	}
 }

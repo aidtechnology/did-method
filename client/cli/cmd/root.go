@@ -3,19 +3,28 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
+	"github.com/bryk-io/did-method/resolver"
 	hd "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	xlog "go.bryk.io/x/log"
 )
 
 var (
-	cfgFile        string
-	homeDir        string
-	didDomainValue = "did.bryk.io"
-	defaultNode    = "did.bryk.io:443"
+	log              xlog.Logger
+	cfgFile          = ""
+	homeDir          = ""
+	didDomainValue   = "did.bryk.io"
+	defaultProviders = []*resolver.Provider{
+		{
+			Method:   "bryk",
+			Endpoint: "https://did.bryk.io/v1/retrieve/{{.Method}}/{{.Subject}}",
+			Protocol: "http",
+		},
+	}
 )
 
 var rootCmd = &cobra.Command{
@@ -36,39 +45,44 @@ https://github.com/bryk-io/did-method`,
 // Execute will process the CLI invocation
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		ll := getLogger()
-		ll.Error(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
+	log = xlog.WithZero(true)
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.didctl/config.yaml)")
 	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.didctl)")
-	if err := viper.BindPFlag("home", rootCmd.PersistentFlags().Lookup("home")); err != nil {
+	if err := viper.BindPFlag("client.home", rootCmd.PersistentFlags().Lookup("home")); err != nil {
 		panic(err)
 	}
 }
 
 func initConfig() {
-	home := ""
-	if homeDir == "" {
+	// Find home directory
+	home := homeDir
+	if home == "" {
 		h, err := hd.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 		home = h
-	} else {
-		home = homeDir
 	}
 
+	// Set default values
+	viper.SetDefault("resolver", defaultProviders)
+	viper.SetDefault("client.timeout", 5)
+	viper.SetDefault("client.home", filepath.Join(home, ".didctl"))
+
+	// Set configuration file
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		homeDir = path.Join(home, ".didctl")
-		viper.AddConfigPath(homeDir)
+		viper.AddConfigPath(filepath.Join(home, ".didctl"))
+		viper.AddConfigPath("/etc/didctl")
 		viper.SetConfigName("config")
 	}
 
@@ -76,11 +90,6 @@ func initConfig() {
 	viper.SetEnvPrefix("didctl")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-
-	// Set default settings
-	viper.SetDefault("client.node", defaultNode)
-	viper.SetDefault("client.tls", true)
-	viper.SetDefault("client.timeout", 5)
 
 	// Read configuration file
 	if err := viper.ReadInConfig(); err != nil && viper.ConfigFileUsed() != "" {

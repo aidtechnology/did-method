@@ -6,13 +6,12 @@ import (
 
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
-	"go.bryk.io/x/did"
 )
 
 var removeKeyCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an existing cryptographic key for the DID",
-	Example: "didctl did key remove [DID reference name] [key name]",
+	Example: "didctl edit key remove [DID reference name] [key name]",
 	Aliases: []string{"rm"},
 	RunE:    runRemoveKeyCmd,
 }
@@ -27,31 +26,23 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get store handler
-	ll := getLogger()
 	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Get identifier
 	name := sanitize.Name(args[0])
 	keyName := sanitize.Name(args[1])
-	ll.Info("removing existing key")
-	ll.Debugf("retrieving entry with reference name: %s", name)
-	e := st.Get(name)
-	if e == nil {
+	log.Info("removing existing key")
+	log.Debugf("retrieving entry with reference name: %s", name)
+	id, err := st.Get(name)
+	if err != nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
-	}
-	id := &did.Identifier{}
-	if err = id.Decode(e.Contents); err != nil {
-		return errors.New("failed to decode entry contents")
 	}
 
 	// Remove key
-	ll.Debug("validating parameters")
+	log.Debug("validating parameters")
 	if len(id.Keys()) >= 2 {
 		_ = id.RemoveAuthenticationKey(keyName)
 	}
@@ -60,11 +51,7 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Update record
-	ll.Debug("key removed")
-	ll.Info("updating local record")
-	contents, err := id.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode identifier: %s", err)
-	}
-	return st.Update(name, contents)
+	log.Debug("key removed")
+	log.Info("updating local record")
+	return st.Update(name, id)
 }

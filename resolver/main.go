@@ -1,48 +1,93 @@
 package resolver
 
 import (
-	"errors"
-	"fmt"
+	"bytes"
+	"io/ioutil"
+	"net/http"
+	"text/template"
 
-	"go.bryk.io/x/did"
+	"github.com/pkg/errors"
+	"go.bryk.io/x/ccg/did"
 )
 
-type methodHandler interface {
-	Resolve(val string) ([]byte, error)
+// Provider represents an external system able to return DID
+// Documents on demand.
+type Provider struct {
+	// Method value expected on the identifier instance.
+	Method string
+
+	// Network location to retrieve DID documents from. The value can
+	// be a template with support for the following variables: DID, Method
+	// and Subject. For example:
+	// https://did.baidu.com/v1/did/resolve/{{.DID}}
+	Endpoint string
+
+	// Protocol used to communicate with the endpoint. Currently HTTP(S)
+	// is supported by submitting GET requests.
+	Protocol string
+
+	// Compiled endpoint template
+	tpl *template.Template
 }
 
-var catalog = make(map[string]methodHandler)
-
-// Get will attempt to retrieve the DID document corresponding to the provided DID
-func Get(value string) ([]byte, error) {
-	// Verify the provided value is a valid DID string
-	id, err := did.Parse(value)
+// Get the DID document (or the provider's response) for the
+// provided identifier instance.
+func Get(id string, providers []*Provider) ([]byte, error) {
+	// Validate id
+	r, err := did.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get method handler
-	mh, ok := catalog[id.Method()]
-	if !ok {
-		return nil, errors.New("unsupported did method")
+	// Select provider
+	var p *Provider
+	for _, p = range providers {
+		if p.Method == r.Method() {
+			break
+		}
+	}
+	if p == nil {
+		return nil, errors.New("not supported method")
 	}
 
-	// Return handler result
-	return mh.Resolve(value)
+	// Return result
+	return p.resolve(r)
 }
 
-// Common verification steps
-func verify(value string, method string) (*did.Identifier, error) {
-	// Verify provided value
-	id, err := did.Parse(value)
-	if err != nil {
+func (p *Provider) resolve(id *did.Identifier) ([]byte, error) {
+	var err error
+
+	// Parse template
+	if p.tpl == nil {
+		p.tpl, err = template.New(p.Method).Parse(p.Endpoint)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Build URL
+	buf := bytes.NewBuffer(nil)
+	if err = p.tpl.Execute(buf, p.data(id)); err != nil {
 		return nil, err
 	}
 
-	// Validate method value
-	if id.Method() != method {
-		return nil, fmt.Errorf("invalid method value: %s", id.Method())
+	// Submit request
+	res, err := http.Get(buf.String())
+	if err != nil {
+		return nil, err
 	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
-	return id, nil
+	// Return response
+	return ioutil.ReadAll(res.Body)
+}
+
+func (p *Provider) data(id *did.Identifier) map[string]string {
+	return map[string]string{
+		"DID":     id.String(),
+		"Method":  id.Method(),
+		"Subject": id.Subject(),
+	}
 }

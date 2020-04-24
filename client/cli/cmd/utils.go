@@ -1,20 +1,15 @@
 package cmd
 
 import (
-	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"io"
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
-	didpb "github.com/bryk-io/did-method/proto"
-	log "github.com/sirupsen/logrus"
+	"github.com/bryk-io/did-method/resolver"
 	"github.com/spf13/viper"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"go.bryk.io/x/crypto/ed25519"
-	"go.bryk.io/x/did"
 	"go.bryk.io/x/net/rpc"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/sha3"
@@ -48,15 +43,13 @@ func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
 
 // Accessor to the local storage handler
 func getClientStore() (*store.LocalStore, error) {
-	return store.NewLocalStore(viper.GetString("home"))
+	return store.NewLocalStore(viper.GetString("client.home"))
 }
 
 // Get an RPC network connection
-func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
+func getClientConnection() (*grpc.ClientConn, error) {
 	node := viper.GetString("client.node")
-	if ll != nil {
-		ll.Infof("establishing connection to the network with node: %s", node)
-	}
+	log.Infof("establishing connection to the network with node: %s", node)
 	timeout := viper.GetInt("client.timeout")
 	opts := []rpc.ClientOption{
 		rpc.WaitForReady(),
@@ -72,44 +65,12 @@ func getClientConnection(ll *log.Logger) (*grpc.ClientConn, error) {
 	return rpc.NewClientConnection(node, opts...)
 }
 
-// Output handler
-func getLogger() *log.Logger {
-	// Set formatter
-	output := log.New()
-	formatter := &prefixed.TextFormatter{}
-	formatter.FullTimestamp = true
-	formatter.TimestampFormat = time.StampMilli
-	formatter.SetColorScheme(&prefixed.ColorScheme{
-		DebugLevelStyle: "black",
-		TimestampStyle:  "white+h",
-	})
-	output.Formatter = formatter
-	output.SetLevel(log.DebugLevel)
-	return output
-}
-
-// Retrieve a DID instance from the network
-func retrieveSubject(subject string, ll *log.Logger) (*did.Identifier, error) {
-	// Get network connection
-	conn, err := getClientConnection(ll)
-	if err != nil {
-		return nil, err
+// Use the global resolver to obtain the DID document for the requested
+// identifier.
+func resolve(id string) ([]byte, error) {
+	var conf []*resolver.Provider
+	if err := viper.UnmarshalKey("resolver", &conf); err != nil {
+		return nil, fmt.Errorf("invalid resolver configuration: %s", err)
 	}
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	client := didpb.NewAgentAPIClient(conn)
-	res, err := client.Retrieve(context.TODO(), &didpb.Query{Subject: subject})
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve DID records: %s", err)
-	}
-
-	// Decode contents
-	ll.Debug("decoding contents")
-	doc := &did.Document{}
-	if err = json.Unmarshal(res.Source, doc); err != nil {
-		return nil, fmt.Errorf("failed to decode received DID Document: %s", err)
-	}
-	return did.FromDocument(doc)
+	return resolver.Get(id, conf)
 }

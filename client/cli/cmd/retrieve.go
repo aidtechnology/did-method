@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bryk-io/did-method/resolver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
 )
 
 var retrieveCmd = &cobra.Command{
@@ -42,49 +41,46 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Verify the provided value is a valid DID string
-	id, err := did.Parse(args[0])
+	_, err := did.Parse(args[0])
 	if err != nil {
 		return err
 	}
 
-	// Retrieve subject
-	var sid *did.Identifier
-	ll := getLogger()
-	ll.Info("retrieving record")
-
-	if id.Method() == "bryk" {
-		// Use RPC client
-		sid, err = retrieveSubject(id.Subject(), ll)
-		if err != nil {
-			return err
-		}
-	} else {
-		// Use global resolver
-		response, err := resolver.Get(args[0])
-		if err != nil {
-			return fmt.Errorf("failed to resolve DID: %s", err)
-		}
-		doc := &did.Document{}
-		if err := json.Unmarshal(response, doc); err != nil {
-			return fmt.Errorf("failed to decode received document: %s", err)
-		}
-		sid, err = did.FromDocument(doc)
-		if err != nil {
-			fmt.Printf("%s", response)
-			return fmt.Errorf("failed to decode received document: %s", err)
-		}
+	// Retrieve record
+	log.Info("retrieving record")
+	response, err := resolve(args[0])
+	if err != nil {
+		return fmt.Errorf("failed to resolve DID: %s", err)
 	}
 
-	// Verify DID Document
+	// Parse response as a DID document. In case of error show warning
+	// and print contents as-is.
+	doc := &did.Document{}
+	if err := json.Unmarshal(response, doc); err != nil {
+		log.Warning("invalid DID document received")
+		fmt.Printf("%s\n", response)
+		return nil
+	}
+
+	// Get DID instance from the received document. In case of error show warning
+	// and print contents as-is.
+	sid, err := did.FromDocument(doc)
+	if err != nil {
+		log.Warning("invalid DID document received")
+		fmt.Printf("%s\n", response)
+		return nil
+	}
+
+	// Integrity checks
 	if viper.GetBool("retrieve.verify") {
 		if err := sid.VerifyProof(nil); err != nil {
 			return err
 		}
-		ll.Info("integrity proof is valid")
+		log.Info("integrity proof is valid")
 	}
 
 	// Print out received response
-	output, err := json.MarshalIndent(sid.Document(), "", "  ")
+	output, err := json.MarshalIndent(sid.SafeDocument(), "", "  ")
 	if err != nil {
 		return err
 	}

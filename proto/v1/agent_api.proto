@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package bryk.did.proto.v1;
+
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.gostring_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.stringer_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option csharp_namespace = "Bryk.Did.Proto.V1";
+option go_package = "protov1";
+option java_multiple_files = true;
+option java_outer_classname = "AgentApiProto";
+option java_package = "io.bryk.did.proto.v1";
+option objc_class_prefix = "BDP";
+option php_namespace = "Bryk\\Did\\Proto\\V1";
+
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+import "proto/v1/main.proto";
+
+// AgentAPI defines the network protocol as detailed in the DID Method specification.
+service AgentAPI {
+  // Reachability test.
+  rpc Ping(google.protobuf.Empty) returns (PingResponse) {
+    option (google.api.http) = {
+      get: "/v1/ping"
+    };
+  }
+  // Process an incoming request ticket.
+  rpc Process(ProcessRequest) returns (ProcessResponse) {
+    option (google.api.http) = {
+      post: "/v1/process"
+      body: "*"
+    };
+  }
+  // Return the current state of a DID subject.
+  rpc Query(QueryRequest) returns (QueryResponse) {
+    option (google.api.http) = {
+      get: "/v1/retrieve/{method}/{subject}"
+    };
+  }
+}
+
+message PingResponse {
+  bool ok = 1;
+}
+
+message QueryRequest {
+  // DID method.
+  string method = 1;
+  // DID subject.
+  string subject = 2;
+}
+
+message QueryResponse {
+  // JSON-encoded DID document.
+  bytes document = 1;
+}
+
+message ProcessRequest {
+  // Available processing operations.
+  enum Task {
+    TASK_PUBLISH = 0;
+    TASK_DEACTIVATE = 1;
+  }
+  Task task = 1;
+  Ticket ticket = 2;
+}
+
+message ProcessResponse {
+  bool ok = 1;
+}

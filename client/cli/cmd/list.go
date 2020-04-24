@@ -6,7 +6,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-	"go.bryk.io/x/did"
 )
 
 var listCmd = &cobra.Command{
@@ -27,9 +26,6 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Get list of entries
 	list := st.List()
@@ -40,13 +36,9 @@ func runListCmd(_ *cobra.Command, _ []string) error {
 
 	// Show list of registered entries
 	table := tabwriter.NewWriter(os.Stdout, 8, 0, 4, ' ', tabwriter.TabIndent)
-	_, _ = fmt.Fprintf(table, "%s\t%s\t%s\n", "Reference Name", "Recovery Mode", "DID")
-	for _, e := range list {
-		id := &did.Identifier{}
-		if err := id.Decode(e.Contents); err != nil {
-			continue
-		}
-		_, _ = fmt.Fprintf(table, "%s\t%s\t%s\n", e.Name, e.Recovery, id.DID())
+	_, _ = fmt.Fprintf(table, "%s\t%s\n", "Name", "DID")
+	for k, id := range list {
+		_, _ = fmt.Fprintf(table, "%s\t%s\n", k, id.DID())
 	}
 	return table.Flush()
 }

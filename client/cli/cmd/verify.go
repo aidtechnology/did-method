@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -49,40 +49,42 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	if len(input) == 0 {
 		return errors.New("no input passed in to verify")
 	}
-	if len(input) > 32 {
-		digest := sha3.New256()
-		if _, err := digest.Write(input); err != nil {
-			return err
-		}
-		input = digest.Sum(nil)
-	}
+
+	// Hash input
+	log.Debug("hashing input (SHA3)")
+	hi := sha3.Sum256(input)
+	input = hi[:]
 
 	// Load signature file
-	ll := getLogger()
-	ll.Info("verifying LD signature")
-	ll.Debug("load signature file")
+	log.Info("verifying LD signature")
+	log.Debug("load signature file")
 	entry, err := ioutil.ReadFile(args[0])
 	if err != nil {
 		return fmt.Errorf("failed to read the signature file: %s", err)
 	}
-	ll.Debug("decoding contents")
+	log.Debug("decoding contents")
 	sig := &did.SignatureLD{}
 	if err = json.Unmarshal(entry, sig); err != nil {
 		return fmt.Errorf("invalid signature file: %s", err)
 	}
 
 	// Validate signature creator
-	ll.Debug("validating signature creator")
+	log.Debug("validating signature creator")
 	id, err := did.Parse(sig.Creator)
 	if err != nil {
 		return fmt.Errorf("invalid signature creator: %s", err)
 	}
-	if id.Method() != "bryk" {
-		return fmt.Errorf("only 'bryk' DID are supported: %s", id)
-	}
 
 	// Retrieve subject
-	peer, err := retrieveSubject(id.Subject(), ll)
+	jsDoc, err := resolve(id.String())
+	if err != nil {
+		return err
+	}
+	doc := &did.Document{}
+	if err := json.Unmarshal(jsDoc, doc); err != nil {
+		return err
+	}
+	peer, err := did.FromDocument(doc)
 	if err != nil {
 		return err
 	}
@@ -97,6 +99,6 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	if !ck.VerifySignatureLD(input, sig) {
 		return errors.New("signature is invalid")
 	}
-	ll.Info("signature is valid")
+	log.Info("signature is valid")
 	return nil
 }

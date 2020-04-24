@@ -8,5 +8,5 @@ var keyCmd = &cobra.Command{
 }
 
 func init() {
-	didCmd.AddCommand(keyCmd)
+	editCmd.AddCommand(keyCmd)
 }

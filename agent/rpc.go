@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	didpb "github.com/bryk-io/did-method/proto"
+	protov1 "github.com/bryk-io/did-method/proto/v1"
 	"github.com/gogo/protobuf/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,34 +23,33 @@ func getHeaders() metadata.MD {
 	})
 }
 
-func (rh *rpcHandler) Ping(ctx context.Context, _ *types.Empty) (*didpb.Pong, error) {
+func (rh *rpcHandler) Ping(ctx context.Context, _ *types.Empty) (*protov1.PingResponse, error) {
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &didpb.Pong{Ok: true}, nil
+	return &protov1.PingResponse{Ok: true}, nil
 }
 
-func (rh *rpcHandler) Process(ctx context.Context, req *didpb.Request) (*didpb.ProcessResponse, error) {
+func (rh *rpcHandler) Process(ctx context.Context, req *protov1.ProcessRequest) (*protov1.ProcessResponse, error) {
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	if err := rh.handler.Process(req); err != nil {
-		return &didpb.ProcessResponse{Ok: false}, status.Error(codes.InvalidArgument, err.Error())
+		return &protov1.ProcessResponse{Ok: false}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &didpb.ProcessResponse{Ok: true}, nil
+	return &protov1.ProcessResponse{Ok: true}, nil
 }
 
-func (rh *rpcHandler) Retrieve(ctx context.Context, req *didpb.Query) (*didpb.Response, error) {
+func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (*protov1.QueryResponse, error) {
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	id, err := rh.handler.Retrieve(req.Subject)
+	id, err := rh.handler.Retrieve(req)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
-	js, _ := json.Marshal(id.Document())
-	return &didpb.Response{
-		Document: populateDocument(id),
-		Source:   js,
+	js, _ := json.Marshal(id.SafeDocument())
+	return &protov1.QueryResponse{
+		Document: js,
 	}, nil
 }

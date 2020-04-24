@@ -9,14 +9,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.bryk.io/x/cli"
-	"go.bryk.io/x/did"
 	"golang.org/x/crypto/sha3"
 )
 
 var signCmd = &cobra.Command{
 	Use:     "sign",
 	Short:   "Produce a linked digital signature",
-	Example: "didctl did sign [DID reference name] --input \"contents to sign\"",
+	Example: "didctl sign [DID reference name] --input \"contents to sign\"",
 	RunE:    runSignCmd,
 }
 
@@ -47,7 +46,7 @@ func init() {
 	if err := cli.SetupCommandParams(signCmd, params); err != nil {
 		panic(err)
 	}
-	keyCmd.AddCommand(signCmd)
+	rootCmd.AddCommand(signCmd)
 }
 
 func runSignCmd(_ *cobra.Command, args []string) error {
@@ -63,32 +62,22 @@ func runSignCmd(_ *cobra.Command, args []string) error {
 	if len(input) == 0 {
 		return errors.New("no input passed in to sign")
 	}
-	if len(input) > 32 {
-		digest := sha3.New256()
-		if _, err := digest.Write(input); err != nil {
-			return err
-		}
-		input = digest.Sum(nil)
-	}
+
+	// Hash input
+	hi := sha3.Sum256(input)
+	input = hi[:]
 
 	// Get store handler
 	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Retrieve identifier
 	name := sanitize.Name(args[0])
-	record := st.Get(name)
-	if record == nil {
+	id, err := st.Get(name)
+	if err != nil {
 		return fmt.Errorf("no available record under the provided reference name: %s", name)
-	}
-	id := &did.Identifier{}
-	if err = id.Decode(record.Contents); err != nil {
-		return errors.New("failed to decode entry contents")
 	}
 
 	// Get key

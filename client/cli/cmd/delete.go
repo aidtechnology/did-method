@@ -19,21 +19,17 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// Get store handler
-		ll := getLogger()
 		st, err := getClientStore()
 		if err != nil {
 			return err
 		}
-		defer func() {
-			_ = st.Close()
-		}()
 
 		// Delete identifier
 		name := sanitize.Name(args[0])
 		if err = st.Delete(name); err != nil {
 			return fmt.Errorf("failed to remove entry: %s", err)
 		}
-		ll.Infof("identifier successfully deleted: %s", name)
+		log.Infof("identifier successfully deleted: %s", name)
 		return nil
 	},
 }

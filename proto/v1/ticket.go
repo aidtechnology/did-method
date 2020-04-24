@@ -1,4 +1,4 @@
-package didpb
+package protov1
 
 import (
 	"bytes"
@@ -6,12 +6,12 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/crypto/pow"
-	"go.bryk.io/x/did"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -19,7 +19,7 @@ const defaultTicketDifficultyLevel = 24
 
 // NewTicket returns a properly initialized new ticket instance
 func NewTicket(id *did.Identifier, keyID string) *Ticket {
-	contents, _ := json.Marshal(id.Document())
+	contents, _ := json.Marshal(id.SafeDocument())
 	return &Ticket{
 		Timestamp:  time.Now().Unix(),
 		Content:    contents,
@@ -102,11 +102,6 @@ func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 	id, err := t.GetDID()
 	if err != nil {
 		return err
-	}
-
-	// DID instance’s “method” value is set to “bryk”
-	if id.Method() != "bryk" {
-		return errors.New("invalid DID method")
 	}
 
 	// Verify private keys are not included

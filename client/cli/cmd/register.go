@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bryk-io/did-method/client/store"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
 	"go.bryk.io/x/crypto/shamir"
-	"go.bryk.io/x/did"
+	xlog "go.bryk.io/x/log"
 )
 
 var registerCmd = &cobra.Command{
@@ -30,24 +30,31 @@ func init() {
 	params := []cli.Param{
 		{
 			Name:      "recovery-mode",
-			Usage:     "choose a recovery mechanism for your primary key, 'passphrase' or 'secret-sharing'",
+			Usage:     "recovery method for primary key, 'passphrase' or 'secret-sharing'",
 			FlagKey:   "register.recovery-mode",
 			ByDefault: "secret-sharing",
 			Short:     "r",
 		},
 		{
 			Name:      "secret-sharing",
-			Usage:     "specify the number of shares and threshold value in the following format: shares,threshold",
+			Usage:     "number of shares and threshold value: shares,threshold",
 			FlagKey:   "register.secret-sharing",
 			ByDefault: "3,2",
 			Short:     "s",
 		},
 		{
 			Name:      "tag",
-			Usage:     "specify a tag value for the identifier instance",
+			Usage:     "tag value for the identifier instance",
 			FlagKey:   "register.tag",
 			ByDefault: "",
 			Short:     "t",
+		},
+		{
+			Name:      "method",
+			Usage:     "method value for the identifier instance",
+			FlagKey:   "register.method",
+			ByDefault: "bryk",
+			Short:     "m",
 		},
 	}
 	if err := cli.SetupCommandParams(registerCmd, params); err != nil {
@@ -63,22 +70,19 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	name := sanitize.Name(args[0])
 
 	// Get store handler
-	ll := getLogger()
 	st, err := getClientStore()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = st.Close()
-	}()
 
 	// Check for duplicates
-	if st.Get(name) != nil {
+	dup, _ := st.Get(name)
+	if dup != nil {
 		return fmt.Errorf("there's already an entry with reference name: %s", name)
 	}
 
 	// Get key secret from the user
-	ll.Info("obtaining secret material for the master private key")
+	log.Info("obtaining secret material for the master private key")
 	secret, err := getSecret(name)
 	if err != nil {
 		return err
@@ -91,39 +95,35 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	}
 	defer masterKey.Destroy()
 	pk := make([]byte, 64)
-	copy(pk, masterKey.Private[:])
+	copy(pk, masterKey.PrivateKey())
 
 	// Generate base identifier instance
-	ll.Info("generating new identifier")
-	id, err := did.NewIdentifierWithMode("bryk", viper.GetString("register.tag"), did.ModeUUID)
+	method := viper.GetString("register.method")
+	tag := viper.GetString("register.tag")
+	log.WithFields(xlog.Fields{
+		"method": method,
+		"tag":    tag,
+	}).Info("generating new identifier")
+	id, err := did.NewIdentifierWithMode(method, tag, did.ModeUUID)
 	if err != nil {
 		return err
 	}
-	ll.Debug("adding master key")
+	log.Debug("adding master key")
 	if err = id.AddExistingKey("master", pk, did.KeyTypeEd, did.EncodingBase58); err != nil {
 		return err
 	}
-	ll.Debug("setting master key as authentication mechanism")
+	log.Debug("setting master key as authentication mechanism")
 	if err = id.AddAuthenticationKey("master"); err != nil {
 		return err
 	}
-	ll.Debug("generating initial integrity proof")
+	log.Debug("generating initial integrity proof")
 	if err = id.AddProof("master", didDomainValue); err != nil {
 		return err
 	}
 
 	// Save instance in the store
-	ll.Info("adding entry to local store")
-	contents, err := id.Encode()
-	if err != nil {
-		return fmt.Errorf("failed to encode DID: %s", err)
-	}
-	record := &store.Entry{
-		Name:     name,
-		Recovery: viper.GetString("register.recovery-mode"),
-		Contents: contents,
-	}
-	return st.Save(name, record)
+	log.Info("adding entry to local store")
+	return st.Save(name, id)
 }
 
 func getSecret(name string) ([]byte, error) {

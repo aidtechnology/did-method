@@ -421,12 +421,12 @@ version of its corresponding DID Document is using the agent's HTTP interface.
 
 The resolution and data retrieval is done by performing a __GET__ request of the form:
 
-`https://did.bryk.io/v1/retrieve?subjet={DID subject}`
+`https://did.bryk.io/v1/retrieve/{{method}}/{{subject}}`
 
 For example:
 
 ```bash
-curl -v https://did.bryk.io/v1/retrieve\?subject\=4d81bd52-2edb-4703-b8fc-b26d514a9c56
+curl -v https://did.bryk.io/v1/retrieve/bryk/4d81bd52-2edb-4703-b8fc-b26d514a9c56
 ```
 
 If the subject is valid, and information has been published to the network, the
@@ -542,10 +542,10 @@ dev               passphrase        did:bryk:4d81bd52-2edb-4703-b8fc-b26d514a9c5
 sample            secret-sharing    did:bryk:99dc4a30-7434-42e5-ac75-5f330be0ea0a
 ```
 
-To inspect the DID Document of any of your local identifiers.
+To inspect the DID Document of your local identifiers.
 
 ```
-didctl did info [reference name]
+didctl info [reference name]
 ```
 
 The generated document will be something similar for the following example.
@@ -698,7 +698,7 @@ etc.
 Manage cryptographic keys associated with the DID
 
 Usage:
-  didctl did key [command]
+  didctl edit key [command]
 
 Available Commands:
   add         Add a new cryptographic key for the DID
@@ -713,7 +713,7 @@ Global Flags:
       --config string   config file ($HOME/.didctl/config.yaml)
       --home string     home directory ($HOME/.didctl)
 
-Use "didctl did key [command] --help" for more information about a command.
+Use "didctl edit key [command] --help" for more information about a command.
 ```
 
 To add a new cryptographic key to one of your identifiers you can use the `did key add`
@@ -723,10 +723,10 @@ command.
 Add a new cryptographic key for the DID
 
 Usage:
-  didctl did key add [flags]
+  didctl edit key add [flags]
 
 Examples:
-didctl did key add [DID reference name] --name my-new-key --type ed --authentication
+didctl edit key add [DID reference name] --name my-new-key --type ed --authentication
 
 Flags:
       --authentication   enable this key for authentication purposes
@@ -748,10 +748,10 @@ integrity proof on the DID Document will also be updated accordingly.
 ```
 
 You can also safely remove an existing key from your identifier using the
-`did key remove` command.
+`edit key remove` command.
 
 ```
-did key remove [DID reference name] [key name]
+edit key remove [DID reference name] [key name]
 ```
 
 #### 4.2.2 Linked Data Signatures
@@ -761,7 +761,7 @@ Signatures](https://w3c-dvcg.github.io/ld-signatures/). For example, to create a
 signature document from an existing file you can run the following command.
 
 ```
-cat file_to_sign | didctl did key sign dev
+cat file_to_sign | didctl sign dev
 ```
 
 The output produced will be a valid JSON-LD document containing the signature details.
@@ -812,7 +812,7 @@ the CLI client you can manage the services enabled for any of your identifiers.
 Manage services enabled for the identifier
 
 Usage:
-  didctl did service [command]
+  didctl edit service [command]
 
 Available Commands:
   add         Register a new service entry for the DID
@@ -825,7 +825,7 @@ Global Flags:
       --config string   config file ($HOME/.didctl/config.yaml)
       --home string     home directory ($HOME/.didctl)
 
-Use "didctl did service [command] --help" for more information about a command.
+Use "didctl edit service [command] --help" for more information about a command.
 ```
 
 To add a new service you can use the `did service add` command.
@@ -834,10 +834,10 @@ To add a new service you can use the `did service add` command.
 Register a new service entry for the DID
 
 Usage:
-  didctl did service add [flags]
+  didctl edit service add [flags]
 
 Examples:
-didctl did service add [DID reference name] --name "service name" --endpoint https://www.agency.com/user_id
+didctl edit service add [DID reference name] --name "service name" --endpoint https://www.agency.com/user_id
 
 Flags:
       --endpoint string   main URL to access the service
@@ -858,8 +858,8 @@ integrity proof on the DID Document will also be updated accordingly.
 ```
 
 You can also safely remove a service from your identifier using the
-`did service remove` command.
+`edit service remove` command.
 
 ```
-did service remove [DID reference name] [service name]
+edit service remove [DID reference name] [service name]
 ```
