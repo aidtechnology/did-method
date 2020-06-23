@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.bryk.io/x/cli"
-	"golang.org/x/crypto/sha3"
 )
 
 var signCmd = &cobra.Command{
@@ -62,10 +61,6 @@ func runSignCmd(_ *cobra.Command, args []string) error {
 	if len(input) == 0 {
 		return errors.New("no input passed in to sign")
 	}
-
-	// Hash input
-	hi := sha3.Sum256(input)
-	input = hi[:]
 
 	// Get store handler
 	st, err := getClientStore()

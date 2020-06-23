@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 	"go.bryk.io/x/ccg/did"
 	"go.bryk.io/x/cli"
-	"golang.org/x/crypto/sha3"
 )
 
 var verifyCmd = &cobra.Command{
@@ -49,11 +48,6 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	if len(input) == 0 {
 		return errors.New("no input passed in to verify")
 	}
-
-	// Hash input
-	log.Debug("hashing input (SHA3)")
-	hi := sha3.Sum256(input)
-	input = hi[:]
 
 	// Load signature file
 	log.Info("verifying LD signature")

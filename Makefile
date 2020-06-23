@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 BINARY_NAME=didctl
 DOCKER_IMAGE=didctl
-VERSION_TAG=0.5.0
+VERSION_TAG=0.5.1
 
 # Linker tags
 # https://golang.org/cmd/link/

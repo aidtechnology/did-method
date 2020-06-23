@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 	"go.bryk.io/x/cli"
 	"go.bryk.io/x/net/rpc"
+	"go.bryk.io/x/observability"
 )
 
 var agentCmd = &cobra.Command{
@@ -127,19 +128,25 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		}()
 	}
 
+	// Observability
+	oop, err := observability.NewOperator([]observability.OperatorOption{
+		observability.WithLogger(log),
+		observability.WithServiceName("didctl"),
+		observability.WithServiceVersion(coreVersion),
+		observability.WithTracerOutput(ioutil.Discard),
+		observability.WithFilteredMethods("bryk.did.proto.v1.AgentAPI/Ping"),
+	}...)
+	if err != nil {
+		return err
+	}
+
 	// Base server configuration
 	opts := []rpc.ServerOption{
 		rpc.WithPanicRecovery(),
 		rpc.WithPort(viper.GetInt("server.port")),
 		rpc.WithNetworkInterface(rpc.NetworkInterfaceAll),
 		rpc.WithService(handler.ServiceDefinition()),
-		rpc.WithLogger(rpc.LoggingOptions{
-			Logger:         log,
-			IncludePayload: false,
-			FilterMethods: []string{
-				"bryk.did.proto.v1.AgentAPI/Ping",
-			},
-		}),
+		rpc.WithObservability(oop),
 	}
 
 	// TLS configuration
@@ -160,16 +167,6 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 			return err
 		}
 		opts = append(opts, rpc.WithHTTPGateway(gw))
-	}
-
-	// Monitoring
-	if viper.GetBool("server.http") && viper.GetBool("server.monitoring") {
-		log.Info("monitoring enabled")
-		opts = append(opts, rpc.WithMonitoring(rpc.MonitoringOptions{
-			IncludeHistograms:   true,
-			UseProcessCollector: true,
-			UseGoCollector:      true,
-		}))
 	}
 
 	// Start server and wait for it to be ready

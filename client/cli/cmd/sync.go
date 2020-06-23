@@ -20,7 +20,7 @@ var syncCmd = &cobra.Command{
 	Use:     "sync",
 	Short:   "Publish a DID instance to the processing network",
 	Example: "didctl sync [DID reference name]",
-	Aliases: []string{"publish", "update", "upload"},
+	Aliases: []string{"publish", "update", "upload", "push"},
 	RunE:    runSyncCmd,
 }
 
