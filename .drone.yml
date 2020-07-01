@@ -43,7 +43,7 @@ steps:
   image: plugins/docker
   settings:
     build_args:
-    - VERSION=${DRONE_TAG##v}
+    - VERSION_TAG=${DRONE_TAG##v}
     password:
       from_secret: registry-password
     registry: registry.bryk.io
@@ -127,6 +127,6 @@ trigger:
 
 ---
 kind: signature
-hmac: 454b180bfc3057f839b6544148b0494455ceec7d97554d7f976deccdd7ef168b
+hmac: d29afc9eb4002d19f89a4d151f3fcac33cb2c8b0234e2fa49490e9f8abe14001
 
 ...

@@ -121,7 +121,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 	}
 	if viper.GetBool("key-add.authentication") {
 		log.Info("setting new key as authentication mechanism")
-		if err = id.AddAuthenticationKey(keyName); err != nil {
+		if err = id.AddVerificationMethod(id.GetReference(keyName), did.AuthenticationVM); err != nil {
 			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
 		}
 	}

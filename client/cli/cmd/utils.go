@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bryk-io/did-method/client/store"
+	"github.com/bryk-io/did-method/info"
 	"github.com/bryk-io/did-method/resolver"
 	"github.com/spf13/viper"
 	"go.bryk.io/x/crypto/ed25519"
@@ -53,7 +54,7 @@ func getClientConnection() (*grpc.ClientConn, error) {
 	timeout := viper.GetInt("client.timeout")
 	opts := []rpc.ClientOption{
 		rpc.WaitForReady(),
-		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", coreVersion)),
+		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", info.CoreVersion)),
 		rpc.WithTimeout(time.Duration(timeout) * time.Second),
 	}
 	if viper.GetBool("client.tls") {

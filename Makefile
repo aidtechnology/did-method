@@ -2,14 +2,14 @@
 .DEFAULT_GOAL := help
 BINARY_NAME=didctl
 DOCKER_IMAGE=didctl
-VERSION_TAG=0.5.1
+VERSION_TAG=0.5.2
 
 # Linker tags
 # https://golang.org/cmd/link/
 LD_FLAGS += -s -w
-LD_FLAGS += -X github.com/bryk-io/did-method/client/cli/cmd.coreVersion=$(VERSION_TAG)
-LD_FLAGS += -X github.com/bryk-io/did-method/client/cli/cmd.buildTimestamp=$(shell date +'%s')
-LD_FLAGS += -X github.com/bryk-io/did-method/client/cli/cmd.buildCode=$(shell git log --pretty=format:'%H' -n1)
+LD_FLAGS += -X github.com/bryk-io/did-method/info.CoreVersion=$(VERSION_TAG)
+LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildTimestamp=$(shell date +'%s')
+LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildCode=$(shell git log --pretty=format:'%H' -n1)
 
 ## help: Prints this help message
 help:

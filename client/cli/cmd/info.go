@@ -40,7 +40,7 @@ func runDidDetailsCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Present its LD document as output
-	info, _ := json.MarshalIndent(id.SafeDocument(), "", "  ")
+	info, _ := json.MarshalIndent(id.Document(true), "", "  ")
 	fmt.Printf("%s\n", info)
 	return nil
 }

@@ -504,8 +504,8 @@ github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e/go.mod h1:w7kd3qXHh8F
 github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb/go.mod h1:29UiAJNsiVdvTBFCJW8e3q6dcDbOoPkhMgttOSCIMMY=
 go.bryk.io/miracl v0.1.0 h1:uwzNsAMbDxRFNydiNCBfZjBKRyInrd9nPKWifzneZro=
 go.bryk.io/miracl v0.1.0/go.mod h1:pFoNLjnUohLwuRjowr/iOpEhvYBdY4MkPUPJuFY0HWg=
-go.bryk.io/x v0.0.0-20200623120934-ea9f2b26251a h1:SuWdkezjQebF63Owo1cYyh/cI2wj3ODB4Nuitre8oRk=
-go.bryk.io/x v0.0.0-20200623120934-ea9f2b26251a/go.mod h1:TsjxTDR4w0gdHeS4rPpjmv20EV7r5/p6ixH+CVrskHc=
+go.bryk.io/x v0.0.0-20200701214452-47bea92a05d8 h1:O/jh1nQWEiYIL/JZjqr/9CU1o6sqMGBethB/ZRu+oo8=
+go.bryk.io/x v0.0.0-20200701214452-47bea92a05d8/go.mod h1:TsjxTDR4w0gdHeS4rPpjmv20EV7r5/p6ixH+CVrskHc=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.4/go.mod h1:G5EMThwa9y8QZGBClrRx5EY+Yw9kAhnjy3bSjsnlVTQ=
 go.mongodb.org/mongo-driver v1.3.2 h1:IYppNjEV/C+/3VPbhHVxQ4t04eVW0cLp0/pNdW++6Ug=

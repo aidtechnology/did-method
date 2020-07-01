@@ -48,7 +48,7 @@ func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (*pr
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
-	js, _ := json.Marshal(id.SafeDocument())
+	js, _ := json.Marshal(id.Document(true))
 	return &protov1.QueryResponse{
 		Document: js,
 	}, nil

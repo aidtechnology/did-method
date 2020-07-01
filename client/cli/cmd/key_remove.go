@@ -6,6 +6,7 @@ import (
 
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
+	"go.bryk.io/x/ccg/did"
 )
 
 var removeKeyCmd = &cobra.Command{
@@ -44,7 +45,7 @@ func runRemoveKeyCmd(_ *cobra.Command, args []string) error {
 	// Remove key
 	log.Debug("validating parameters")
 	if len(id.Keys()) >= 2 {
-		_ = id.RemoveAuthenticationKey(keyName)
+		_ = id.RemoveVerificationMethod(id.GetReference(keyName), did.AuthenticationVM)
 	}
 	if err = id.RemoveKey(keyName); err != nil {
 		return fmt.Errorf("failed to remove key: %s", keyName)

@@ -80,7 +80,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Print out received response
-	output, err := json.MarshalIndent(sid.SafeDocument(), "", "  ")
+	output, err := json.MarshalIndent(sid.Document(true), "", "  ")
 	if err != nil {
 		return err
 	}

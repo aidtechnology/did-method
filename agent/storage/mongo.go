@@ -95,7 +95,7 @@ func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, error) {
 
 // Save will create or update an entry for the provided DID instance.
 func (ms *MongoStore) Save(id *did.Identifier) error {
-	data, err := json.Marshal(id.SafeDocument())
+	data, err := json.Marshal(id.Document(true))
 	if err != nil {
 		return err
 	}

@@ -28,7 +28,7 @@ func NewLocalStore(home string) (*LocalStore, error) {
 
 // Save add a new entry to the store
 func (ls *LocalStore) Save(name string, id *did.Identifier) error {
-	data, err := json.Marshal(id.Document())
+	data, err := json.Marshal(id.Document(false))
 	if err != nil {
 		return err
 	}

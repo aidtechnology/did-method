@@ -1,11 +1,14 @@
 package agent
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/bryk-io/did-method/info"
 	protov1 "github.com/bryk-io/did-method/proto/v1"
 	"go.bryk.io/x/ccg/did"
 	xlog "go.bryk.io/x/log"
@@ -134,23 +137,30 @@ func (h *Handler) QueryResponseFilter() rpc.HTTPGatewayFilter {
 		}
 
 		// Submit query
-		res.Header().Set("content-type", "application/json")
-		res.Header().Set("x-content-type-options", "nosniff")
-		var response []byte
+		var (
+			status   = http.StatusNotFound
+			response []byte
+		)
 		rr := &protov1.QueryRequest{
 			Method:  seg[0],
 			Subject: seg[1],
 		}
 		id, err := h.Retrieve(rr)
 		if err != nil {
-			res.WriteHeader(http.StatusNotFound)
 			response, _ = json.MarshalIndent(map[string]string{"error": err.Error()}, "", "  ")
 		} else {
-			res.WriteHeader(http.StatusOK)
-			response, _ = json.MarshalIndent(id.SafeDocument(), "", "  ")
+			response, _ = json.MarshalIndent(id.Document(true), "", "  ")
+			status = http.StatusOK
+			res.Header().Set("Etag", fmt.Sprintf("W/%x", sha256.Sum256(response)))
 		}
 
 		// Return result
+		res.Header().Set("content-type", "application/json")
+		res.Header().Set("x-content-type-options", "nosniff")
+		res.Header().Set("x-didctl-build-code", info.BuildCode)
+		res.Header().Set("x-didctl-build-timestamp", info.BuildTimestamp)
+		res.Header().Set("x-didctl-version", info.CoreVersion)
+		res.WriteHeader(status)
 		_, _ = res.Write(response)
 		return errors.New("prevent further processing")
 	}

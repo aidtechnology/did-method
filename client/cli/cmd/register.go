@@ -109,15 +109,18 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 	log.Debug("adding master key")
-	if err = id.AddExistingKey("master", pk, did.KeyTypeEd, did.EncodingBase58); err != nil {
+	if err = id.AddKey("master", pk, did.KeyTypeEd, did.EncodingBase58); err != nil {
 		return err
 	}
 	log.Debug("setting master key as authentication mechanism")
-	if err = id.AddAuthenticationKey("master"); err != nil {
+	if err = id.AddVerificationMethod(id.GetReference("master"), did.AuthenticationVM); err != nil {
 		return err
 	}
 	log.Debug("generating initial integrity proof")
 	if err = id.AddProof("master", didDomainValue); err != nil {
+		return err
+	}
+	if err := id.VerifyProof(nil); err != nil {
 		return err
 	}
 

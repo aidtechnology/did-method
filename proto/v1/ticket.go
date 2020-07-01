@@ -19,7 +19,7 @@ const defaultTicketDifficultyLevel = 24
 
 // NewTicket returns a properly initialized new ticket instance
 func NewTicket(id *did.Identifier, keyID string) *Ticket {
-	contents, _ := json.Marshal(id.SafeDocument())
+	contents, _ := json.Marshal(id.Document(true))
 	return &Ticket{
 		Timestamp:  time.Now().Unix(),
 		Content:    contents,
@@ -85,10 +85,10 @@ func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
 // ready for further processing
 // - Challenge is valid
 // - Contents are a properly encoded DID instance
-// - DID instance’s “method” value is set to “bryk”
 // - Contents don’t include any private key, for security reasons no private keys should
 //   ever be published on the network
-// - Signature is valid
+// - DID document proof is valid, if present
+// - Ticket signature is valid
 func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 	// Challenge is valid
 	if difficulty == 0 {
@@ -131,6 +131,11 @@ func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 	digest := sha3.New256()
 	if _, err = digest.Write(data); err != nil {
 		return err
+	}
+
+	// Verify proof if present
+	if id.Proof() != nil {
+		return id.VerifyProof(nil)
 	}
 
 	// Verify signature

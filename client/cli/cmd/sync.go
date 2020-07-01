@@ -84,6 +84,9 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	if err = id.AddProof(key.ID, didDomainValue); err != nil {
 		return fmt.Errorf("failed to generate proof: %s", err)
 	}
+	if err = id.VerifyProof(key); err != nil {
+		return fmt.Errorf("invalid proof generated: %s", err)
+	}
 
 	// Generate request ticket
 	log.Infof("publishing: %s", name)
@@ -159,7 +162,7 @@ func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
 
 	// Verify the key is enabled for authentication
 	isAuth := false
-	for _, k := range id.AuthenticationKeys() {
+	for _, k := range id.GetVerificationMethod(did.AuthenticationVM) {
 		if k == key.ID {
 			isAuth = true
 			break

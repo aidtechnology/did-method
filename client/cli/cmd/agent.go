@@ -12,6 +12,7 @@ import (
 
 	"github.com/bryk-io/did-method/agent"
 	"github.com/bryk-io/did-method/agent/storage"
+	"github.com/bryk-io/did-method/info"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.bryk.io/x/cli"
@@ -132,7 +133,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	oop, err := observability.NewOperator([]observability.OperatorOption{
 		observability.WithLogger(log),
 		observability.WithServiceName("didctl"),
-		observability.WithServiceVersion(coreVersion),
+		observability.WithServiceVersion(info.CoreVersion),
 		observability.WithTracerOutput(ioutil.Discard),
 		observability.WithFilteredMethods("bryk.did.proto.v1.AgentAPI/Ping"),
 	}...)
