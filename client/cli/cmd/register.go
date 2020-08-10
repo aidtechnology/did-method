@@ -116,13 +116,6 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	if err = id.AddVerificationMethod(id.GetReference("master"), did.AuthenticationVM); err != nil {
 		return err
 	}
-	log.Debug("generating initial integrity proof")
-	if err = id.AddProof("master", didDomainValue); err != nil {
-		return err
-	}
-	if err := id.VerifyProof(nil); err != nil {
-		return err
-	}
 
 	// Save instance in the store
 	log.Info("adding entry to local store")

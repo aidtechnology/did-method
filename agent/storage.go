@@ -21,10 +21,10 @@ type Storage interface {
 	Exists(id *did.Identifier) bool
 
 	// Return a previously stored DID instance.
-	Get(req *protov1.QueryRequest) (*did.Identifier, error)
+	Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error)
 
 	// Create or update the record for the given DID instance.
-	Save(id *did.Identifier) error
+	Save(id *did.Identifier, proof *did.ProofLD) error
 
 	// Remove any existing records for the given DID instance.
 	Delete(id *did.Identifier) error

@@ -230,7 +230,7 @@ func getAgentHandler() (*agent.Handler, error) {
 	}
 
 	// Prepare API handler
-	handler, err := agent.NewHandler(log, methods, pow, store)
+	handler, err := agent.NewHandler(methods, pow, store, log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start method handler: %s", err)
 	}
@@ -285,9 +285,6 @@ func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 	}
 
 	gwOpts := []rpc.HTTPGatewayOption{
-		rpc.WithEncoder("application/json", rpc.MarshalerStandard(false)),
-		rpc.WithEncoder("application/json+pretty", rpc.MarshalerStandard(true)),
-		rpc.WithEncoder("*", rpc.MarshalerStandard(false)),
 		rpc.WithClientOptions(gwCl),
 		rpc.WithOutgoingHeaderMatcher(headersMatcher),
 		rpc.WithFilter(handler.QueryResponseFilter()),

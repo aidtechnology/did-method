@@ -37,3 +37,6 @@ secret*
 
 # Default agent data store
 data
+
+# Code coverage reports
+coverage.*

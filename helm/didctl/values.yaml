@@ -40,7 +40,7 @@ restartPolicy: Always
 imagePullSecrets: []
 
 image:
-  repository: registry.bryk.io/base/didctl
+  repository: docker.pkg.github.com/bryk-io/did-method/didctl
   pullPolicy: IfNotPresent
 
 serviceAccount:

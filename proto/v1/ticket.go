@@ -18,23 +18,49 @@ import (
 const defaultTicketDifficultyLevel = 24
 
 // NewTicket returns a properly initialized new ticket instance
-func NewTicket(id *did.Identifier, keyID string) *Ticket {
-	contents, _ := json.Marshal(id.Document(true))
-	return &Ticket{
-		Timestamp:  time.Now().Unix(),
-		Content:    contents,
-		KeyId:      keyID,
-		NonceValue: 0,
+func NewTicket(id *did.Identifier, keyID string) (*Ticket, error) {
+	// Get safe DID contents
+	contents, err := json.Marshal(id.Document(true))
+	if err != nil {
+		return nil, err
 	}
+
+	// Get proof
+	proof, err := id.GetProof(keyID, "did.bryk.io")
+	if err != nil {
+		return nil, err
+	}
+	proofBytes, err := json.Marshal(proof)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Ticket{
+		Timestamp:  time.Now().UTC().Unix(),
+		NonceValue: 0,
+		KeyId:      keyID,
+		Document:   contents,
+		Proof:      proofBytes,
+		Signature:  nil,
+	}, nil
 }
 
 // GetDID retrieve the DID instance from the ticket contents
 func (t *Ticket) GetDID() (*did.Identifier, error) {
 	doc := &did.Document{}
-	if err := json.Unmarshal(t.Content, doc); err != nil {
+	if err := json.Unmarshal(t.Document, doc); err != nil {
 		return nil, errors.New("invalid ticket contents")
 	}
 	return did.FromDocument(doc)
+}
+
+// GetProofLD returns the decoded proof document contained in the ticket
+func (t *Ticket) GetProofLD() (*did.ProofLD, error) {
+	proof := &did.ProofLD{}
+	if err := json.Unmarshal(t.Proof, proof); err != nil {
+		return nil, errors.New("invalid proof contents")
+	}
+	return proof, nil
 }
 
 // ResetNonce returns the internal nonce value back to 0
@@ -52,10 +78,12 @@ func (t *Ticket) Nonce() int64 {
 	return t.NonceValue
 }
 
-// Encode returns a deterministic binary encoding for the ticket instance using a
-// byte concatenation of the form 'timestamp | nonce | key_id | content'; where both
-// timestamp and nonce are individually encoded using little endian byte order
-func (t *Ticket) Encode() ([]byte, error) {
+// MarshalBinary returns a deterministic binary encoding for the ticket
+// instance using a byte concatenation of the form:
+// 'timestamp | nonce | key_id | document | proof'
+// where timestamp and nonce are individually encoded using little endian
+// byte order.
+func (t *Ticket) MarshalBinary() ([]byte, error) {
 	var tc []byte
 	nb := bytes.NewBuffer(nil)
 	tb := bytes.NewBuffer(nil)
@@ -70,7 +98,14 @@ func (t *Ticket) Encode() ([]byte, error) {
 	tc = append(tc, tb.Bytes()...)
 	tc = append(tc, nb.Bytes()...)
 	tc = append(tc, kb...)
-	return append(tc, t.Content...), nil
+	tc = append(tc, t.Document...)
+	tc = append(tc, t.Proof...)
+	return tc, nil
+
+	// A simpler encoding mechanism using the standard protobuf encoder.
+	// tc := proto.Clone(t).(*Ticket)
+	// tc.Signature = nil
+	// return proto.MarshalOptions{Deterministic: true}.Marshal(tc)
 }
 
 // Solve the ticket challenge using the proof-of-work mechanism
@@ -87,9 +122,9 @@ func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
 // - Contents are a properly encoded DID instance
 // - Contents don’t include any private key, for security reasons no private keys should
 //   ever be published on the network
-// - DID document proof is valid, if present
+// - DID proof is valid
 // - Ticket signature is valid
-func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
+func (t *Ticket) Verify(difficulty uint) error {
 	// Challenge is valid
 	if difficulty == 0 {
 		difficulty = defaultTicketDifficultyLevel
@@ -111,31 +146,33 @@ func (t *Ticket) Verify(k *did.PublicKey, difficulty uint) error {
 		}
 	}
 
-	var key *did.PublicKey
-	if k != nil {
-		// Use provided key
-		key = k
-	} else {
-		// Retrieve DID's key
-		key = id.Key(t.KeyId)
-	}
+	// Retrieve DID key
+	key := id.Key(t.KeyId)
 	if key == nil {
 		return errors.New("the selected key is not available on the DID")
 	}
 
+	// Verify proof
+	proof, err := t.GetProofLD()
+	if err != nil {
+		return err
+	}
+	data, err := id.Document(true).NormalizedLD()
+	if err != nil {
+		return err
+	}
+	if !key.VerifyProof(data, proof) {
+		return errors.New("invalid proof")
+	}
+
 	// Get digest
-	data, err := t.Encode()
+	data, err = t.MarshalBinary()
 	if err != nil {
 		return errors.New("failed to re-encode ticket instance")
 	}
 	digest := sha3.New256()
 	if _, err = digest.Write(data); err != nil {
 		return err
-	}
-
-	// Verify proof if present
-	if id.Proof() != nil {
-		return id.VerifyProof(nil)
 	}
 
 	// Verify signature

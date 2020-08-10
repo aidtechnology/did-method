@@ -1,8 +1,10 @@
 # DID Method
-[![Build Status](https://drone.bryk.io/api/badges/bryk-io/did-method/status.svg)](https://drone.bryk.io/bryk-io/did-method)
+
+[![Build Status](https://github.com/bryk-io/did-method/workflows/ci/badge.svg?branch=master)](https://github.com/bryk-io/did-method/actions)
 [![Version](https://img.shields.io/github/tag/bryk-io/did-method.svg)](https://github.com/bryk-io/did-method/releases)
 [![Software License](https://img.shields.io/badge/license-BSD3-red.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bryk-io/did-method?style=flat)](https://goreportcard.com/report/github.com/bryk-io/did-method)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0-ff69b4.svg)](.github/CODE_OF_CONDUCT.md)
 
 The present document describes the __"bryk"__ DID Method specification. The
 definitions, conventions and technical details included intend to provide a 
@@ -66,7 +68,7 @@ It should be considered as such by satisfying at least the following considerati
   the user should be able to remove, revoke and/or reassign the user's identifiers.
 
 This model is commonly referred to as __Decentralized Identifiers__, and allows us to
-build a new __(3P)__ digital identity, one that is: __Private, Permanent__ and
+build a new __(3P)__ digital identity: __Private, Permanent__ and
 __Portable__.
 
 ## 2. Access Considerations
@@ -181,9 +183,9 @@ did:bryk:c137:02825c9d-6660-4f17-92db-2bd22c4ed902
 ```
 
 #### 3.1.2 Mode Hash
-The id string should be a randomly generated 32 byte [SHA3-256](https://goo.gl/Wx8pTY)
-hash value, encoded in hexadecimal format as a lower-case string of 64 characters. The formal
-schema for the `specific-idstring` field on this mode is the following.
+The id string should be a randomly generated 32 bytes [SHA3-256](https://goo.gl/Wx8pTY)
+hash value, encoded in hexadecimal format as a lower-case string of 64 characters.
+The formal schema for the `specific-idstring` field on this mode is the following.
 
 ```abnf
 specific-idstring = 32hexOctet
@@ -202,7 +204,7 @@ did:bryk:c137:85d48aebe67da2fdd273d03071de663d4fdd470cff2f5f3b8b41839f8b07075c
 A Decentralized Identifier, regardless of its particular method, can be resolved
 to a standard resource describing the subject. This resource is called a
 [DID Document](https://w3c-ccg.github.io/did-spec/#did-documents), and typically
-contains, among other relevant details, cryptographic material that enables
+contains, among other relevant details, cryptographic material to support
 authentication of the DID subject.
 
 The document is a Linked Data structure that ensures a high degree of flexibility
@@ -217,7 +219,8 @@ information. For the moment, the suggested encoding format for the document is
   easily linked to it. Linked Data is extensible in a decentralized way, greatly
   reducing barriers to large scale integration. 
 
-At the very least, the document must include the DID subject it's referring to under the `id` key.
+At the very least, the document must include the DID subject it's referring to under
+the `id` key.
 
 ```json
 {
@@ -229,26 +232,24 @@ At the very least, the document must include the DID subject it's referring to u
 As it stands, this document is not very useful in itself. Other relevant details that
 are often included in a DID Document are:
 
-- [Created](https://w3c-ccg.github.io/did-spec/#created-optional):
+- [Created:](https://w3c-ccg.github.io/did-spec/#created-optional)
   Timestamp of the original creation.
-- [Updated](https://w3c-ccg.github.io/did-spec/#updated-optional):
+- [Updated:](https://w3c-ccg.github.io/did-spec/#updated-optional)
   Timestamp of the most recent change.
-- [Public Keys](https://w3c-ccg.github.io/did-spec/#public-keys):
+- [Public Keys:](https://w3c-ccg.github.io/did-spec/#public-keys)
   Public keys are used for digital signatures, encryption and other cryptographic
   operations, which in turn are the basis for purposes such as authentication, secure
   communication, etc.
-- [Authentication](https://w3c-ccg.github.io/did-spec/#authentication):
+- [Authentication:](https://w3c-ccg.github.io/did-spec/#authentication)
   List the enabled mechanisms by which the DID subject can cryptographically prove
   that they are, in fact, associated with a DID Document.
-- [Services](https://w3c-ccg.github.io/did-spec/#service-endpoints):
+- [Services:](https://w3c-ccg.github.io/did-spec/#service-endpoints)
   In addition to publication of authentication and authorization mechanisms, the
   other primary purpose of a DID Document is to enable discovery of service endpoints
   for the subject. A service endpoint may represent any type of service the subject
   wishes to advertise, including decentralized identity management services for
   further discovery, authentication, authorization, or interaction. 
-- [Proof](https://w3c-ccg.github.io/did-spec/#proof-optional):
-  Cryptographic proof of the integrity of the DID Document according its subject.
-    
+
 Additionally, the DID Document may include any other fields deemed relevant for the
 particular use case or implementation.
 
@@ -289,42 +290,59 @@ Example of a more complete, and useful, DID Document.
         "individual": "rick"
       }
     }
-  ],
-  "proof": {
-    "@context": [
-      "https://w3id.org/security/v1"
-    ],
-    "type": "Ed25519Signature2018",
-    "creator": "did:bryk:c137:eeb0c865-ce21-4ad6-baf8-5ba287ba8683#master",
-    "created": "2019-03-09T15:44:16Z",
-    "domain": "identity.bryk.io",
-    "nonce": "c3dcd2ec89e439f18cea8767abf379c7",
-    "proofValue": "QAYz9GlVsVhf4KaZdnu5KMGCKTPK026CZg3fXxQYU7EDZ/0URlgYwBdHIOzAG8ZBIUCGdDQEk7nmlj3DwTJaDg=="
-  }
+  ]
 }
 ```
 
 Is important to note that the official specifications around service endpoints are
 still in a very early stage at this point. Where appropriate or required the present
-Method specification builds on it and introduces new considerations.
+Method specification builds on it and introduces new considerations. 
 
 #### 3.2.1 Method Requirements
 Building upon the base requirements and recommendations from the original
 specification, the "bryk" DID method introduces the following additional guidelines.
 
-- The fields `created`, `updated`, and `proof` are required for all generated
+- The fields `created` and `updated` are required for all generated
   DID Documents.
 - All service endpoints included in the DID Document may include an additional `data`
   field. Is recommended to include all extra parameters required for the particular
   service under this field.
 - Supported public keys and signature formats
   - [Ed25519](https://w3c-ccg.github.io/ld-cryptosuite-registry/#ed25519signature2018)
-  - [RSA](https://w3c-ccg.github.io/ld-cryptosuite-registry/#rsasignature2018),
-    with a minimum length of 4096 bits.
+  - [RSA](https://w3c-ccg.github.io/ld-cryptosuite-registry/#rsasignature2018)
+    (with a minimum length of 4096 bits).
   - [secp256k1](https://w3c-ccg.github.io/ld-cryptosuite-registry/#eddsasasignaturesecp256k1)
 
 More information on the official keys and signatures formats is available at
 [LD Cryptographic Suite Registry](https://w3c-ccg.github.io/ld-cryptosuite-registry/).
+
+#### 3.2.2 Proofs
+
+[proof:](https://w3c-ccg.github.io/did-spec/#proof-optional) Cryptographic proof
+of the integrity of the DID Document according its subject. Recently it was removed
+from the DID core document. This method still generates valid proofs for all mutations
+performed on the DID documents and returns it under the `proof` element of all
+resolved identifiers.
+
+```json
+{
+  "document": "...",
+  "proof": {
+    "@context": [
+      "https://w3id.org/security/v1"
+    ],
+    "type": "Ed25519Signature2018",
+    "created": "2020-08-08T03:12:53Z",
+    "domain": "did.bryk.io",
+    "nonce": "3ec84acf8b301f3d7e0bba25a24b438a",
+    "proofPurpose": "authentication",
+    "verificationMethod": "did:bryk:46389176-6109-4de7-bdb4-67e4fcf0230d#master",
+    "proofValue": "QvVkJxTWHf6BQO5A/RzgqDoz6neKaagHWspwSeWqztWnjnt7Rlc73KKiHRs9++C2tdV3pZQtPiKDk6C7Q7nFAQ=="
+  }
+}
+```
+
+> More information about this change is [available here](https://github.com/w3c/did-core/issues/293).
 
 ### 3.3 Agent Protocol
 The method implementation introduces the concept of a __network agent__. A network 
@@ -332,7 +350,7 @@ agent is responsible for handling incoming client requests. It's very important 
 note that the agent itself adheres to an operational protocol. The protocol is
 independent of the data storage and message delivery mechanisms used. The method
 protocol can be implemented using a __Distributed Ledger Platform__, as well as any
-other infrastructure applicable for the particular use case.
+other infrastructure suitable for the particular use case.
 
 There are two main groups of operations available, __read__ and __write__. Write
 operations are required when a user wishes to publish a new identifier record to
@@ -363,7 +381,8 @@ ticket {
   int64  timestamp
   int64  nonce
   string key_id
-  bytes  content
+  bytes  document
+  bytes  proof
   bytes  signature
 }
 ```
@@ -376,43 +395,44 @@ The client generates a ticket for the request using the following algorithm.
    binary-encoded representation of a given input value.
 3. __"timestamp"__ is set to the current UNIX time at the moment of creating the
    ticket.
-4. __"nonce"__ is a randomly generated integer of 64 bit precision.
+4. __"nonce"__ is a randomly generated integer of 64bit precision.
 5. __"key_id"__ is set to the identifier from the cryptographic key used to
    generate the ticket signature, MUST be enabled as an authentication key for the
    DID instance.
-6. __"content"__ is set to a deterministic binary encoding of the DID Document to
-   process.
-7. A HashCash round is initiated for the ticket. The hash mechanism used MUST be
+6. __"document"__ is set to the JSON-encoded DID Document to process.
+7. __"proof"__ is set to the JSON-encoded valid proof for the DID Document to process.
+8. A HashCash round is initiated for the ticket. The hash mechanism used MUST be
    SHA3-256 and the content submitted for each iteration of the round is a byte
    concatenation of the form:
-   `"bel(timestamp) | bel(nonce) | hex(key_id) | content"`.
-8. The __"nonce"__ value of the ticket is atomically increased by one for each
+   `"bel(timestamp) | bel(nonce) | hex(key_id) | document | proof"`.
+9. The __"nonce"__ value of the ticket is atomically increased by one for each
    iteration of the round.
-9. The ticket's __"challenge"__ is implicitly set to the produced hash from the
+10. The ticket's __"challenge"__ is implicitly set to the produced hash from the
    HashCash round.
-10. The __"signature"__ for the ticket is generated using the selected key of the DID
+11. The __"signature"__ for the ticket is generated using the selected key of the DID
     and the obtained challenge value: `did.keys["key_id"].sign(challenge)`
 
 Upon receiving a new write request the network agent validates the request ticket
 using the following procedure.
 
-1. Verify the ticket's __"challenge"__ is valid by performing a HashCash
+1. Verify the ticket's `challenge` is valid by performing a HashCash
    verification.
-2. Validate __“contents”__ are a properly encoded DID Document.
-3. DID instance’s __“method”__ value is properly set; in this case to `bryk`.
-4. Ensure __“contents”__ don’t include any private key. For security reasons no
+2. Validate `document` are a properly encoded DID Document.
+3. Validate `proof` is valid for the DID Document included in the ticket.
+4. DID instance `method` value is properly set and supported by the agent.
+5. Ensure `document` don’t include any private key. For security reasons no
    private keys should ever be published on the network.
-5. Verify __“signature”__ is valid.
+6. Verify `signature` is valid.
     - For operations submitting a new entry, the key contents are obtained directly
       from the ticket contents. This ensures the user submitting the new DID instance
       is the one in control of the corresponding private key.
     - For operations updating an existing entry, the key contents are obtained from
       the previously stored record. This ensures the user submitting the request is
       the one in control of the original private key.
-6. If the request is valid, the entry will be created or updated accordingly.
+7. If the request is valid, the entry will be created or updated accordingly.
 
 A sample implementation of the described __Request Ticket__ mechanism is available
-[here](https://github.com/bryk-io/did-method/blob/master/proto/ticket.go).
+[here](https://github.com/bryk-io/did-method/blob/master/proto/v1/ticket.go).
 
 #### 3.3.2 DID Resolution
 
@@ -430,9 +450,16 @@ curl -v https://did.bryk.io/v1/retrieve/bryk/4d81bd52-2edb-4703-b8fc-b26d514a9c5
 ```
 
 If the subject is valid, and information has been published to the network, the
-response will be latest version available of its corresponding DID Document encoded
-in JSON-LD with a __200__ status code. If no information is available the response
-will be a JSON encoded error message with a __404__ status code.
+response will include the latest version available of its corresponding DID Document
+encoded in JSON-LD with a __200__ status code. If no information is available the
+response will be a JSON encoded error message with a __404__ status code.
+
+```json
+{
+  "document": "...",
+  "proof": "..."
+}
+```
 
 You can also retrieve an existing subject using the provided SDK and RPC interface.
 For example, using the Go client.
@@ -649,7 +676,7 @@ to the world, you can publish it to the network.
 didctl sync sample
 ```
 
-The CLI tool will generate the __Request Ticket__, submit the write operation for
+The CLI tool will generate the __Request Ticket__, submit the operation for
 processing to the network and present the final result.
 
 ```
@@ -666,7 +693,7 @@ processing to the network and present the final result.
 
 Once an identifier is published any user can retrieve and validate your DID document.
 If you make local changes to your identifier, like adding a new cryptographic key or
-service endpoint, and you wish this adjustments to be accessible to the rest of the
+service endpoint, and you wish these adjustments to be accessible to the rest of the
 users, you'll need to publish it again.
 
 #### 4.1.4 Delete (Deactivate)
@@ -679,13 +706,13 @@ published identifiers you may submit a __deactivation__ request by adding the
 didctl sync sample --deactivate
 ```
 
-__No information is destroyed or lost with this operations__, the identifier and all
+__No information is destroyed or lost with these operations__, the identifier and all
 its related data is safely stored on your local machine. This will only prevent other
 users from retrieving your DID Document from the network.
 
 ### 4.2 DID Instance Management
 
-The CLI client also facilitates some of the tasks required to manage a DID instance.
+The CLI client also facilitates some tasks required to manage a DID instance.
 
 #### 4.2.1 Key Management
 

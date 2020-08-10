@@ -25,7 +25,7 @@ type Handler struct {
 }
 
 // NewHandler starts a new DID method handler instance
-func NewHandler(logger xlog.Logger, methods []string, difficulty uint, store Storage) (*Handler, error) {
+func NewHandler(methods []string, difficulty uint, store Storage, logger xlog.Logger) (*Handler, error) {
 	return &Handler{
 		log:        logger,
 		store:      store,
@@ -41,7 +41,7 @@ func (h *Handler) Close() error {
 }
 
 // Retrieve an existing DID instance based on its subject string
-func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, error) {
+func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
 	logFields := xlog.Fields{
 		"method":  req.Method,
 		"subject": req.Subject,
@@ -51,16 +51,16 @@ func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, error) {
 	// Verify method is supported
 	if !h.isSupported(req.Method) {
 		h.log.WithFields(logFields).Warning("non supported method")
-		return nil, errors.New("non supported method")
+		return nil, nil, errors.New("non supported method")
 	}
 
 	// Retrieve document from storage
-	id, err := h.store.Get(req)
+	id, proof, err := h.store.Get(req)
 	if err != nil {
 		h.log.WithFields(logFields).Warning(err.Error())
-		return nil, err
+		return nil, nil, err
 	}
-	return id, nil
+	return id, proof, nil
 }
 
 // Process an incoming request ticket
@@ -71,15 +71,20 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	}
 
 	// Validate ticket
-	if err := req.Ticket.Verify(nil, h.difficulty); err != nil {
+	if err := req.Ticket.Verify(h.difficulty); err != nil {
 		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
 		return err
 	}
 
-	// Load DID document
+	// Load DID document and proof
 	id, err := req.Ticket.GetDID()
 	if err != nil {
 		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID contents")
+		return err
+	}
+	proof, err := req.Ticket.GetProofLD()
+	if err != nil {
+		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID proof")
 		return err
 	}
 
@@ -92,7 +97,7 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	// Update operations require another validation step using the original record
 	isUpdate := h.store.Exists(id)
 	if isUpdate {
-		if err := req.Ticket.Verify(id.Key(req.Ticket.KeyId), h.difficulty); err != nil {
+		if err := req.Ticket.Verify(h.difficulty); err != nil {
 			h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
 			return err
 		}
@@ -105,7 +110,7 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	}).Debug("write operation")
 	switch req.Task {
 	case protov1.ProcessRequest_TASK_PUBLISH:
-		err = h.store.Save(id)
+		err = h.store.Save(id, proof)
 	case protov1.ProcessRequest_TASK_DEACTIVATE:
 		err = h.store.Delete(id)
 	default:
@@ -145,11 +150,14 @@ func (h *Handler) QueryResponseFilter() rpc.HTTPGatewayFilter {
 			Method:  seg[0],
 			Subject: seg[1],
 		}
-		id, err := h.Retrieve(rr)
+		id, proof, err := h.Retrieve(rr)
 		if err != nil {
 			response, _ = json.MarshalIndent(map[string]string{"error": err.Error()}, "", "  ")
 		} else {
-			response, _ = json.MarshalIndent(id.Document(true), "", "  ")
+			response, _ = json.MarshalIndent(map[string]interface{}{
+				"document": id.Document(true),
+				"proof":    proof,
+			}, "", "  ")
 			status = http.StatusOK
 			res.Header().Set("Etag", fmt.Sprintf("W/%x", sha256.Sum256(response)))
 		}

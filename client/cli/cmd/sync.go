@@ -79,15 +79,6 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	}
 	log.Debugf("key selected for the operation: %s", key.ID)
 
-	// Update proof
-	log.Info("updating record proof")
-	if err = id.AddProof(key.ID, didDomainValue); err != nil {
-		return fmt.Errorf("failed to generate proof: %s", err)
-	}
-	if err = id.VerifyProof(key); err != nil {
-		return fmt.Errorf("invalid proof generated: %s", err)
-	}
-
 	// Generate request ticket
 	log.Infof("publishing: %s", name)
 	ticket, err := getRequestTicket(id, key)
@@ -132,7 +123,14 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, error) {
 	diff := uint(viper.GetInt("sync.pow"))
 	log.WithFields(xlog.Fields{"pow": diff}).Info("generating request ticket")
-	ticket := protov1.NewTicket(id, key.ID)
+
+	// Create new ticket
+	ticket, err := protov1.NewTicket(id, key.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Solve PoW challenge
 	start := time.Now()
 	challenge := ticket.Solve(context.TODO(), diff)
 	log.Debugf("ticket obtained: %s", challenge)
@@ -140,13 +138,12 @@ func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, 
 	ch, _ := hex.DecodeString(challenge)
 
 	// Sign ticket
-	var err error
 	if ticket.Signature, err = key.Sign(ch); err != nil {
 		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
 	}
 
 	// Verify on client's side
-	if err = ticket.Verify(nil, diff); err != nil {
+	if err = ticket.Verify(diff); err != nil {
 		return nil, fmt.Errorf("failed to verify ticket: %s", err)
 	}
 

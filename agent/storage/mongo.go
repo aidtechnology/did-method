@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var useUpsert bool = true
+var useUpsert = true
 
 // Collection used to store the DID documents managed.
 const didCol = "identifiers"
@@ -57,7 +57,7 @@ func (ms *MongoStore) Exists(id *did.Identifier) bool {
 }
 
 // Get a previously stored DID instance.
-func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, error) {
+func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
 	// Run query
 	query := bson.M{
 		"method":  req.Method,
@@ -69,33 +69,24 @@ func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, error) {
 
 	// Check for result
 	if res.Err() == mongo.ErrNoDocuments {
-		return nil, errors.New("no information available")
+		return nil, nil, errors.New("no information available")
 	}
 
 	// Decode result
 	record := map[string]string{}
 	if err := res.Decode(&record); err != nil {
-		return nil, errors.New("invalid record contents")
+		return nil, nil, errors.New("invalid record contents")
 	}
-	if _, ok := record["document"]; !ok {
-		return nil, errors.New("invalid record contents")
-	}
-	data, err := base64.RawStdEncoding.DecodeString(record["document"])
-	if err != nil {
-		return nil, errors.New("invalid record contents")
-	}
-
-	// Restore DID document
-	doc := &did.Document{}
-	if err = json.Unmarshal(data, doc); err != nil {
-		return nil, errors.New("invalid record contents")
-	}
-	return did.FromDocument(doc)
+	return decodeRecord(record)
 }
 
 // Save will create or update an entry for the provided DID instance.
-func (ms *MongoStore) Save(id *did.Identifier) error {
+func (ms *MongoStore) Save(id *did.Identifier, proof *did.ProofLD) error {
 	data, err := json.Marshal(id.Document(true))
+	if err != nil {
+		return err
+	}
+	pp, err := json.Marshal(proof)
 	if err != nil {
 		return err
 	}
@@ -108,6 +99,7 @@ func (ms *MongoStore) Save(id *did.Identifier) error {
 			{Key: "method", Value: id.Method()},
 			{Key: "subject", Value: id.Subject()},
 			{Key: "document", Value: base64.RawStdEncoding.EncodeToString(data)},
+			{Key: "proof", Value: base64.RawStdEncoding.EncodeToString(pp)},
 		}},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -131,4 +123,38 @@ func (ms *MongoStore) Delete(id *did.Identifier) error {
 // Description returns a brief summary for the storage instance.
 func (ms *MongoStore) Description() string {
 	return "MongoDB data store"
+}
+
+func decodeRecord(r map[string]string) (*did.Identifier, *did.ProofLD, error) {
+	if _, ok := r["document"]; !ok {
+		return nil, nil, errors.New("invalid record contents")
+	}
+	if _, ok := r["proof"]; !ok {
+		return nil, nil, errors.New("invalid record contents")
+	}
+	d1, err := base64.RawStdEncoding.DecodeString(r["document"])
+	if err != nil {
+		return nil, nil, errors.New("invalid record contents")
+	}
+	d2, err := base64.RawStdEncoding.DecodeString(r["proof"])
+	if err != nil {
+		return nil, nil, errors.New("invalid record contents")
+	}
+
+	// Restore DID document
+	doc := &did.Document{}
+	if err = json.Unmarshal(d1, doc); err != nil {
+		return nil, nil, errors.New("invalid record contents")
+	}
+	id, err := did.FromDocument(doc)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Restore proof
+	proof := &did.ProofLD{}
+	if err = json.Unmarshal(d2, proof); err != nil {
+		return nil, nil, errors.New("invalid record contents")
+	}
+	return id, proof, nil
 }

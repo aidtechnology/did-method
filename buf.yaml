@@ -1,0 +1,28 @@
+build:
+  roots:
+    - proto
+lint:
+  service_suffix: API
+  enum_zero_value_suffix: _INVALID
+  rpc_allow_google_protobuf_empty_requests: true
+  rpc_allow_google_protobuf_empty_responses: true
+  allow_comment_ignores: true
+  use:
+    - BASIC
+    - FILE_LOWER_SNAKE_CASE
+    - PACKAGE_VERSION_SUFFIX
+    - SERVICE_SUFFIX
+    - COMMENT_ENUM
+    - COMMENT_RPC
+    - COMMENT_SERVICE
+    - COMMENT_MESSAGE
+  except:
+    - ENUM_NO_ALLOW_ALIAS
+    - IMPORT_NO_PUBLIC
+    - PACKAGE_AFFINITY
+    - PACKAGE_DIRECTORY_MATCH
+  ignore:
+    - third_party
+breaking:
+  use:
+    - WIRE_JSON

@@ -9,16 +9,21 @@ import (
 	"go.bryk.io/x/ccg/did"
 )
 
+type record struct {
+	id    *did.Identifier
+	proof *did.ProofLD
+}
+
 // Ephemeral provides an in-memory store for development and testing.
 type Ephemeral struct {
-	entries map[string]*did.Identifier
+	entries map[string]*record
 	mu      sync.Mutex
 }
 
 // Open is a no-op for the ephemeral store. As an example just setup
 // internally used structures.
 func (e *Ephemeral) Open(_ string) error {
-	e.entries = make(map[string]*did.Identifier)
+	e.entries = make(map[string]*record)
 	return nil
 }
 
@@ -43,22 +48,25 @@ func (e *Ephemeral) Exists(id *did.Identifier) bool {
 }
 
 // Get a previously stored DID instance.
-func (e *Ephemeral) Get(req *protov1.QueryRequest) (*did.Identifier, error) {
+func (e *Ephemeral) Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
 	key := fmt.Sprintf("%s:%s", req.Method, req.Subject)
 	e.mu.Lock()
-	id, ok := e.entries[key]
+	r, ok := e.entries[key]
 	e.mu.Unlock()
 	if !ok {
-		return nil, errors.New("no information available")
+		return nil, nil, errors.New("no information available")
 	}
-	return id, nil
+	return r.id, r.proof, nil
 }
 
 // Save will create or update an entry for the provided DID instance.
-func (e *Ephemeral) Save(id *did.Identifier) error {
+func (e *Ephemeral) Save(id *did.Identifier, proof *did.ProofLD) error {
 	key := fmt.Sprintf("%s:%s", id.Method(), id.Subject())
 	e.mu.Lock()
-	e.entries[key] = id
+	e.entries[key] = &record{
+		id:    id,
+		proof: proof,
+	}
 	e.mu.Unlock()
 	return nil
 }

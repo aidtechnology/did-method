@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 
 	protov1 "github.com/bryk-io/did-method/proto/v1"
-	"github.com/gogo/protobuf/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Wrapper to enable RPC access to an underlying method handler instance
 type rpcHandler struct {
+	protov1.UnimplementedAgentAPIServer
 	handler *Handler
 }
 
@@ -23,7 +24,7 @@ func getHeaders() metadata.MD {
 	})
 }
 
-func (rh *rpcHandler) Ping(ctx context.Context, _ *types.Empty) (*protov1.PingResponse, error) {
+func (rh *rpcHandler) Ping(ctx context.Context, _ *emptypb.Empty) (*protov1.PingResponse, error) {
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -44,12 +45,14 @@ func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (*pr
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	id, err := rh.handler.Retrieve(req)
+	id, proof, err := rh.handler.Retrieve(req)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
-	js, _ := json.Marshal(id.Document(true))
+	doc, _ := json.Marshal(id.Document(true))
+	pp, _ := json.Marshal(proof)
 	return &protov1.QueryResponse{
-		Document: js,
+		Document: doc,
+		Proof:    pp,
 	}, nil
 }
