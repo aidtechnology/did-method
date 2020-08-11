@@ -16,15 +16,7 @@ refer to the original [DID Primer.](https://github.com/WebOfTrustInfo/rwot5-bost
 
 To facilitate adoption and testing, and promote open discussions about the subjects
 treated, this repository also includes an open source reference implementation for a
-CLI client and network agent. You can easily install the client application locally
-using the provided install script.
-
-```bash
-# To install latest version
-curl -sfl https://raw.githubusercontent.com/bryk-io/did-method/master/install.sh | sh -s -- -b /usr/local/bin
-```
-
-Alternatively you can directly download the binary from the
+CLI client and network agent. You can directly download the binary from the
 [published releases](https://github.com/bryk-io/did-method/releases). 
 
 Collaborators.

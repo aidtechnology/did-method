@@ -1,0 +1,241 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/agent_api.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/ping": {
+      "get": {
+        "summary": "Reachability test.",
+        "operationId": "AgentAPI_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "AgentAPI"
+        ]
+      }
+    },
+    "/v1/process": {
+      "post": {
+        "summary": "Process an incoming request ticket.",
+        "operationId": "AgentAPI_Process",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ProcessResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ProcessRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AgentAPI"
+        ]
+      }
+    },
+    "/v1/retrieve/{method}/{subject}": {
+      "get": {
+        "summary": "Return the current state of a DID subject.",
+        "operationId": "AgentAPI_Query",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QueryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "method",
+            "description": "DID method.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "subject",
+            "description": "DID subject.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ProcessRequestTask": {
+      "type": "string",
+      "enum": [
+        "TASK_PUBLISH",
+        "TASK_DEACTIVATE"
+      ],
+      "default": "TASK_PUBLISH",
+      "description": "Available mutations."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Responsiveness result."
+        }
+      },
+      "description": "Basic reachability test response."
+    },
+    "v1ProcessRequest": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "$ref": "#/definitions/ProcessRequestTask",
+          "description": "Mutation type."
+        },
+        "ticket": {
+          "$ref": "#/definitions/v1Ticket",
+          "description": "Request ticket."
+        }
+      },
+      "description": "Mutation request, either to publish or deactivate a DID record."
+    },
+    "v1ProcessResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Processing result, must be 'true' if the mutation was\nproperly applied."
+        }
+      },
+      "description": "Mutation result."
+    },
+    "v1QueryResponse": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "type": "string",
+          "format": "byte",
+          "description": "JSON-encoded DID document."
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "description": "JSON-encoded DID proof."
+        }
+      },
+      "description": "Query response."
+    },
+    "v1Ticket": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "UNIX timestamp (in UTC) when the ticket was generated.\nAll ticket automatically expire after 5 minutes to\nprevent replay attacks."
+        },
+        "nonce_value": {
+          "type": "string",
+          "format": "int64",
+          "description": "Nonce selected to solve the PoW challenge."
+        },
+        "key_id": {
+          "type": "string",
+          "description": "Cryptographic key identifier. Must be a valid 'authentication' method\non the DID document. The key will be used to generate the DID proof\nand to sign the ticket itself."
+        },
+        "document": {
+          "type": "string",
+          "format": "byte",
+          "description": "JSON encoded DID document."
+        },
+        "proof": {
+          "type": "string",
+          "format": "byte",
+          "description": "JSON encoded Proof document."
+        },
+        "signature": {
+          "type": "string",
+          "format": "byte",
+          "description": "Digital signature for the ticket, it's calculated using the\nPoW solution as input."
+        }
+      },
+      "description": "Ticket required for write operations."
+    }
+  }
+}

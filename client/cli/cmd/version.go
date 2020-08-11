@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"runtime"
-	"strconv"
 	"time"
 
 	"github.com/bryk-io/did-method/info"
@@ -21,9 +20,9 @@ var versionCmd = &cobra.Command{
 			"Go version": runtime.Version(),
 		}
 		if info.BuildTimestamp != "" {
-			st, err := strconv.ParseInt(info.BuildTimestamp, 10, 64)
+			rd, err := time.Parse(time.RFC3339, info.BuildTimestamp)
 			if err == nil {
-				components["Release Date"] = time.Unix(st, 0).Format(time.RFC822)
+				components["Release Date"] = rd.Format(time.RFC822)
 			}
 		}
 		for k, v := range components {

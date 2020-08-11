@@ -1,17 +1,21 @@
 .PHONY: *
 .DEFAULT_GOAL:=help
 
-# Project setup variables
+# Project setup
 BINARY_NAME=didctl
 DOCKER_IMAGE=docker.pkg.github.com/bryk-io/did-method/didctl
-VERSION_TAG=0.6.0
+
+# State values
+GIT_COMMIT_DATE=$(shell TZ=UTC git log -n1 --pretty=format:'%cd' --date='format-local:%Y-%m-%dT%H:%M:%SZ')
+GIT_COMMIT_HASH=$(shell git log -n1 --pretty=format:'%H')
+GIT_TAG=$(shell git describe --abbrev=0 --match='v*' --always | cut -c 1-8)
 
 # Linker tags
 # https://golang.org/cmd/link/
 LD_FLAGS += -s -w
-LD_FLAGS += -X github.com/bryk-io/did-method/info.CoreVersion=$(VERSION_TAG)
-LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildTimestamp=$(shell date +'%s')
-LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildCode=$(shell git log --pretty=format:'%H' -n1)
+LD_FLAGS += -X github.com/bryk-io/did-method/info.CoreVersion=$(GIT_TAG)
+LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildCode=$(GIT_COMMIT_HASH)
+LD_FLAGS += -X github.com/bryk-io/did-method/info.BuildTimestamp=$(GIT_COMMIT_DATE)
 
 # Proto builder basic setup
 proto-builder=docker run --rm -it -v $(shell pwd):/workdir \
@@ -47,11 +51,7 @@ scan:
 
 ## release: Prepare assets for a new tagged release
 release:
-	@-rm -rf release-$(VERSION_TAG)
-	mkdir release-$(VERSION_TAG)
-	make build-for os=linux arch=amd64 dest=release-$(VERSION_TAG)/
-	make build-for os=darwin arch=amd64 dest=release-$(VERSION_TAG)/
-	make build-for os=windows arch=amd64 suffix=".exe" dest=release-$(VERSION_TAG)/
+	goreleaser release --skip-validate --skip-publish --rm-dist
 
 ## build: Build for the current architecture in use, intended for development
 build:
@@ -61,12 +61,11 @@ build:
 build-for:
 	CGO_ENABLED=0 GOOS=$(os) GOARCH=$(arch) \
 	go build -v -ldflags '$(LD_FLAGS)' \
-	-o $(dest)$(BINARY_NAME)_$(VERSION_TAG)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
-	chmod +x $(dest)$(BINARY_NAME)_$(VERSION_TAG)_$(os)_$(arch)$(suffix)
+	-o $(BINARY_NAME)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
 
 ## install: Install the binary to GOPATH and keep cached all compiled artifacts
 install:
-	@go build -v -ldflags $(LD_FLAGS) -i -o ${GOPATH}/bin/$(BINARY_NAME) github.com/bryk-io/did-method/client/cli
+	@go build -v -ldflags '$(LD_FLAGS)' -i -o ${GOPATH}/bin/$(BINARY_NAME) github.com/bryk-io/did-method/client/cli
 
 ## clean: Verify dependencies and remove intermediary products
 clean:
@@ -88,17 +87,23 @@ ca-roots:
 ## docker: Build docker image
 docker:
 	@make build-for os=linux arch=amd64
-	@-docker rmi $(DOCKER_IMAGE):$(VERSION_TAG)
-	@docker build --build-arg VERSION_TAG="$(VERSION_TAG)" --rm -t $(DOCKER_IMAGE):$(VERSION_TAG) .
-	@-rm $(BINARY_NAME)_$(VERSION_TAG)_linux_amd64
+	@-docker rmi $(DOCKER_IMAGE):$(GIT_TAG)
+	@docker build \
+	"--label=org.opencontainers.image.title=$(BINARY_NAME)" \
+	"--label=org.opencontainers.image.authors=$(MAINTAINERS)" \
+	"--label=org.opencontainers.image.created=$(GIT_COMMIT_DATE)" \
+	"--label=org.opencontainers.image.revision=$(GIT_COMMIT_HASH)" \
+	"--label=org.opencontainers.image.version=$(GIT_TAG)" \
+	--rm -t $(DOCKER_IMAGE):$(GIT_TAG) .
+	@-rm $(BINARY_NAME)_linux_amd64
 
 ## proto: Compile all PB definitions and RPC services
 proto:
 	# Verify style and consistency
 	$(proto-builder) buf check lint --file $(shell echo proto/v1/*.proto | tr ' ' ',')
 	@-$(proto-builder) buf check breaking \
-    --file $(shell echo proto/v1/*.proto | tr ' ' ',') \
-    --against-input proto/v1/image.bin
+	--file $(shell echo proto/v1/*.proto | tr ' ' ',') \
+	--against-input proto/v1/image.bin
 
 	# Clean old builds
 	@-rm proto/v1/image.bin
@@ -108,13 +113,13 @@ proto:
 
 	# Build package code
 	$(proto-builder) buf protoc \
-    --proto_path=proto \
-    --go_out=proto \
-    --go-grpc_out=proto \
-    --grpc-gateway_out=logtostderr=true:proto \
-    --swagger_out=logtostderr=true:proto \
-    --govalidators_out=proto \
-    proto/v1/*.proto
+	--proto_path=proto \
+	--go_out=proto \
+	--go-grpc_out=proto \
+	--grpc-gateway_out=logtostderr=true:proto \
+	--swagger_out=logtostderr=true:proto \
+	--govalidators_out=proto \
+	proto/v1/*.proto
 
 	# Remove package comment added by the gateway generator to avoid polluting
 	# the package documentation.

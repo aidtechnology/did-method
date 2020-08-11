@@ -1,0 +1,97 @@
+# produced artifacts are stored in this folder
+dist: dist
+# customize execution
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+# artifacts to produce
+# https://goreleaser.com/customization/build/
+builds:
+  # a single project can support/require several build targets
+  - id: didctl
+    # main binary name
+    binary: didctl
+    # code entrypoint
+    main: ./client/cli/main.go
+    # CLI flags for the 'go build' command
+    flags:
+      -v
+    ldflags:
+      - -s -w
+      - -X github.com/bryk-io/did-method/info.CoreVersion={{.Version}}
+      - -X github.com/bryk-io/did-method/info.BuildCode={{.Commit}}
+      - -X github.com/bryk-io/did-method/info.BuildTimestamp={{.CommitDate}}
+    # set the modified timestamp on the output binary to ensure a
+    # reproducible build
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    # disable CGO since it's not supported
+    env:
+      - CGO_ENABLED=0
+    # supported OSs
+    goos:
+      - linux
+      - windows
+      - darwin
+    # supported architectures
+    goarch:
+      - amd64
+# packages to produce
+# https://goreleaser.com/customization/archive/
+archives:
+  # a single project can produce multiple archives
+  -
+    name_template: "didctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+# generate integrity checksums
+# https://goreleaser.com/customization/checksum/
+checksum:
+  name_template: 'didctl_{{ .Version }}_checksums.txt'
+  algorithm: sha256
+# Include source code package on the release
+# https://goreleaser.com/customization/source/
+source:
+  enabled: false
+# produce test releases
+# https://goreleaser.com/customization/snapshots/
+snapshot:
+  name_template: '{{ .Tag }}-next'
+# configure the 'CHANGELOG.md' file produced
+# https://goreleaser.com/customization/release/#customize-the-changelog
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - typo
+# Produce homebrew formulas for the project artifacts
+# https://goreleaser.com/customization/homebrew/
+brews:
+  -
+    # Formula name
+    name: didctl
+    # Push the formula to the tap repository
+    skip_upload: false
+    # TAP repository
+    tap:
+      owner: bryk-io
+      name: homebrew-tap
+    # Use 'github-actions' as commit author
+    # https://github.community/t/github-actions-bot-email-address/17204
+    commit_author:
+      name: github-actions
+      email: 41898282+github-actions[bot]@users.noreply.github.com
+    homepage: 'https://github.com/bryk-io/did-method'
+    description: |
+      Reference client implementation for the 'bryk' DID method. The platform allows
+      entities to fully manage Decentralized Identifiers as described on the version
+      v1.0 of the specification.
+    install: |
+      bin.install "didctl"
+      output = Utils.popen_read("#{bin}/didctl completion bash")
+      (bash_completion/"didctl").write output
+      output = Utils.popen_read("#{bin}/didctl completion zsh")
+      (zsh_completion/"_didctl").write output
+      prefix.install_metafiles
+    test: |
+      system "#{bin}/didctl version"

@@ -10,7 +10,7 @@ vendor/**
 tmp/
 
 # Build releases
-release-*/**
+dist
 *.tgz
 
 # PKI
@@ -27,11 +27,9 @@ release-*/**
 secret*
 
 # protobuf / RPC
-*.swagger.json
+# *.swagger.json
 
 # Build
-/bryk-did
-/bryk-did-*
 /didctl
 /didctl-*
 
