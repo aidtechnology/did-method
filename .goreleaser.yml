@@ -5,6 +5,7 @@ before:
   hooks:
     - go mod download
     - go generate ./...
+    - rm didctl*
 # artifacts to produce
 # https://goreleaser.com/customization/build/
 builds:
