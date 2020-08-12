@@ -4,11 +4,12 @@
 # Project setup
 BINARY_NAME=didctl
 DOCKER_IMAGE=docker.pkg.github.com/bryk-io/did-method/didctl
+MAINTAINERS='Ben Cessa <ben@pixative.com>'
 
 # State values
 GIT_COMMIT_DATE=$(shell TZ=UTC git log -n1 --pretty=format:'%cd' --date='format-local:%Y-%m-%dT%H:%M:%SZ')
 GIT_COMMIT_HASH=$(shell git log -n1 --pretty=format:'%H')
-GIT_TAG=$(shell git describe --abbrev=0 --match='v*' --always | cut -c 1-8)
+GIT_TAG=$(shell git describe --tags --always --abbrev=0 | cut -c 1-8)
 
 # Linker tags
 # https://golang.org/cmd/link/
@@ -26,33 +27,6 @@ help:
 	@echo "Commands available"
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /' | sort
 
-## lint: Static analysis
-lint:
-	# Code
-	golangci-lint run -v ./...
-
-	# Helm charts
-	helm lint helm/*
-
-## test: Run unit tests excluding the vendor dependencies
-test:
-	go test -race -v -failfast -coverprofile=coverage.report ./...
-	go tool cover -html coverage.report -o coverage.html
-
-## updates: List available updates for direct dependencies
-# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
-updates:
-	@go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
-
-## scan: Look for known vulnerabilities in the project dependencies
-# https://github.com/sonatype-nexus-community/nancy
-scan:
-	@nancy -quiet go.sum
-
-## release: Prepare assets for a new tagged release
-release:
-	goreleaser release --skip-validate --skip-publish --rm-dist
-
 ## build: Build for the current architecture in use, intended for development
 build:
 	go build -v -ldflags '$(LD_FLAGS)' -o $(BINARY_NAME) github.com/bryk-io/did-method/client/cli
@@ -63,18 +37,6 @@ build-for:
 	go build -v -ldflags '$(LD_FLAGS)' \
 	-o $(BINARY_NAME)_$(os)_$(arch)$(suffix) github.com/bryk-io/did-method/client/cli
 
-## install: Install the binary to GOPATH and keep cached all compiled artifacts
-install:
-	@go build -v -ldflags '$(LD_FLAGS)' -i -o ${GOPATH}/bin/$(BINARY_NAME) github.com/bryk-io/did-method/client/cli
-
-## clean: Verify dependencies and remove intermediary products
-clean:
-	@-rm -rf vendor
-	go clean
-	go mod tidy
-	go mod verify
-	go mod vendor
-
 ## ca-roots: Generate the list of valid CA certificates
 ca-roots:
 	@docker run -dit --rm --name ca-roots debian:stable-slim
@@ -84,9 +46,17 @@ ca-roots:
 	@docker cp ca-roots:/ca-roots.crt ca-roots.crt
 	@docker stop ca-roots
 
+## clean: Verify dependencies and remove intermediary products
+clean:
+	@-rm -rf vendor
+	go clean
+	go mod tidy
+	go mod verify
+	go mod vendor
+
 ## docker: Build docker image
 docker:
-	@make build-for os=linux arch=amd64
+	make build-for os=linux arch=amd64
 	@-docker rmi $(DOCKER_IMAGE):$(GIT_TAG)
 	@docker build \
 	"--label=org.opencontainers.image.title=$(BINARY_NAME)" \
@@ -95,7 +65,19 @@ docker:
 	"--label=org.opencontainers.image.revision=$(GIT_COMMIT_HASH)" \
 	"--label=org.opencontainers.image.version=$(GIT_TAG)" \
 	--rm -t $(DOCKER_IMAGE):$(GIT_TAG) .
-	@-rm $(BINARY_NAME)_linux_amd64
+	@rm $(BINARY_NAME)_linux_amd64
+
+## install: Install the binary to GOPATH and keep cached all compiled artifacts
+install:
+	@go build -v -ldflags '$(LD_FLAGS)' -i -o ${GOPATH}/bin/$(BINARY_NAME) github.com/bryk-io/did-method/client/cli
+
+## lint: Static analysis
+lint:
+	# Code
+	golangci-lint run -v ./...
+
+	# Helm charts
+	helm lint helm/*
 
 ## proto: Compile all PB definitions and RPC services
 proto:
@@ -128,3 +110,22 @@ proto:
 	# Style adjustments
 	gofmt -s -w proto/v1
 	goimports -w proto/v1
+
+## release: Prepare assets for a new tagged release
+release:
+	goreleaser release --skip-validate --skip-publish --rm-dist
+
+## scan: Look for known vulnerabilities in the project dependencies
+# https://github.com/sonatype-nexus-community/nancy
+scan:
+	@nancy -quiet go.sum
+
+## test: Run unit tests excluding the vendor dependencies
+test:
+	go test -race -v -failfast -coverprofile=coverage.report ./...
+	go tool cover -html coverage.report -o coverage.html
+
+## updates: List available updates for direct dependencies
+# https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
+updates:
+	@go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
