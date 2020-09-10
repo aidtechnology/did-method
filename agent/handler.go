@@ -13,21 +13,22 @@ import (
 	"go.bryk.io/x/ccg/did"
 	xlog "go.bryk.io/x/log"
 	"go.bryk.io/x/net/rpc"
+	"go.bryk.io/x/observability"
 	"google.golang.org/grpc"
 )
 
 // Handler provides the required functionality for the DID method
 type Handler struct {
+	oop        *observability.Operator
 	methods    []string
 	store      Storage
-	log        xlog.Logger
 	difficulty uint
 }
 
 // NewHandler starts a new DID method handler instance
-func NewHandler(methods []string, difficulty uint, store Storage, logger xlog.Logger) (*Handler, error) {
+func NewHandler(methods []string, difficulty uint, store Storage, oop *observability.Operator) (*Handler, error) {
 	return &Handler{
-		log:        logger,
+		oop:        oop,
 		store:      store,
 		methods:    methods,
 		difficulty: difficulty,
@@ -36,7 +37,7 @@ func NewHandler(methods []string, difficulty uint, store Storage, logger xlog.Lo
 
 // Close the instance and safely terminate any internal processing
 func (h *Handler) Close() error {
-	h.log.Info("closing agent handler")
+	h.oop.Info("closing agent handler")
 	return h.store.Close()
 }
 
@@ -46,18 +47,18 @@ func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, *did.Pro
 		"method":  req.Method,
 		"subject": req.Subject,
 	}
-	h.log.WithFields(logFields).Debug("retrieve request")
+	h.oop.WithFields(logFields).Debug("retrieve request")
 
 	// Verify method is supported
 	if !h.isSupported(req.Method) {
-		h.log.WithFields(logFields).Warning("non supported method")
+		h.oop.WithFields(logFields).Warning("non supported method")
 		return nil, nil, errors.New("non supported method")
 	}
 
 	// Retrieve document from storage
 	id, proof, err := h.store.Get(req)
 	if err != nil {
-		h.log.WithFields(logFields).Warning(err.Error())
+		h.oop.WithFields(logFields).Warning(err.Error())
 		return nil, nil, err
 	}
 	return id, proof, nil
@@ -72,25 +73,25 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 
 	// Validate ticket
 	if err := req.Ticket.Verify(h.difficulty); err != nil {
-		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
+		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
 		return err
 	}
 
 	// Load DID document and proof
 	id, err := req.Ticket.GetDID()
 	if err != nil {
-		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID contents")
+		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID contents")
 		return err
 	}
 	proof, err := req.Ticket.GetProofLD()
 	if err != nil {
-		h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID proof")
+		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID proof")
 		return err
 	}
 
 	// Verify method is supported
 	if !h.isSupported(id.Method()) {
-		h.log.WithFields(xlog.Fields{"method": id.Method()}).Warning("non supported method")
+		h.oop.WithFields(xlog.Fields{"method": id.Method()}).Warning("non supported method")
 		return errors.New("non supported method")
 	}
 
@@ -98,12 +99,12 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	isUpdate := h.store.Exists(id)
 	if isUpdate {
 		if err := req.Ticket.Verify(h.difficulty); err != nil {
-			h.log.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
+			h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
 			return err
 		}
 	}
 
-	h.log.WithFields(xlog.Fields{
+	h.oop.WithFields(xlog.Fields{
 		"subject": id.Subject(),
 		"update":  isUpdate,
 		"task":    req.Task,

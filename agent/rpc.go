@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	protov1 "github.com/bryk-io/did-method/proto/v1"
+	"go.bryk.io/x/observability"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -25,28 +26,45 @@ func getHeaders() metadata.MD {
 }
 
 func (rh *rpcHandler) Ping(ctx context.Context, _ *emptypb.Empty) (*protov1.PingResponse, error) {
+	// Track operation
+	sp := rh.handler.oop.Span(ctx, "Ping", observability.SpanKindServer)
+	defer sp.End()
+
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
+		sp.SetStatus(codes.Internal, err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &protov1.PingResponse{Ok: true}, nil
 }
 
 func (rh *rpcHandler) Process(ctx context.Context, req *protov1.ProcessRequest) (*protov1.ProcessResponse, error) {
+	// Track operation
+	sp := rh.handler.oop.Span(ctx, "Process", observability.SpanKindServer)
+	defer sp.End()
+
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
+		sp.SetStatus(codes.Internal, err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	if err := rh.handler.Process(req); err != nil {
+		sp.SetStatus(codes.InvalidArgument, err.Error())
 		return &protov1.ProcessResponse{Ok: false}, status.Error(codes.InvalidArgument, err.Error())
 	}
 	return &protov1.ProcessResponse{Ok: true}, nil
 }
 
 func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (*protov1.QueryResponse, error) {
+	// Track operation
+	sp := rh.handler.oop.Span(ctx, "Query", observability.SpanKindServer)
+	defer sp.End()
+
 	if err := grpc.SendHeader(ctx, getHeaders()); err != nil {
+		sp.SetStatus(codes.Internal, err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	id, proof, err := rh.handler.Retrieve(req)
 	if err != nil {
+		sp.SetStatus(codes.NotFound, err.Error())
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	doc, _ := json.Marshal(id.Document(true))

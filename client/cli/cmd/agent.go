@@ -18,6 +18,8 @@ import (
 	"go.bryk.io/x/cli"
 	"go.bryk.io/x/net/rpc"
 	"go.bryk.io/x/observability"
+	"go.bryk.io/x/observability/extras"
+	"go.opentelemetry.io/otel/exporters/otlp"
 )
 
 var agentCmd = &cobra.Command{
@@ -107,12 +109,6 @@ func init() {
 }
 
 func runMethodServer(_ *cobra.Command, _ []string) error {
-	// Prepare API handler
-	handler, err := getAgentHandler()
-	if err != nil {
-		return err
-	}
-
 	// CPU profile
 	if viper.GetBool("server.debug") {
 		cpu, err := ioutil.TempFile("", "didctl_cpu_")
@@ -129,14 +125,24 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		}()
 	}
 
-	// Observability
+	// Observability operator
 	oop, err := observability.NewOperator([]observability.OperatorOption{
+		observability.RegisterAsGlobal(),
+		observability.WithExporterOTLP(otlp.WithInsecure()),
 		observability.WithLogger(log),
 		observability.WithServiceName("didctl"),
 		observability.WithServiceVersion(info.CoreVersion),
-		observability.WithTracerOutput(ioutil.Discard),
 		observability.WithFilteredMethods("bryk.did.proto.v1.AgentAPI/Ping"),
 	}...)
+	if err != nil {
+		return err
+	}
+	if err = extras.RuntimeMetrics(0); err != nil {
+		return err
+	}
+
+	// Prepare API handler
+	handler, err := getAgentHandler(oop)
 	if err != nil {
 		return err
 	}
@@ -220,7 +226,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func getAgentHandler() (*agent.Handler, error) {
+func getAgentHandler(oop *observability.Operator) (*agent.Handler, error) {
 	// Get handler settings
 	methods := viper.GetStringSlice("server.method")
 	pow := uint(viper.GetInt("server.pow"))
@@ -230,7 +236,7 @@ func getAgentHandler() (*agent.Handler, error) {
 	}
 
 	// Prepare API handler
-	handler, err := agent.NewHandler(methods, pow, store, log)
+	handler, err := agent.NewHandler(methods, pow, store, oop)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start method handler: %s", err)
 	}
