@@ -14,8 +14,8 @@ import (
 
 var verifyCmd = &cobra.Command{
 	Use:     "verify",
-	Short:   "Check the validity of a SignatureLD document",
-	Example: "didctl verify [signature file] --input \"contents to verify\"",
+	Short:   "Check the validity of a ProofLD document",
+	Example: "didctl verify [proof file] --input \"contents to verify\"",
 	RunE:    runVerifyCmd,
 }
 
@@ -49,24 +49,25 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 		return errors.New("no input passed in to verify")
 	}
 
-	// Load signature file
-	log.Info("verifying LD signature")
+	// Load proof file
+	log.Info("verifying proof document")
 	log.Debug("load signature file")
 	entry, err := ioutil.ReadFile(args[0])
 	if err != nil {
 		return fmt.Errorf("failed to read the signature file: %s", err)
 	}
 	log.Debug("decoding contents")
-	sig := &did.SignatureLD{}
-	if err = json.Unmarshal(entry, sig); err != nil {
+	proof := &did.ProofLD{}
+	if err = json.Unmarshal(entry, proof); err != nil {
 		return fmt.Errorf("invalid signature file: %s", err)
 	}
 
-	// Validate signature creator
-	log.Debug("validating signature creator")
-	id, err := did.Parse(sig.Creator)
+	// Validate verification method
+	log.Debug("validating proof verification method")
+	vm := proof.VerificationMethod
+	id, err := did.Parse(vm)
 	if err != nil {
-		return fmt.Errorf("invalid signature creator: %s", err)
+		return fmt.Errorf("invalid proof verification method: %s", err)
 	}
 
 	// Retrieve subject
@@ -74,25 +75,36 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	doc := &did.Document{}
-	if err := json.Unmarshal(jsDoc, doc); err != nil {
-		return err
+
+	// Decode result obtained from resolve
+	doc := new(did.Document)
+	result := map[string]json.RawMessage{}
+	if err := json.Unmarshal([]byte(jsDoc), &result); err != nil {
+		return fmt.Errorf("invalid DID document received: %s", jsDoc)
 	}
+	if _, ok := result["document"]; !ok {
+		return fmt.Errorf("invalid DID document received: %s", jsDoc)
+	}
+	if err := json.Unmarshal(result["document"], doc); err != nil {
+		return fmt.Errorf("invalid DID document received: %s", jsDoc)
+	}
+
+	// Restore peer DID instance
 	peer, err := did.FromDocument(doc)
 	if err != nil {
 		return err
 	}
 
 	// Get creator's key
-	ck := peer.Key(sig.Creator)
+	ck := peer.Key(vm)
 	if ck == nil {
-		return fmt.Errorf("creator key is not available on the DID Document: %s", sig.Creator)
+		return fmt.Errorf("verification method is not available on the DID document: %s", vm)
 	}
 
 	// Verify signature
-	if !ck.VerifySignatureLD(input, sig) {
-		return errors.New("signature is invalid")
+	if !ck.VerifyProof(input, proof) {
+		return errors.New("proof is invalid")
 	}
-	log.Info("signature is valid")
+	log.Info("proof is valid")
 	return nil
 }

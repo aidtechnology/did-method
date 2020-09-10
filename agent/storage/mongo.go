@@ -58,7 +58,7 @@ func (ir *identifierRecord) decode() (*did.Identifier, *did.ProofLD, error) {
 	return id, proof, nil
 }
 
-func (ir *identifierRecord) load(id *did.Identifier, proof *did.ProofLD) {
+func (ir *identifierRecord) encode(id *did.Identifier, proof *did.ProofLD) {
 	data, _ := json.Marshal(id.Document(true))
 	pp, _ := json.Marshal(proof)
 	ir.Method = id.Method()
@@ -97,10 +97,7 @@ func (ms *MongoStore) Close() error {
 // Exists returns true if the provided DID instance is already available
 // in the store.
 func (ms *MongoStore) Exists(id *did.Identifier) bool {
-	filter := orm.Filter()
-	filter["method"] = id.Method()
-	filter["subject"] = id.Subject()
-	n, _ := ms.did.Count(filter)
+	n, _ := ms.did.Count(filter(id))
 	return n > 0
 }
 
@@ -121,28 +118,28 @@ func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, *did.Proo
 
 // Save will create or update an entry for the provided DID instance.
 func (ms *MongoStore) Save(id *did.Identifier, proof *did.ProofLD) error {
-	// Filter
-	filter := orm.Filter()
-	filter["method"] = id.Method()
-	filter["subject"] = id.Subject()
-
 	// Record
 	rec := new(identifierRecord)
-	rec.load(id, proof)
+	rec.encode(id, proof)
 
 	// Run upsert operation
-	return ms.did.Update(filter, rec, true)
+	return ms.did.Update(filter(id), rec, true)
 }
 
 // Delete any existing record for the provided DID instance.
 func (ms *MongoStore) Delete(id *did.Identifier) error {
-	filter := orm.Filter()
-	filter["method"] = id.Method()
-	filter["subject"] = id.Subject()
-	return ms.did.Delete(filter)
+	return ms.did.Delete(filter(id))
 }
 
 // Description returns a brief summary for the storage instance.
 func (ms *MongoStore) Description() string {
 	return "MongoDB data store"
+}
+
+// Helper method to produce a selector from a DID instance.
+func filter(id *did.Identifier) map[string]interface{} {
+	filter := orm.Filter()
+	filter["method"] = id.Method()
+	filter["subject"] = id.Subject()
+	return filter
 }
