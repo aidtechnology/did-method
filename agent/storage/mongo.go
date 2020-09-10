@@ -4,139 +4,38 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"time"
 
 	protov1 "github.com/bryk-io/did-method/proto/v1"
 	"github.com/pkg/errors"
 	"go.bryk.io/x/ccg/did"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.bryk.io/x/storage/orm"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var useUpsert = true
+// Base64 encoding used
+var b64 = base64.RawStdEncoding
 
-// Collection used to store the DID documents managed.
-const didCol = "identifiers"
+// Data structure to store DID entries.
+type identifierRecord struct {
+	// DID method.
+	Method string `bson:"method"`
 
-// MongoStore provides a storage handler utilizing MongoDB as underlying
-// database. The connection strings must be of the form "mongodb://...";
-// for example: "mongodb://localhost:27017"
-type MongoStore struct {
-	db *mongo.Database
+	// DID subject.
+	Subject string `bson:"subject"`
+
+	// DID document.
+	Document string `bson:"document"`
+
+	// DID proof.
+	Proof string `bson:"proof"`
 }
 
-// Open establish the connection and database selection for the instance.
-// Must be called before any further operations.
-func (ms *MongoStore) Open(info string) error {
-	ctx := context.TODO()
-	cl, err := mongo.Connect(ctx, options.Client().ApplyURI(info))
-	if err != nil {
-		return err
-	}
-	ms.db = cl.Database("didctl")
-	return nil
-}
-
-// Close the client connection with the backend server.
-func (ms *MongoStore) Close() error {
-	return ms.db.Client().Disconnect(context.TODO())
-}
-
-// Exists returns true if the provided DID instance is already available
-// in the store.
-func (ms *MongoStore) Exists(id *did.Identifier) bool {
-	query := bson.M{
-		"method":  id.Method(),
-		"subject": id.Subject(),
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	res := ms.db.Collection(didCol).FindOne(ctx, query)
-	return res.Err() != mongo.ErrNoDocuments
-}
-
-// Get a previously stored DID instance.
-func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
-	// Run query
-	query := bson.M{
-		"method":  req.Method,
-		"subject": req.Subject,
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	res := ms.db.Collection(didCol).FindOne(ctx, query)
-
-	// Check for result
-	if res.Err() == mongo.ErrNoDocuments {
-		return nil, nil, errors.New("no information available")
-	}
-
-	// Decode result
-	record := map[string]string{}
-	if err := res.Decode(&record); err != nil {
-		return nil, nil, errors.New("invalid record contents")
-	}
-	return decodeRecord(record)
-}
-
-// Save will create or update an entry for the provided DID instance.
-func (ms *MongoStore) Save(id *did.Identifier, proof *did.ProofLD) error {
-	data, err := json.Marshal(id.Document(true))
-	if err != nil {
-		return err
-	}
-	pp, err := json.Marshal(proof)
-	if err != nil {
-		return err
-	}
-	filter := bson.M{
-		"method":  id.Method(),
-		"subject": id.Subject(),
-	}
-	record := bson.D{
-		{Key: "$set", Value: bson.D{
-			{Key: "method", Value: id.Method()},
-			{Key: "subject", Value: id.Subject()},
-			{Key: "document", Value: base64.RawStdEncoding.EncodeToString(data)},
-			{Key: "proof", Value: base64.RawStdEncoding.EncodeToString(pp)},
-		}},
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	_, err = ms.db.Collection(didCol).UpdateOne(ctx, filter, record, &options.UpdateOptions{Upsert: &useUpsert})
-	return err
-}
-
-// Delete any existing record for the provided DID instance.
-func (ms *MongoStore) Delete(id *did.Identifier) error {
-	query := bson.M{
-		"method":  id.Method(),
-		"subject": id.Subject(),
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	_, err := ms.db.Collection(didCol).DeleteOne(ctx, query)
-	return err
-}
-
-// Description returns a brief summary for the storage instance.
-func (ms *MongoStore) Description() string {
-	return "MongoDB data store"
-}
-
-func decodeRecord(r map[string]string) (*did.Identifier, *did.ProofLD, error) {
-	if _, ok := r["document"]; !ok {
-		return nil, nil, errors.New("invalid record contents")
-	}
-	if _, ok := r["proof"]; !ok {
-		return nil, nil, errors.New("invalid record contents")
-	}
-	d1, err := base64.RawStdEncoding.DecodeString(r["document"])
+func (ir *identifierRecord) decode() (*did.Identifier, *did.ProofLD, error) {
+	d1, err := b64.DecodeString(ir.Document)
 	if err != nil {
 		return nil, nil, errors.New("invalid record contents")
 	}
-	d2, err := base64.RawStdEncoding.DecodeString(r["proof"])
+	d2, err := b64.DecodeString(ir.Proof)
 	if err != nil {
 		return nil, nil, errors.New("invalid record contents")
 	}
@@ -157,4 +56,93 @@ func decodeRecord(r map[string]string) (*did.Identifier, *did.ProofLD, error) {
 		return nil, nil, errors.New("invalid record contents")
 	}
 	return id, proof, nil
+}
+
+func (ir *identifierRecord) load(id *did.Identifier, proof *did.ProofLD) {
+	data, _ := json.Marshal(id.Document(true))
+	pp, _ := json.Marshal(proof)
+	ir.Method = id.Method()
+	ir.Subject = id.Subject()
+	ir.Document = b64.EncodeToString(data)
+	ir.Proof = b64.EncodeToString(pp)
+}
+
+// MongoStore provides a storage handler utilizing MongoDB as underlying
+// database. The connection strings must be of the form "mongodb://...";
+// for example: "mongodb://localhost:27017"
+type MongoStore struct {
+	op  *orm.Operator
+	did *orm.Model
+}
+
+// Open establish the connection and database selection for the instance.
+// Must be called before any further operations.
+func (ms *MongoStore) Open(info string) error {
+	var err error
+	opts := options.Client()
+	opts.ApplyURI(info)
+	ms.op, err = orm.NewOperator("didctl", opts)
+	if err != nil {
+		return err
+	}
+	ms.did = ms.op.Model("identifiers", true)
+	return err
+}
+
+// Close the client connection with the backend server.
+func (ms *MongoStore) Close() error {
+	return ms.op.Close(context.TODO())
+}
+
+// Exists returns true if the provided DID instance is already available
+// in the store.
+func (ms *MongoStore) Exists(id *did.Identifier) bool {
+	filter := orm.Filter()
+	filter["method"] = id.Method()
+	filter["subject"] = id.Subject()
+	n, _ := ms.did.Count(filter)
+	return n > 0
+}
+
+// Get a previously stored DID instance.
+func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
+	// Run query
+	var res identifierRecord
+	filter := orm.Filter()
+	filter["method"] = req.Method
+	filter["subject"] = req.Subject
+	if err := ms.did.First(filter, &res); err != nil {
+		return nil, nil, errors.New("no information available")
+	}
+
+	// Decode result
+	return res.decode()
+}
+
+// Save will create or update an entry for the provided DID instance.
+func (ms *MongoStore) Save(id *did.Identifier, proof *did.ProofLD) error {
+	// Filter
+	filter := orm.Filter()
+	filter["method"] = id.Method()
+	filter["subject"] = id.Subject()
+
+	// Record
+	rec := new(identifierRecord)
+	rec.load(id, proof)
+
+	// Run upsert operation
+	return ms.did.Update(filter, rec, true)
+}
+
+// Delete any existing record for the provided DID instance.
+func (ms *MongoStore) Delete(id *did.Identifier) error {
+	filter := orm.Filter()
+	filter["method"] = id.Method()
+	filter["subject"] = id.Subject()
+	return ms.did.Delete(filter)
+}
+
+// Description returns a brief summary for the storage instance.
+func (ms *MongoStore) Description() string {
+	return "MongoDB data store"
 }
