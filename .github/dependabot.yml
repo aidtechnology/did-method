@@ -11,7 +11,7 @@ updates:
       - "dependencies"
     schedule:
       # how often to look for updates
-      interval: "weekly"
+      interval: "monthly"
       # what day to use for opening new requests
       day: "monday"
       # check for npm updates at 0hrs UTC
