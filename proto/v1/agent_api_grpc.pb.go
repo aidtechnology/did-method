@@ -13,7 +13,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion7
 
 // AgentAPIClient is the client API for AgentAPI service.
 //
@@ -79,16 +79,23 @@ type AgentAPIServer interface {
 type UnimplementedAgentAPIServer struct {
 }
 
-func (*UnimplementedAgentAPIServer) Ping(context.Context, *empty.Empty) (*PingResponse, error) {
+func (UnimplementedAgentAPIServer) Ping(context.Context, *empty.Empty) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (*UnimplementedAgentAPIServer) Process(context.Context, *ProcessRequest) (*ProcessResponse, error) {
+func (UnimplementedAgentAPIServer) Process(context.Context, *ProcessRequest) (*ProcessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Process not implemented")
 }
-func (*UnimplementedAgentAPIServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
+func (UnimplementedAgentAPIServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
 }
-func (*UnimplementedAgentAPIServer) mustEmbedUnimplementedAgentAPIServer() {}
+func (UnimplementedAgentAPIServer) mustEmbedUnimplementedAgentAPIServer() {}
+
+// UnsafeAgentAPIServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AgentAPIServer will
+// result in compilation errors.
+type UnsafeAgentAPIServer interface {
+	mustEmbedUnimplementedAgentAPIServer()
+}
 
 func RegisterAgentAPIServer(s *grpc.Server, srv AgentAPIServer) {
 	s.RegisterService(&_AgentAPI_serviceDesc, srv)

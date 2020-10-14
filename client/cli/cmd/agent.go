@@ -18,8 +18,6 @@ import (
 	"go.bryk.io/x/cli"
 	"go.bryk.io/x/net/rpc"
 	"go.bryk.io/x/observability"
-	"go.bryk.io/x/observability/extras"
-	"go.opentelemetry.io/otel/exporters/otlp"
 )
 
 var agentCmd = &cobra.Command{
@@ -127,17 +125,11 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 
 	// Observability operator
 	oop, err := observability.NewOperator([]observability.OperatorOption{
-		observability.RegisterAsGlobal(),
-		observability.WithExporterOTLP(otlp.WithInsecure()),
 		observability.WithLogger(log),
 		observability.WithServiceName("didctl"),
 		observability.WithServiceVersion(info.CoreVersion),
-		observability.WithFilteredMethods("bryk.did.proto.v1.AgentAPI/Ping"),
 	}...)
 	if err != nil {
-		return err
-	}
-	if err = extras.RuntimeMetrics(0); err != nil {
 		return err
 	}
 

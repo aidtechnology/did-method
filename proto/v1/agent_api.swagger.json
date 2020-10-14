@@ -23,7 +23,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -46,7 +46,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -79,7 +79,7 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
@@ -155,7 +155,6 @@
       "properties": {
         "ok": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Responsiveness result."
         }
       },
@@ -180,7 +179,6 @@
       "properties": {
         "ok": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Processing result, must be 'true' if the mutation was\nproperly applied."
         }
       },

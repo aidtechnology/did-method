@@ -19,13 +19,6 @@ treated, this repository also includes an open source reference implementation f
 CLI client and network agent. You can directly download the binary from the
 [published releases](https://github.com/bryk-io/did-method/releases). 
 
-Collaborators.
-
-- Ben Cessa / [ben@pixative.com](mailto:ben@pixative.com)
-- Sandra Murcia / [smurcia@iadb.org](mailto:smurcia@iadb.org)
-- Marcos Allende / [marcosal@iadb.org](mailto:marcosal@iadb.org)
-- Flavia Munhoso / [flaviamu@iadb.org](mailto:flaviamu@iadb.org)
-
 ## 1. Decentralized Identifiers
 __In order to access online, i.e. digital, services, we need to be electronically
 identifiable.__ It means we need an electronic profile that, with a certain level
