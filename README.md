@@ -1,9 +1,9 @@
 # DID Method
 
-[![Build Status](https://github.com/bryk-io/did-method/workflows/ci/badge.svg?branch=master)](https://github.com/bryk-io/did-method/actions)
-[![Version](https://img.shields.io/github/tag/bryk-io/did-method.svg)](https://github.com/bryk-io/did-method/releases)
+[![Build Status](https://github.com/aidtechnology/did-method/workflows/ci/badge.svg?branch=master)](https://github.com/aidtechnology/did-method/actions)
+[![Version](https://img.shields.io/github/tag/aidtechnology/did-method.svg)](https://github.com/aidtechnology/did-method/releases)
 [![Software License](https://img.shields.io/badge/license-BSD3-red.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bryk-io/did-method?style=flat)](https://goreportcard.com/report/github.com/bryk-io/did-method)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aidtechnology/did-method?style=flat)](https://goreportcard.com/report/github.com/aidtechnology/did-method)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0-ff69b4.svg)](.github/CODE_OF_CONDUCT.md)
 
 The present document describes the __"bryk"__ DID Method specification. The
@@ -17,7 +17,7 @@ refer to the original [DID Primer.](https://github.com/WebOfTrustInfo/rwot5-bost
 To facilitate adoption and testing, and promote open discussions about the subjects
 treated, this repository also includes an open source reference implementation for a
 CLI client and network agent. You can directly download the binary from the
-[published releases](https://github.com/bryk-io/did-method/releases). 
+[published releases](https://github.com/aidtechnology/did-method/releases). 
 
 ## 1. Decentralized Identifiers
 __In order to access online, i.e. digital, services, we need to be electronically

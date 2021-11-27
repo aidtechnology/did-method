@@ -8,8 +8,8 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/cli"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/did"
 )
 
 var addKeyCmd = &cobra.Command{
@@ -84,7 +84,7 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 		return errors.New("invalid key name")
 	}
 	if strings.Count(keyName, "#") == 1 {
-		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.Keys())+1), 1)
+		keyName = strings.Replace(keyName, "#", fmt.Sprintf("%d", len(id.VerificationMethods())+1), 1)
 	}
 	keyName = sanitize.Name(keyName)
 
@@ -101,28 +101,15 @@ func runAddKeyCmd(_ *cobra.Command, args []string) error {
 		return errors.New("invalid key type")
 	}
 
-	// Set key encoding
-	var keyEnc did.KeyEncoding
-	switch viper.GetString("key-add.encoding") {
-	case "hex":
-		keyEnc = did.EncodingHex
-	case "base58":
-		keyEnc = did.EncodingBase58
-	case "base64":
-		keyEnc = did.EncodingBase64
-	default:
-		return errors.New("invalid key encoding")
-	}
-
 	// Add key
 	log.Debugf("adding new key with name: %s", keyName)
-	if err = id.AddNewKey(keyName, keyType, keyEnc); err != nil {
-		return fmt.Errorf("failed to add new key: %s", err)
+	if err = id.AddNewVerificationMethod(keyName, keyType); err != nil {
+		return fmt.Errorf("failed to add new key: %w", err)
 	}
 	if viper.GetBool("key-add.authentication") {
 		log.Info("setting new key as authentication mechanism")
-		if err = id.AddVerificationMethod(id.GetReference(keyName), did.AuthenticationVM); err != nil {
-			return fmt.Errorf("failed to establish key for authentication purposes: %s", err)
+		if err = id.AddVerificationRelationship(id.GetReference(keyName), did.AuthenticationVM); err != nil {
+			return fmt.Errorf("failed to establish key for authentication purposes: %w", err)
 		}
 	}
 

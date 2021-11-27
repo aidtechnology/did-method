@@ -1,4 +1,4 @@
-FROM ghcr.io/bryk-io/shell:0.1.0
+FROM ghcr.io/bryk-io/shell:0.2.0
 
 EXPOSE 9090/tcp
 

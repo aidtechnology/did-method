@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	protov1 "github.com/bryk-io/did-method/proto/v1"
+	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/cli"
-	xlog "go.bryk.io/x/log"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/did"
+	xlog "go.bryk.io/pkg/log"
 )
 
 var syncCmd = &cobra.Command{
@@ -89,7 +89,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	// Get client connection
 	conn, err := getClientConnection()
 	if err != nil {
-		return fmt.Errorf("failed to establish connection: %s", err)
+		return fmt.Errorf("failed to establish connection: %w", err)
 	}
 	defer func() {
 		_ = conn.Close()
@@ -109,7 +109,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	client := protov1.NewAgentAPIClient(conn)
 	res, err := client.Process(context.TODO(), req)
 	if err != nil {
-		return fmt.Errorf("network return an error: %s", err)
+		return fmt.Errorf("network return an error: %w", err)
 	}
 	log.Debugf("request status: %v", res.Ok)
 	if !res.Ok {
@@ -139,12 +139,12 @@ func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, 
 
 	// Sign ticket
 	if ticket.Signature, err = key.Sign(ch); err != nil {
-		return nil, fmt.Errorf("failed to generate request ticket: %s", err)
+		return nil, fmt.Errorf("failed to generate request ticket: %w", err)
 	}
 
 	// Verify on client's side
 	if err = ticket.Verify(diff); err != nil {
-		return nil, fmt.Errorf("failed to verify ticket: %s", err)
+		return nil, fmt.Errorf("failed to verify ticket: %w", err)
 	}
 
 	return ticket, nil
@@ -152,14 +152,14 @@ func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, 
 
 func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
 	// Get selected key for the sync operation
-	key := id.Key(viper.GetString("sync.key"))
+	key := id.VerificationMethod(viper.GetString("sync.key"))
 	if key == nil {
 		return nil, errors.New("invalid key selected")
 	}
 
 	// Verify the key is enabled for authentication
 	isAuth := false
-	for _, k := range id.GetVerificationMethod(did.AuthenticationVM) {
+	for _, k := range id.GetVerificationRelationship(did.AuthenticationVM) {
 		if k == key.ID {
 			isAuth = true
 			break

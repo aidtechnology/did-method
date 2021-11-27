@@ -3,11 +3,11 @@
 
 # Project setup
 BINARY_NAME=didctl
-OWNER=bryk-io
+OWNER=aidtechnology
 REPO=did-method
 PROJECT_REPO=github.com/$(OWNER)/$(REPO)
 DOCKER_IMAGE=ghcr.io/$(OWNER)/$(BINARY_NAME)
-MAINTAINERS='Ben Cessa <ben@pixative.com>'
+MAINTAINERS='Ben Cessa <ben@aid.technology>'
 
 # State values
 GIT_COMMIT_DATE=$(shell TZ=UTC git log -n1 --pretty=format:'%cd' --date='format-local:%Y-%m-%dT%H:%M:%SZ')
@@ -25,10 +25,13 @@ LD_FLAGS += -X $(PROJECT_REPO)/info.BuildTimestamp=$(GIT_COMMIT_DATE)
 # subdirectories if no value is provided.
 pkg?="..."
 
-# Proto builder basic setup
-proto-builder=docker run --rm -it -v $(shell pwd):/workdir ghcr.io/bryk-io/buf-builder:0.25.0
+# "buf" is used to manage protocol buffer definitions, either
+# locally (on a dev container) or using a builder image.
+buf:=buf
+ifndef REMOTE_CONTAINERS_SOCKETS
+	buf=docker run --rm -it -v $(shell pwd):/workdir ghcr.io/bryk-io/buf-builder:1.0.0-rc1 buf
+endif
 
-## help: Prints this help message
 help:
 	@echo "Commands available"
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /' | sort
@@ -55,14 +58,19 @@ ca-roots:
 	@docker cp ca-roots:/ca-roots.crt ca-roots.crt
 	@docker stop ca-roots
 
-## clean: Download and compile all dependencies and intermediary products
-clean:
+## deps: Download and compile all dependencies and intermediary products
+deps:
 	@-rm -rf vendor
-	go clean
 	go mod tidy
 	go mod verify
 	go mod download
 	go mod vendor
+
+## docs: Display package documentation on local server
+docs:
+	@echo "Docs available at: http://localhost:8080/"
+	godoc -http=:8080 -goroot=${GOPATH} -play
+
 
 ## docker: Build docker image
 # https://github.com/opencontainers/image-spec/blob/master/annotations.md
@@ -76,6 +84,7 @@ docker:
 	"--label=org.opencontainers.image.created=$(GIT_COMMIT_DATE)" \
 	"--label=org.opencontainers.image.revision=$(GIT_COMMIT_HASH)" \
 	"--label=org.opencontainers.image.version=$(GIT_TAG:v%=%)" \
+	"--label=org.opencontainers.image.source=$(PROJECT_REPO)" \
 	--rm -t $(DOCKER_IMAGE):$(GIT_TAG:v%=%) .
 	@rm $(BINARY_NAME)
 
@@ -91,49 +100,52 @@ lint:
 	# Helm charts
 	helm lint helm/*
 
-## proto: Compile all PB definitions and RPC services
-proto:
+## proto-test: Verify PB definitions
+proto-test:
 	# Verify style and consistency
-	$(proto-builder) buf check lint --file $(shell echo proto/v1/*.proto | tr ' ' ',')
-	@-$(proto-builder) buf check breaking \
-	--file $(shell echo proto/v1/*.proto | tr ' ' ',') \
-	--against-input proto/v1/image.bin
+	$(buf) lint --path proto/did/v1
 
-	# Clean old builds
-	@-rm proto/v1/image.bin
+	# Verify breaking changes. This fails if no image is already present,
+	# use `buf build --o proto/$(pkg)/image.bin --path proto/$(pkg)` to generate it.
+	$(buf) breaking --against proto/v1/image.bin
+
+## proto-build: Build PB definitions on 'pkg'
+proto-build:
+	# Verify PB definitions
+	make proto-test
 
 	# Build package image
-	$(proto-builder) buf image build -o proto/v1/image.bin --file $(shell echo proto/v1/*.proto | tr ' ' ',')
+	$(buf) build --output proto/did/v1/image.bin --path proto/did/v1
 
-	# Build package code
-	$(proto-builder) buf protoc \
-	--proto_path=proto \
-	--go_out=proto \
-	--go-grpc_out=proto \
-	--grpc-gateway_out=logtostderr=true:proto \
-	--swagger_out=logtostderr=true:proto \
-	proto/v1/*.proto
+	# Generate package code using buf.gen.yaml
+	$(buf) generate --output proto --path proto/did/v1
 
 	# Remove package comment added by the gateway generator to avoid polluting
 	# the package documentation.
-	@-sed -i '' '/\/\*/,/*\//d' proto/v1/*.pb.gw.go
+	@-sed -i.bak '/\/\*/,/*\//d' proto/did/v1/*.pb.gw.go
 
-	# Style adjustments
-	gofmt -s -w proto/v1
-	goimports -w proto/v1
+	# Remove non-required dependencies. "protoc-gen-validate" don't have runtime
+	# dependencies but the generated code includes the package by the default =/.
+	@-sed -i.bak '/protoc-gen-validate/d' proto/did/v1/*.pb.go
+
+	# Remove in-place edit backup files
+	@-rm proto/did/v1/*.bak
+
+	# Style adjustments (required for consistency)
+	gofmt -s -w proto/did/v1
+	goimports -w proto/did/v1
 
 ## release: Prepare artifacts for a new tagged release
 release:
-	goreleaser release --skip-validate --skip-publish --rm-dist
+	goreleaser release --rm-dist --skip-validate --skip-publish
 
 ## scan: Look for known vulnerabilities in the project dependencies
 # https://github.com/sonatype-nexus-community/nancy
 scan:
-	@go list -f '{{if not .Indirect}}{{.}}{{end}}' -mod=mod -m all | nancy sleuth -o text
+	@go list -mod=mod -f '{{if not .Indirect}}{{.}}{{end}}' -m all | nancy sleuth --skip-update-check
 
-## test: Run all tests excluding the vendor dependencies
+## test: Run unit tests excluding the vendor dependencies
 test:
-	# Unit tests
 	# -count=1 -p=1 (disable cache and parallel execution)
 	go test -race -v -failfast -coverprofile=coverage.report ./$(pkg)
 	go tool cover -html coverage.report -o coverage.html
@@ -141,4 +153,4 @@ test:
 ## updates: List available updates for direct dependencies
 # https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
 updates:
-	@go list -mod=mod -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all 2> /dev/null
+	@go list -mod=mod -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -u -m all 2> /dev/null

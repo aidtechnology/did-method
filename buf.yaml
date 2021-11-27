@@ -2,6 +2,9 @@ version: v1beta1
 build:
   roots:
     - proto
+breaking:
+  use:
+    - FILE
 lint:
   service_suffix: API
   enum_zero_value_suffix: _INVALID
@@ -22,8 +25,7 @@ lint:
     - IMPORT_NO_PUBLIC
     - PACKAGE_AFFINITY
     - PACKAGE_DIRECTORY_MATCH
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
   ignore:
     - third_party
-breaking:
-  use:
-    - WIRE_JSON

@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/cli"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/did"
 )
 
 var verifyCmd = &cobra.Command{
@@ -54,12 +54,12 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	log.Debug("load signature file")
 	entry, err := ioutil.ReadFile(args[0])
 	if err != nil {
-		return fmt.Errorf("failed to read the signature file: %s", err)
+		return fmt.Errorf("failed to read the signature file: %w", err)
 	}
 	log.Debug("decoding contents")
 	proof := &did.ProofLD{}
 	if err = json.Unmarshal(entry, proof); err != nil {
-		return fmt.Errorf("invalid signature file: %s", err)
+		return fmt.Errorf("invalid signature file: %w", err)
 	}
 
 	// Validate verification method
@@ -67,7 +67,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	vm := proof.VerificationMethod
 	id, err := did.Parse(vm)
 	if err != nil {
-		return fmt.Errorf("invalid proof verification method: %s", err)
+		return fmt.Errorf("invalid proof verification method: %w", err)
 	}
 
 	// Retrieve subject
@@ -79,7 +79,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	// Decode result obtained from resolve
 	doc := new(did.Document)
 	result := map[string]json.RawMessage{}
-	if err := json.Unmarshal([]byte(jsDoc), &result); err != nil {
+	if err := json.Unmarshal(jsDoc, &result); err != nil {
 		return fmt.Errorf("invalid DID document received: %s", jsDoc)
 	}
 	if _, ok := result["document"]; !ok {
@@ -96,7 +96,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get creator's key
-	ck := peer.Key(vm)
+	ck := peer.VerificationMethod(vm)
 	if ck == nil {
 		return fmt.Errorf("verification method is not available on the DID document: %s", vm)
 	}

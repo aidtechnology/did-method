@@ -1,8 +1,8 @@
 package agent
 
 import (
-	protov1 "github.com/bryk-io/did-method/proto/v1"
-	"go.bryk.io/x/ccg/did"
+	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
+	"go.bryk.io/pkg/did"
 )
 
 // Storage defines an abstract component that provides and manage

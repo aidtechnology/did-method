@@ -10,14 +10,14 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/bryk-io/did-method/agent"
-	"github.com/bryk-io/did-method/agent/storage"
-	"github.com/bryk-io/did-method/info"
+	"github.com/aidtechnology/did-method/agent"
+	"github.com/aidtechnology/did-method/agent/storage"
+	"github.com/aidtechnology/did-method/info"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/cli"
-	"go.bryk.io/x/net/rpc"
-	"go.bryk.io/x/observability"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/net/rpc"
+	"go.bryk.io/pkg/otel"
 )
 
 var agentCmd = &cobra.Command{
@@ -116,6 +116,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		if err := pprof.StartCPUProfile(cpu); err != nil {
 			return err
 		}
+		// nolint: gosec
 		defer func() {
 			log.Infof("CPU profile saved at %s", cpu.Name())
 			pprof.StopCPUProfile()
@@ -124,10 +125,10 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	}
 
 	// Observability operator
-	oop, err := observability.NewOperator([]observability.OperatorOption{
-		observability.WithLogger(log),
-		observability.WithServiceName("didctl"),
-		observability.WithServiceVersion(info.CoreVersion),
+	oop, err := otel.NewOperator([]otel.OperatorOption{
+		otel.WithLogger(log),
+		otel.WithServiceName("didctl"),
+		otel.WithServiceVersion(info.CoreVersion),
 	}...)
 	if err != nil {
 		return err
@@ -178,7 +179,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	}
 	server, err := rpc.NewServer(opts...)
 	if err != nil {
-		return fmt.Errorf("failed to start node: %s", err)
+		return fmt.Errorf("failed to start node: %w", err)
 	}
 	ready := make(chan bool)
 	go func() {
@@ -218,7 +219,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func getAgentHandler(oop *observability.Operator) (*agent.Handler, error) {
+func getAgentHandler(oop *otel.Operator) (*agent.Handler, error) {
 	// Get handler settings
 	methods := viper.GetStringSlice("server.method")
 	pow := uint(viper.GetInt("server.pow"))
@@ -230,7 +231,7 @@ func getAgentHandler(oop *observability.Operator) (*agent.Handler, error) {
 	// Prepare API handler
 	handler, err := agent.NewHandler(methods, pow, store, oop)
 	if err != nil {
-		return nil, fmt.Errorf("failed to start method handler: %s", err)
+		return nil, fmt.Errorf("failed to start method handler: %w", err)
 	}
 	log.Infof("storage: %s", store.Description())
 	return handler, nil
@@ -243,16 +244,16 @@ func loadAgentCredentials() (rpc.ServerOption, error) {
 	}
 	tlsConf.Cert, err = ioutil.ReadFile(viper.GetString("server.tls.cert"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load certificate file: %s", err)
+		return nil, fmt.Errorf("failed to load certificate file: %w", err)
 	}
 	tlsConf.PrivateKey, err = ioutil.ReadFile(viper.GetString("server.tls.key"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load private key file: %s", err)
+		return nil, fmt.Errorf("failed to load private key file: %w", err)
 	}
 	if viper.GetString("server.tls.ca") != "" {
 		caPEM, err := ioutil.ReadFile(viper.GetString("server.tls.ca"))
 		if err != nil {
-			return nil, fmt.Errorf("failed to load CA file: %s", err)
+			return nil, fmt.Errorf("failed to load CA file: %w", err)
 		}
 		tlsConf.CustomCAs = append(tlsConf.CustomCAs, caPEM)
 	}
@@ -266,7 +267,7 @@ func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 		if viper.GetString("server.tls.ca") != "" {
 			caPEM, err := ioutil.ReadFile(viper.GetString("server.tls.ca"))
 			if err != nil {
-				return nil, fmt.Errorf("failed to load CA file: %s", err)
+				return nil, fmt.Errorf("failed to load CA file: %w", err)
 			}
 			tlsConf.CustomCAs = append(tlsConf.CustomCAs, caPEM)
 		}
@@ -274,22 +275,13 @@ func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 		gwCl = append(gwCl, rpc.WithInsecureSkipVerify()) // Internally the gateway proxy accept any certificate
 	}
 
-	// Properly adjust outgoing headers
-	headersMatcher := func(h string) (string, bool) {
-		if strings.HasPrefix(strings.ToLower(h), "x-") {
-			return h, true
-		}
-		return "x-rpc-" + h, true
-	}
-
 	gwOpts := []rpc.HTTPGatewayOption{
 		rpc.WithClientOptions(gwCl),
-		rpc.WithOutgoingHeaderMatcher(headersMatcher),
 		rpc.WithFilter(handler.QueryResponseFilter()),
 	}
 	gw, err := rpc.NewHTTPGateway(gwOpts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize HTTP gateway: %s", err)
+		return nil, fmt.Errorf("failed to initialize HTTP gateway: %w", err)
 	}
 	return gw, nil
 }

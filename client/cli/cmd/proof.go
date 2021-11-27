@@ -8,7 +8,7 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/cli"
+	"go.bryk.io/pkg/cli"
 )
 
 var proofCmd = &cobra.Command{
@@ -84,7 +84,7 @@ func runProofCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Get key
-	key := id.Key(viper.GetString("proof.key"))
+	key := id.VerificationMethod(viper.GetString("proof.key"))
 	if key == nil {
 		return fmt.Errorf("selected key is not available on the DID: %s", viper.GetString("proof.key"))
 	}
@@ -94,11 +94,11 @@ func runProofCmd(_ *cobra.Command, args []string) error {
 	domain := viper.GetString("proof.domain")
 	pld, err := key.ProduceProof(input, purpose, domain)
 	if err != nil {
-		return fmt.Errorf("failed to produce proof: %s", err)
+		return fmt.Errorf("failed to produce proof: %w", err)
 	}
 	js, err := json.MarshalIndent(pld, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed to produce proof: %s", err)
+		return fmt.Errorf("failed to produce proof: %w", err)
 	}
 	fmt.Printf("%s\n", js)
 	return nil

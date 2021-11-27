@@ -6,21 +6,21 @@ import (
 	"io"
 	"time"
 
-	"github.com/bryk-io/did-method/client/store"
-	"github.com/bryk-io/did-method/info"
-	"github.com/bryk-io/did-method/resolver"
+	"github.com/aidtechnology/did-method/client/store"
+	"github.com/aidtechnology/did-method/info"
+	"github.com/aidtechnology/did-method/resolver"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/crypto/ed25519"
-	"go.bryk.io/x/net/rpc"
+	"go.bryk.io/pkg/crypto/ed25519"
+	"go.bryk.io/pkg/net/rpc"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/sha3"
 	"google.golang.org/grpc"
 )
 
-// When reading contents from standard input a maximum of 4MB is expected
+// When reading contents from standard input a maximum of 4MB is expected.
 const maxPipeInputSize = 4096
 
-// Securely expand the provided secret material
+// Securely expand the provided secret material.
 func expand(secret []byte, size int, info []byte) ([]byte, error) {
 	salt := make([]byte, sha256.Size)
 	buf := make([]byte, size)
@@ -31,7 +31,7 @@ func expand(secret []byte, size int, info []byte) ([]byte, error) {
 	return buf, nil
 }
 
-// Restore key pair from the provided material
+// Restore key pair from the provided material.
 func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
 	m, err := expand(material, 32, nil)
 	if err != nil {
@@ -42,12 +42,12 @@ func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
 	return ed25519.FromSeed(seed[:])
 }
 
-// Accessor to the local storage handler
+// Accessor to the local storage handler.
 func getClientStore() (*store.LocalStore, error) {
 	return store.NewLocalStore(viper.GetString("client.home"))
 }
 
-// Get an RPC network connection
+// Get an RPC network connection.
 func getClientConnection() (*grpc.ClientConn, error) {
 	node := viper.GetString("client.node")
 	log.Infof("establishing connection to the network with node: %s", node)
@@ -71,7 +71,7 @@ func getClientConnection() (*grpc.ClientConn, error) {
 func resolve(id string) ([]byte, error) {
 	var conf []*resolver.Provider
 	if err := viper.UnmarshalKey("resolver", &conf); err != nil {
-		return nil, fmt.Errorf("invalid resolver configuration: %s", err)
+		return nil, fmt.Errorf("invalid resolver configuration: %w", err)
 	}
 	return resolver.Get(id, conf)
 }

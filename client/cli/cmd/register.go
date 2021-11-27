@@ -12,10 +12,10 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/cli"
-	"go.bryk.io/x/crypto/shamir"
-	xlog "go.bryk.io/x/log"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/crypto/shamir"
+	"go.bryk.io/pkg/did"
+	xlog "go.bryk.io/pkg/log"
 )
 
 var registerCmd = &cobra.Command{
@@ -76,8 +76,7 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Check for duplicates
-	dup, _ := st.Get(name)
-	if dup != nil {
+	if dup, _ := st.Get(name); dup != nil {
 		return fmt.Errorf("there's already an entry with reference name: %s", name)
 	}
 
@@ -109,11 +108,11 @@ func runRegisterCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 	log.Debug("adding master key")
-	if err = id.AddKey("master", pk, did.KeyTypeEd, did.EncodingBase58); err != nil {
+	if err = id.AddVerificationMethod("master", pk, did.KeyTypeEd); err != nil {
 		return err
 	}
 	log.Debug("setting master key as authentication mechanism")
-	if err = id.AddVerificationMethod(id.GetReference("master"), did.AuthenticationVM); err != nil {
+	if err = id.AddVerificationRelationship(id.GetReference("master"), did.AuthenticationVM); err != nil {
 		return err
 	}
 
@@ -139,7 +138,7 @@ func getSecret(name string) ([]byte, error) {
 		for i, k := range shares {
 			share := fmt.Sprintf("%s.share_%d.bin", name, i+1)
 			if err := ioutil.WriteFile(share, k, 0400); err != nil {
-				return nil, fmt.Errorf("failed to save share '%s': %s", share, err)
+				return nil, fmt.Errorf("failed to save share '%s': %w", share, err)
 			}
 		}
 		return secret, nil

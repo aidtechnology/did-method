@@ -1,5 +1,5 @@
 run:
-  deadline: 2m
+  deadline: 5m
   issues-exit-code: 1
   tests: true
   build-tags: []
@@ -24,7 +24,7 @@ linters:
     - errcheck
     - gosimple
     - govet
-    - golint
+    - revive
     - gofmt
     - ineffassign
     - staticcheck
@@ -32,7 +32,6 @@ linters:
     - typecheck
     - varcheck
     - gocyclo
-    - maligned
     - goconst
     - depguard
     - misspell
@@ -40,15 +39,27 @@ linters:
     - nakedret
     - prealloc
     - gosec
-    - scopelint
     - bodyclose
     - stylecheck
-    - interfacer
     - unparam
+    - durationcheck
+    - unconvert
+    - asciicheck
+    - errorlint
+    - exhaustive
+    - forcetypeassert
+    - godot
+    - ifshort
+    - noctx
+    - predeclared
+    - exportloopref
+    - wastedassign
+    - whitespace
+    - funlen
+    - nestif
     - deadcode
-    - gocognit
-    - goimports
     - unused
+    #- wrapcheck
   disable:
     - dupl
 issues:
@@ -62,25 +73,40 @@ issues:
         - gosec
         - lll
         - nakedret
-        - scopelint
+        - funlen
+        - nestif
+        - noctx
 linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: false
   govet:
     check-shadowing: false
-  golint:
-    min-confidence: 0.8
-    set-exit-status: true
+    enable:
+      - atomic
+      - atomicalign
+      - buildtag
+      - cgocall
+      - copylocks
+      - httpresponse
+      - loopclosure
+      - lostcancel
+      - nilfunc
+      - shift
+      - structtag
+      - unmarshal
+      - unreachable
+      - unusedresult
+      - tests
+      #- fieldalignment
+      #- composites
   gofmt:
     simplify: true
   gocyclo:
     min-complexity: 18
-  maligned:
-    suggest-new: true
   goconst:
     min-len: 3
-    min-occurrences: 3
+    min-occurrences: 5
   depguard:
     list-type: blacklist
     include-go-root: false
@@ -98,4 +124,9 @@ linters-settings:
     range-loops: true
     for-loops: false
   dupl:
-    threshold: 150
+    threshold: 110
+  exhaustive:
+    default-signifies-exhaustive: true
+  funlen:
+    lines: 120
+    statements: 70

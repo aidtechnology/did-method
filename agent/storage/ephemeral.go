@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	protov1 "github.com/bryk-io/did-method/proto/v1"
+	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"github.com/pkg/errors"
-	"go.bryk.io/x/ccg/did"
+	"go.bryk.io/pkg/did"
 )
 
 type record struct {

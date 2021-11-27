@@ -9,8 +9,8 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/cli"
+	"go.bryk.io/pkg/cli"
+	"go.bryk.io/pkg/did"
 )
 
 var addServiceCmd = &cobra.Command{
@@ -94,7 +94,7 @@ func runAddServiceCmd(_ *cobra.Command, args []string) error {
 	// Add service
 	log.Debugf("registering service with id: %s", svc.ID)
 	if err = id.AddService(svc); err != nil {
-		return fmt.Errorf("failed to add new service: %s", err)
+		return fmt.Errorf("failed to add new service: %w", err)
 	}
 
 	// Update record

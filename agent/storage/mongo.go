@@ -5,14 +5,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	protov1 "github.com/bryk-io/did-method/proto/v1"
+	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"github.com/pkg/errors"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/storage/orm"
+	"go.bryk.io/pkg/did"
+	"go.bryk.io/pkg/storage/orm"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Base64 encoding used
+// Base64 encoding used.
 var b64 = base64.RawStdEncoding
 
 // Data structure to store DID entries.
@@ -85,7 +85,7 @@ func (ms *MongoStore) Open(info string) error {
 	if err != nil {
 		return err
 	}
-	ms.did = ms.op.Model("identifiers", true)
+	ms.did = ms.op.Model("identifiers")
 	return err
 }
 

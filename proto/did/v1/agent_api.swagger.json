@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v1/agent_api.proto",
+    "title": "did/v1/agent_api.proto",
     "version": "version not set"
   },
   "consumes": [

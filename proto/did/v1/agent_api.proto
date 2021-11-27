@@ -3,7 +3,7 @@ syntax = "proto3";
 package bryk.did.proto.v1;
 
 option csharp_namespace = "Bryk.Did.Proto.V1";
-option go_package = "v1;protov1";
+option go_package = "did/v1;protov1";
 option java_multiple_files = true;
 option java_outer_classname = "AgentApiProto";
 option java_package = "io.bryk.did.proto.v1";

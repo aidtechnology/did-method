@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/bryk-io/did-method/info"
+	"github.com/aidtechnology/did-method/info"
 	"github.com/spf13/cobra"
 )
 

@@ -5,14 +5,15 @@ package protov1
 import (
 	context "context"
 
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // AgentAPIClient is the client API for AgentAPI service.
@@ -20,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentAPIClient interface {
 	// Reachability test.
-	Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PingResponse, error)
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingResponse, error)
 	// Process an incoming request ticket.
 	Process(ctx context.Context, in *ProcessRequest, opts ...grpc.CallOption) (*ProcessResponse, error)
 	// Return the current state of a DID subject.
@@ -35,7 +36,7 @@ func NewAgentAPIClient(cc grpc.ClientConnInterface) AgentAPIClient {
 	return &agentAPIClient{cc}
 }
 
-func (c *agentAPIClient) Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PingResponse, error) {
+func (c *agentAPIClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingResponse, error) {
 	out := new(PingResponse)
 	err := c.cc.Invoke(ctx, "/bryk.did.proto.v1.AgentAPI/Ping", in, out, opts...)
 	if err != nil {
@@ -67,7 +68,7 @@ func (c *agentAPIClient) Query(ctx context.Context, in *QueryRequest, opts ...gr
 // for forward compatibility
 type AgentAPIServer interface {
 	// Reachability test.
-	Ping(context.Context, *empty.Empty) (*PingResponse, error)
+	Ping(context.Context, *emptypb.Empty) (*PingResponse, error)
 	// Process an incoming request ticket.
 	Process(context.Context, *ProcessRequest) (*ProcessResponse, error)
 	// Return the current state of a DID subject.
@@ -79,7 +80,7 @@ type AgentAPIServer interface {
 type UnimplementedAgentAPIServer struct {
 }
 
-func (UnimplementedAgentAPIServer) Ping(context.Context, *empty.Empty) (*PingResponse, error) {
+func (UnimplementedAgentAPIServer) Ping(context.Context, *emptypb.Empty) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedAgentAPIServer) Process(context.Context, *ProcessRequest) (*ProcessResponse, error) {
@@ -97,12 +98,12 @@ type UnsafeAgentAPIServer interface {
 	mustEmbedUnimplementedAgentAPIServer()
 }
 
-func RegisterAgentAPIServer(s *grpc.Server, srv AgentAPIServer) {
-	s.RegisterService(&_AgentAPI_serviceDesc, srv)
+func RegisterAgentAPIServer(s grpc.ServiceRegistrar, srv AgentAPIServer) {
+	s.RegisterService(&AgentAPI_ServiceDesc, srv)
 }
 
 func _AgentAPI_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -114,7 +115,7 @@ func _AgentAPI_Ping_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/bryk.did.proto.v1.AgentAPI/Ping",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentAPIServer).Ping(ctx, req.(*empty.Empty))
+		return srv.(AgentAPIServer).Ping(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -155,7 +156,10 @@ func _AgentAPI_Query_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-var _AgentAPI_serviceDesc = grpc.ServiceDesc{
+// AgentAPI_ServiceDesc is the grpc.ServiceDesc for AgentAPI service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AgentAPI_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "bryk.did.proto.v1.AgentAPI",
 	HandlerType: (*AgentAPIServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -173,5 +177,5 @@ var _AgentAPI_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "v1/agent_api.proto",
+	Metadata: "did/v1/agent_api.proto",
 }

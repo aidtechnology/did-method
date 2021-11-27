@@ -10,16 +10,16 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"go.bryk.io/x/ccg/did"
-	"go.bryk.io/x/crypto/pow"
+	"go.bryk.io/pkg/crypto/pow"
+	"go.bryk.io/pkg/did"
 	"golang.org/x/crypto/sha3"
 )
 
 const defaultTicketDifficultyLevel = 24
 
-// NewTicket returns a properly initialized new ticket instance
+// NewTicket returns a properly initialized new ticket instance.
 func NewTicket(id *did.Identifier, keyID string) (*Ticket, error) {
-	// Get safe DID contents
+	// Get safe DID content
 	contents, err := json.Marshal(id.Document(true))
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func NewTicket(id *did.Identifier, keyID string) (*Ticket, error) {
 	}, nil
 }
 
-// GetDID retrieve the DID instance from the ticket contents
+// GetDID retrieve the DID instance from the ticket contents.
 func (t *Ticket) GetDID() (*did.Identifier, error) {
 	doc := &did.Document{}
 	if err := json.Unmarshal(t.Document, doc); err != nil {
@@ -54,7 +54,7 @@ func (t *Ticket) GetDID() (*did.Identifier, error) {
 	return did.FromDocument(doc)
 }
 
-// GetProofLD returns the decoded proof document contained in the ticket
+// GetProofLD returns the decoded proof document contained in the ticket.
 func (t *Ticket) GetProofLD() (*did.ProofLD, error) {
 	proof := &did.ProofLD{}
 	if err := json.Unmarshal(t.Proof, proof); err != nil {
@@ -63,17 +63,17 @@ func (t *Ticket) GetProofLD() (*did.ProofLD, error) {
 	return proof, nil
 }
 
-// ResetNonce returns the internal nonce value back to 0
+// ResetNonce returns the internal nonce value back to 0.
 func (t *Ticket) ResetNonce() {
 	t.NonceValue = 0
 }
 
-// IncrementNonce will adjust the internal nonce value by 1
+// IncrementNonce will adjust the internal nonce value by 1.
 func (t *Ticket) IncrementNonce() {
 	t.NonceValue++
 }
 
-// Nonce returns the current value set on the nonce attribute
+// Nonce returns the current value set on the nonce attribute.
 func (t *Ticket) Nonce() int64 {
 	return t.NonceValue
 }
@@ -89,10 +89,10 @@ func (t *Ticket) MarshalBinary() ([]byte, error) {
 	tb := bytes.NewBuffer(nil)
 	kb := make([]byte, hex.EncodedLen(len([]byte(t.KeyId))))
 	if err := binary.Write(nb, binary.LittleEndian, t.Nonce()); err != nil {
-		return nil, fmt.Errorf("failed to encode nonce value: %s", err)
+		return nil, fmt.Errorf("failed to encode nonce value: %w", err)
 	}
 	if err := binary.Write(tb, binary.LittleEndian, t.GetTimestamp()); err != nil {
-		return nil, fmt.Errorf("failed to encode nonce value: %s", err)
+		return nil, fmt.Errorf("failed to encode nonce value: %w", err)
 	}
 	hex.Encode(kb, []byte(t.KeyId))
 	tc = append(tc, tb.Bytes()...)
@@ -108,7 +108,7 @@ func (t *Ticket) MarshalBinary() ([]byte, error) {
 	// return proto.MarshalOptions{Deterministic: true}.Marshal(tc)
 }
 
-// Solve the ticket challenge using the proof-of-work mechanism
+// Solve the ticket challenge using the proof-of-work mechanism.
 func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
 	if difficulty == 0 {
 		difficulty = defaultTicketDifficultyLevel
@@ -117,13 +117,13 @@ func (t *Ticket) Solve(ctx context.Context, difficulty uint) string {
 }
 
 // Verify perform all the required validations to ensure the request ticket is
-// ready for further processing
-// - Challenge is valid
-// - Contents are a properly encoded DID instance
-// - Contents don’t include any private key, for security reasons no private keys should
-//   ever be published on the network
-// - DID proof is valid
-// - Ticket signature is valid
+// ready for further processing.
+//   - Challenge is valid
+//   - Contents are a properly encoded DID instance
+//   - Contents don’t include any private key, for security reasons no private keys should
+//     ever be published on the network
+//   - DID proof is valid
+//   - Ticket signature is valid
 func (t *Ticket) Verify(difficulty uint) error {
 	// Challenge is valid
 	if difficulty == 0 {
@@ -140,14 +140,14 @@ func (t *Ticket) Verify(difficulty uint) error {
 	}
 
 	// Verify private keys are not included
-	for _, k := range id.Keys() {
+	for _, k := range id.VerificationMethods() {
 		if len(k.Private) != 0 {
 			return errors.New("private keys included on the DID")
 		}
 	}
 
 	// Retrieve DID key
-	key := id.Key(t.KeyId)
+	key := id.VerificationMethod(t.KeyId)
 	if key == nil {
 		return errors.New("the selected key is not available on the DID")
 	}

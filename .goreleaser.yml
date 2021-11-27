@@ -23,9 +23,9 @@ builds:
       - -v
     ldflags:
       - -s -w
-      - -X github.com/bryk-io/did-method/info.CoreVersion={{.Version}}
-      - -X github.com/bryk-io/did-method/info.BuildCode={{.Commit}}
-      - -X github.com/bryk-io/did-method/info.BuildTimestamp={{.CommitDate}}
+      - -X github.com/aidtechnology/did-method/info.CoreVersion={{.Version}}
+      - -X github.com/aidtechnology/did-method/info.BuildCode={{.Commit}}
+      - -X github.com/aidtechnology/did-method/info.BuildTimestamp={{.CommitDate}}
     # set the modified timestamp on the output binary to ensure a
     # reproducible build
     mod_timestamp: "{{ .CommitTimestamp }}"
@@ -45,6 +45,20 @@ builds:
 archives:
   # a single project can produce multiple archives
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    builds:
+      # artifacts to pack
+      - tredctl
+    format_overrides:
+      # use zip file instead of 'tar.gz' on Windows systems
+      - goos: windows
+        format: zip
+    files:
+      # include documentation files in the package for distribution
+      - README.md
+      - LICENSE*
+      - src: '*.md'
+        dst: docs
+        strip_parent: true
 # generate integrity checksums
 # https://goreleaser.com/customization/checksum/
 checksum:
@@ -58,22 +72,32 @@ source:
 # https://goreleaser.com/customization/snapshots/
 snapshot:
   name_template: "{{ .Version }}-next"
+# configure the 'CHANGELOG.md' file produced
+# https://goreleaser.com/customization/release/#customize-the-changelog
+changelog:
+  # Sorts the changelog by the commit messages (asc, desc or '')
+  sort: ''
+  # Remove certain commit messages from the changelog
+  filters:
+    # Standard commit messages can help to produce better changelogs
+    # https://www.conventionalcommits.org/en/v1.0.0/
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^typo:"
 # build and publish docker images
 # https://goreleaser.com/customization/docker/
 dockers:
-  -
+  - # Build IDs to gather the binaries from
+    ids:
+      - didctl
     # GOOS of the built binary that should be used
     goos: linux
     # GOARCH of the built binary that should be used
     goarch: amd64
     # Dockerfile location
     dockerfile: Dockerfile
-    # Binaries that should be used
-    binaries:
-      - didctl
-    # Build IDs to gather the binaries from
-    builds:
-      - didctl
     # OCI image tags
     build_flag_templates:
       - "--pull"
@@ -81,21 +105,13 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.created={{ .CommitDate }}"
+      - "--label=org.opencontainers.image.source=https://github.com/aidtechnology/did-method"
     # Skips the docker push if there is an indicator for prerelease
     # in the tag e.g. v1.0.0-rc1 (auto)
     skip_push: auto
     image_templates:
-      - "ghcr.io/bryk-io/{{ .ProjectName }}:{{ .Version }}"
-      - "ghcr.io/bryk-io/{{ .ProjectName }}:latest"
-# configure the 'CHANGELOG.md' file produced
-# https://goreleaser.com/customization/release/#customize-the-changelog
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - typo
+      - "ghcr.io/aidtechnology/{{ .ProjectName }}:{{ .Version }}"
+      - "ghcr.io/aidtechnology/{{ .ProjectName }}:latest"
 # Produce homebrew formulas for the project artifacts
 # https://goreleaser.com/customization/homebrew/
 brews:
@@ -103,7 +119,7 @@ brews:
     # Formula name
     name: didctl
     # Push the formula to the tap repository
-    skip_upload: false
+    skip_upload: "false"
     # TAP repository
     tap:
       owner: bryk-io
@@ -128,3 +144,35 @@ brews:
       prefix.install_metafiles
     test: |
       system "#{bin}/didctl version"
+# linux packages
+# https://goreleaser.com/customization/nfpm/
+nfpms:
+  -
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    builds:
+      - didctl
+    vendor: AID:Technology
+    homepage: https://github.com/aidtechnology/did-method
+    maintainer: Ben Cessa <ben@aid.technology>
+    description: Reference client implementation for the 'bryk' DID method.
+    license: BSD-3-Clause
+    formats:
+      # Alpine
+      - apk
+      # Debian based distributions
+      - deb
+      # RedHat based distributions
+      - rpm
+    # Binary location
+    bindir: /usr/local/bin
+    # Folders created and managed by the installer
+    empty_folders:
+      - /etc/didctl
+    # Additional files managed by the installer
+    contents:
+      - src: sample-config.yaml
+        dst: /etc/didctl/config.yaml
+        type: "config|noreplace"
+        file_info:
+          mode: 0644
+          group: root

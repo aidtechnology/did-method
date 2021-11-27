@@ -2,12 +2,13 @@ package resolver
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"text/template"
 
 	"github.com/pkg/errors"
-	"go.bryk.io/x/ccg/did"
+	"go.bryk.io/pkg/did"
 )
 
 // Provider represents an external system able to return DID
@@ -22,7 +23,7 @@ type Provider struct {
 	// https://did.baidu.com/v1/did/resolve/{{.DID}}
 	Endpoint string
 
-	// Protocol used to communicate with the endpoint. Currently HTTP(S)
+	// Protocol used to communicate with the endpoint. Currently, HTTP(S)
 	// is supported by submitting GET requests.
 	Protocol string
 
@@ -72,7 +73,7 @@ func (p *Provider) resolve(id *did.Identifier) ([]byte, error) {
 	}
 
 	// Submit request
-	res, err := http.Get(buf.String())
+	res, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, buf.String(), nil)
 	if err != nil {
 		return nil, err
 	}

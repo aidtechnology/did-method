@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"go.bryk.io/x/ccg/did"
+	"go.bryk.io/pkg/did"
 )
 
 var retrieveCmd = &cobra.Command{
@@ -27,8 +27,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	}
 
 	// Verify the provided value is a valid DID string
-	_, err := did.Parse(args[0])
-	if err != nil {
+	if _, err := did.Parse(args[0]); err != nil {
 		return err
 	}
 
@@ -36,7 +35,7 @@ func runRetrieveCmd(_ *cobra.Command, args []string) error {
 	log.Info("retrieving record")
 	response, err := resolve(args[0])
 	if err != nil {
-		return fmt.Errorf("failed to resolve DID: %s", err)
+		return fmt.Errorf("failed to resolve DID: %w", err)
 	}
 	fmt.Printf("%s\n", response)
 	return nil

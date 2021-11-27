@@ -8,25 +8,25 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bryk-io/did-method/info"
-	protov1 "github.com/bryk-io/did-method/proto/v1"
-	"go.bryk.io/x/ccg/did"
-	xlog "go.bryk.io/x/log"
-	"go.bryk.io/x/net/rpc"
-	"go.bryk.io/x/observability"
+	"github.com/aidtechnology/did-method/info"
+	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
+	"go.bryk.io/pkg/did"
+	xlog "go.bryk.io/pkg/log"
+	"go.bryk.io/pkg/net/rpc"
+	"go.bryk.io/pkg/otel"
 	"google.golang.org/grpc"
 )
 
-// Handler provides the required functionality for the DID method
+// Handler provides the required functionality for the DID method.
 type Handler struct {
-	oop        *observability.Operator
+	oop        *otel.Operator
 	methods    []string
 	store      Storage
 	difficulty uint
 }
 
-// NewHandler starts a new DID method handler instance
-func NewHandler(methods []string, difficulty uint, store Storage, oop *observability.Operator) (*Handler, error) {
+// NewHandler starts a new DID method handler instance.
+func NewHandler(methods []string, difficulty uint, store Storage, oop *otel.Operator) (*Handler, error) {
 	return &Handler{
 		oop:        oop,
 		store:      store,
@@ -35,13 +35,13 @@ func NewHandler(methods []string, difficulty uint, store Storage, oop *observabi
 	}, nil
 }
 
-// Close the instance and safely terminate any internal processing
+// Close the instance and safely terminate any internal processing.
 func (h *Handler) Close() error {
 	h.oop.Info("closing agent handler")
 	return h.store.Close()
 }
 
-// Retrieve an existing DID instance based on its subject string
+// Retrieve an existing DID instance based on its subject string.
 func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
 	logFields := xlog.Fields{
 		"method":  req.Method,
@@ -64,7 +64,7 @@ func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, *did.Pro
 	return id, proof, nil
 }
 
-// Process an incoming request ticket
+// Process an incoming request ticket.
 func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	// Empty request
 	if req == nil {
@@ -120,7 +120,7 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	return err
 }
 
-// ServiceDefinition allows the handler instance to be exposed using a RPC server
+// ServiceDefinition allows the handler instance to be exposed using an RPC server.
 func (h *Handler) ServiceDefinition() *rpc.Service {
 	return &rpc.Service{
 		GatewaySetup: protov1.RegisterAgentAPIHandlerFromEndpoint,
@@ -175,7 +175,7 @@ func (h *Handler) QueryResponseFilter() rpc.HTTPGatewayFilter {
 	}
 }
 
-// Verify a specific method is supported
+// Verify a specific method is supported.
 func (h *Handler) isSupported(method string) bool {
 	for _, m := range h.methods {
 		if method == m {

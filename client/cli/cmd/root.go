@@ -7,10 +7,9 @@ import (
 	"strings"
 
 	"github.com/bryk-io/did-method/resolver"
-	hd "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	xlog "go.bryk.io/x/log"
+	xlog "go.bryk.io/pkg/log"
 )
 
 var (
@@ -42,7 +41,7 @@ For more information:
 https://github.com/bryk-io/did-method`,
 }
 
-// Execute will process the CLI invocation
+// Execute will process the CLI invocation.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Error(err)
@@ -51,7 +50,10 @@ func Execute() {
 }
 
 func init() {
-	log = xlog.WithZero(true)
+	log = xlog.WithZero(xlog.ZeroOptions{
+		PrettyPrint: true,
+		ErrorField:  "error",
+	})
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file ($HOME/.didctl/config.yaml)")
 	rootCmd.PersistentFlags().StringVar(&homeDir, "home", "", "home directory ($HOME/.didctl)")
@@ -64,7 +66,7 @@ func initConfig() {
 	// Find home directory
 	home := homeDir
 	if home == "" {
-		h, err := hd.Dir()
+		h, err := os.UserHomeDir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
