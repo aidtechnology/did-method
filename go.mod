@@ -3,7 +3,6 @@ module github.com/aidtechnology/did-method
 go 1.17
 
 require (
-	github.com/bryk-io/did-method v0.7.1
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/kennygrant/sanitize v1.2.4
@@ -70,7 +69,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.bryk.io/miracl v0.4.0 // indirect
-	go.bryk.io/x v0.0.0-20211103170929-c7821f7cb026 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.27.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/host v0.27.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect

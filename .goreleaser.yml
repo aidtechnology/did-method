@@ -130,7 +130,7 @@ brews:
       name: github-actions
       email: 41898282+github-actions[bot]@users.noreply.github.com
     # Project details
-    homepage: "https://github.com/bryk-io/did-method"
+    homepage: "https://github.com/aidtechnology/did-method"
     description: |
       Reference client implementation for the 'bryk' DID method. The platform allows
       entities to fully manage Decentralized Identifiers as described on the version
@@ -165,9 +165,6 @@ nfpms:
       - rpm
     # Binary location
     bindir: /usr/local/bin
-    # Folders created and managed by the installer
-    empty_folders:
-      - /etc/didctl
     # Additional files managed by the installer
     contents:
       - src: sample-config.yaml

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bryk-io/did-method/resolver"
+	"github.com/aidtechnology/did-method/resolver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	xlog "go.bryk.io/pkg/log"
