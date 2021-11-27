@@ -47,7 +47,7 @@ archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     builds:
       # artifacts to pack
-      - tredctl
+      - didctl
     format_overrides:
       # use zip file instead of 'tar.gz' on Windows systems
       - goos: windows
