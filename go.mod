@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.9.0
 	go.bryk.io/pkg v0.0.0-20211126165103-0cb9ea9fe075
 	go.mongodb.org/mongo-driver v1.8.0
