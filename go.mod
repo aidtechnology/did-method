@@ -14,7 +14,7 @@ require (
 	go.opentelemetry.io/otel v1.2.0
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.27.1
 )
 
