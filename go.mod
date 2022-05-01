@@ -10,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	go.bryk.io/pkg v0.0.0-20211126165103-0cb9ea9fe075
-	go.mongodb.org/mongo-driver v1.8.0
+	go.mongodb.org/mongo-driver v1.9.0
 	go.opentelemetry.io/otel v1.2.0
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1
