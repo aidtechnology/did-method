@@ -120,18 +120,20 @@ func (h *Handler) Process(req *protov1.ProcessRequest) error {
 	return err
 }
 
-// ServiceDefinition allows the handler instance to be exposed using an RPC server.
-func (h *Handler) ServiceDefinition() *rpc.Service {
-	return &rpc.Service{
-		GatewaySetup: protov1.RegisterAgentAPIHandlerFromEndpoint,
-		ServerSetup: func(s *grpc.Server) {
-			protov1.RegisterAgentAPIServer(s, &rpcHandler{handler: h})
-		},
-	}
+// ServerSetup perform all initialization requirements for the
+// handler instance to be exposed through the provided gRPC server.
+func (h *Handler) ServerSetup(srv *grpc.Server) {
+	protov1.RegisterAgentAPIServer(srv, &rpcHandler{handler: h})
+}
+
+// GatewaySetup return the HTTP setup required to be expose the handler
+// instance via HTTP.
+func (h *Handler) GatewaySetup() rpc.GatewayRegister {
+	return protov1.RegisterAgentAPIHandler
 }
 
 // QueryResponseFilter provides custom encoding of HTTP query results.
-func (h *Handler) QueryResponseFilter() rpc.HTTPGatewayFilter {
+func (h *Handler) QueryResponseFilter() rpc.GatewayInterceptor {
 	return func(res http.ResponseWriter, req *http.Request) error {
 		// Filter query requests
 		if !strings.HasPrefix(req.URL.Path, "/v1/retrieve/") {

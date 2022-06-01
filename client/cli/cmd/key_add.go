@@ -50,7 +50,7 @@ func init() {
 			Short:     "a",
 		},
 	}
-	if err := cli.SetupCommandParams(addKeyCmd, params); err != nil {
+	if err := cli.SetupCommandParams(addKeyCmd, params, viper.GetViper()); err != nil {
 		panic(err)
 	}
 	keyCmd.AddCommand(addKeyCmd)

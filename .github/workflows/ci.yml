@@ -8,24 +8,116 @@ on:
       - master
   workflow_dispatch: {}
 jobs:
+  # Scan direct Go dependencies for known vulnerabilities
+  scan:
+    name: scan for vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      # Go
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18.x
+
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Configure runner environment
+      - name: Set up runner environment
+        run: ./.github/workflows/assets/utils.sh setup
+        env:
+          GITHUB_USER: ${{ github.actor }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      # List direct dependencies
+      - name: List dependencies
+        run: go list -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' -m all > go.list
+
+      # Scan dependencies using Nancy
+      # https://github.com/sonatype-nexus-community/nancy-github-action
+      - name: Scan dependencies
+        uses: sonatype-nexus-community/nancy-github-action@v1.0.2
+  
+  # Validate the protocol buffer definitions on the project
+  # using 'buf'. Remove if not required.
+  protos:
+    name: validate protobuf definitions
+    needs: scan
+    runs-on: ubuntu-latest
+    steps:
+      # Go
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18.x
+
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Configure runner environment
+      - name: Set up runner environment
+        run: ./.github/workflows/assets/utils.sh setup
+        env:
+          GITHUB_USER: ${{ github.actor }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      
+      # Get commit message
+      - name: Get commit message
+        run: |
+          echo 'commit_msg<<EOF' >> $GITHUB_ENV
+          git log --format=%B -n 1 ${{ github.sha }} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      # Setup buf
+      - name: Setup buf
+        id: buf-setup
+        uses: bufbuild/buf-setup-action@v1.5.0
+        with:
+          version: 1.5.0
+          github_token: ${{ github.token }}
+
+      # Static analysis
+      - name: Static analysis
+        id: buf-lint
+        uses: bufbuild/buf-lint-action@v1.0.0
+        if: ${{ steps.buf-setup.outcome == 'success' }}
+
+      # Detect breaking changes
+      - name: Detect breaking changes
+        id: buf-breaking
+        uses: bufbuild/buf-breaking-action@v1.0.0
+        if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[buf-breaking skip]')
+        with:
+          against: 'https://github.com/${{ github.repository }}.git#branch=master'
+        env:
+          BUF_INPUT_HTTPS_USERNAME: ${{ github.actor }}
+          BUF_INPUT_HTTPS_PASSWORD: ${{ secrets.ACCESS_TOKEN }}
+
   # Runs on every push and pull request on the selected branches.
   # Can also be executed manually.
   test:
     name: code quality and correctness
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    needs: protos
+    strategy:
+      matrix:
+        go-version: [1.17.x, 1.18.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
-      # Go 1.17
-      - name: Set up Go 1.17
-        uses: actions/setup-go@v2
+      # Go
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
-          go-version: ^1.17
+          go-version: ${{ matrix.go-version }}
 
       # Checkout code
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      # Prepare runner environment
+      # Configure runner environment
       - name: Set up runner environment
         run: ./.github/workflows/assets/utils.sh setup
         env:
@@ -35,9 +127,9 @@ jobs:
       # If "vendor" is in cache, restore.
       # To run conditional steps use:
       # if: steps.vendor-cache.outputs.cache-hit != 'true'
-      - name: Restore vendor from cache
+      - name: Restore modules from cache
         id: vendor-cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.2
         env:
           cache-name: vendor
         with:
@@ -47,7 +139,7 @@ jobs:
       # Style consistency and static analysis using 'golangci-lint'
       # https://github.com/marketplace/actions/run-golangci-lint
       - name: Static analysis
-        uses: golangci/golangci-lint-action@v2.5.2
+        uses: golangci/golangci-lint-action@v3.2.0
         with:
           version: latest
 
@@ -61,7 +153,7 @@ jobs:
 
       # Save artifacts
       - name: Save artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: assets
           path: |

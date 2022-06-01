@@ -1,3 +1,9 @@
+server:
+  http: true
+  port: 9090
+  storage: ephemeral
+  tls:
+    enabled: false
 client:
   node: did.bryk.io:443
   tls: true

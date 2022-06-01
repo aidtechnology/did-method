@@ -29,7 +29,7 @@ pkg?="..."
 # locally (on a dev container) or using a builder image.
 buf:=buf
 ifndef REMOTE_CONTAINERS_SOCKETS
-	buf=docker run --rm -it -v $(shell pwd):/workdir ghcr.io/bryk-io/buf-builder:1.0.0-rc1 buf
+	buf=docker run --platform linux/amd64 --rm -it -v $(shell pwd):/workdir ghcr.io/bryk-io/buf-builder:1.5.0 buf
 endif
 
 help:
@@ -100,49 +100,63 @@ lint:
 	# Helm charts
 	helm lint helm/*
 
-## proto-test: Verify PB definitions
+## protos: Verify and compile all PB definitions and RPC services
+protos:
+	# Generate package images and code
+	make proto-test pkg=did/v1
+	make proto-build pkg=did/v1
+
 proto-test:
 	# Verify style and consistency
-	$(buf) lint --path proto/did/v1
+	$(buf) lint --path proto/$(pkg)
 
 	# Verify breaking changes. This fails if no image is already present,
 	# use `buf build --o proto/$(pkg)/image.bin --path proto/$(pkg)` to generate it.
-	$(buf) breaking --against proto/v1/image.bin
+	$(buf) breaking --against proto/$(pkg)/image.bin
 
-## proto-build: Build PB definitions on 'pkg'
 proto-build:
-	# Verify PB definitions
-	make proto-test
-
 	# Build package image
-	$(buf) build --output proto/did/v1/image.bin --path proto/did/v1
+	$(buf) build --output proto/$(pkg)/image.bin --path proto/$(pkg)
 
 	# Generate package code using buf.gen.yaml
-	$(buf) generate --output proto --path proto/did/v1
+	$(buf) generate --output proto --path proto/$(pkg)
 
 	# Remove package comment added by the gateway generator to avoid polluting
 	# the package documentation.
-	@-sed -i.bak '/\/\*/,/*\//d' proto/did/v1/*.pb.gw.go
+	@-sed -i.bak '/\/\*/,/*\//d' proto/$(pkg)/*.pb.gw.go
 
-	# Remove non-required dependencies. "protoc-gen-validate" don't have runtime
-	# dependencies but the generated code includes the package by the default =/.
-	@-sed -i.bak '/protoc-gen-validate/d' proto/did/v1/*.pb.go
+	# "protoc-gen-validate" don't have runtime dependencies but the generated
+	# code includes the package by the default =/
+	@-sed -i.bak '/protoc-gen-validate/d' proto/$(pkg)/*.pb.go
+
+	# "protoc-gen-openapiv2" don't have runtime dependencies but the generated
+	# code includes the package by the default =/
+	@-sed -i.bak '/protoc-gen-openapiv2/d' proto/$(pkg)/*.pb.go
 
 	# Remove in-place edit backup files
-	@-rm proto/did/v1/*.bak
+	@-rm proto/$(pkg)/*.bak
 
-	# Style adjustments (required for consistency)
-	gofmt -s -w proto/did/v1
-	goimports -w proto/did/v1
+	# Style adjustments
+	gofmt -s -w proto/$(pkg)
+	goimports -w proto/$(pkg)
 
 ## release: Prepare artifacts for a new tagged release
 release:
 	goreleaser release --rm-dist --skip-validate --skip-publish
 
-## scan: Look for known vulnerabilities in the project dependencies
+## scan-deps: Look for known vulnerabilities in the project dependencies
 # https://github.com/sonatype-nexus-community/nancy
-scan:
-	@go list -mod=mod -f '{{if not .Indirect}}{{.}}{{end}}' -m all | nancy sleuth --skip-update-check
+scan-deps:
+	@go list -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' -m all | nancy sleuth --skip-update-check
+
+## scan-secrets: Scan project code for accidentally leaked secrets
+scan-secrets:
+	@docker run --platform linux/amd64 --rm \
+	-v $(shell pwd):/proj \
+	dxa4481/trufflehog file:///proj \
+	-x .exclude-secrets-scan.txt \
+	--regex \
+	--entropy false
 
 ## test: Run unit tests excluding the vendor dependencies
 test:

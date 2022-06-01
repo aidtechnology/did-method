@@ -100,7 +100,7 @@ func init() {
 			Short:     "s",
 		},
 	}
-	if err := cli.SetupCommandParams(agentCmd, params); err != nil {
+	if err := cli.SetupCommandParams(agentCmd, params, viper.GetViper()); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(agentCmd)
@@ -145,7 +145,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 		rpc.WithPanicRecovery(),
 		rpc.WithPort(viper.GetInt("server.port")),
 		rpc.WithNetworkInterface(rpc.NetworkInterfaceAll),
-		rpc.WithService(handler.ServiceDefinition()),
+		rpc.WithServiceProvider(handler),
 		rpc.WithObservability(oop),
 	}
 
@@ -260,8 +260,8 @@ func loadAgentCredentials() (rpc.ServerOption, error) {
 	return rpc.WithTLS(tlsConf), nil
 }
 
-func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
-	gwCl := []rpc.ClientOption{rpc.WaitForReady()}
+func getAgentGateway(handler *agent.Handler) (*rpc.Gateway, error) {
+	gwCl := []rpc.ClientOption{}
 	if viper.GetBool("server.tls.enabled") {
 		tlsConf := rpc.ClientTLSConfig{IncludeSystemCAs: true}
 		if viper.GetString("server.tls.ca") != "" {
@@ -275,11 +275,11 @@ func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 		gwCl = append(gwCl, rpc.WithInsecureSkipVerify()) // Internally the gateway proxy accept any certificate
 	}
 
-	gwOpts := []rpc.HTTPGatewayOption{
-		rpc.WithClientOptions(gwCl),
-		rpc.WithFilter(handler.QueryResponseFilter()),
+	gwOpts := []rpc.GatewayOption{
+		rpc.WithClientOptions(gwCl...),
+		rpc.WithInterceptor(handler.QueryResponseFilter()),
 	}
-	gw, err := rpc.NewHTTPGateway(gwOpts...)
+	gw, err := rpc.NewGateway(gwOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize HTTP gateway: %w", err)
 	}
@@ -290,7 +290,7 @@ func getAgentGateway(handler *agent.Handler) (*rpc.HTTPGateway, error) {
 // details provided.
 func getStorage(info string) (agent.Storage, error) {
 	switch {
-	case info == "":
+	case info == "ephemeral":
 		store := &storage.Ephemeral{}
 		_ = store.Open("no-op")
 		return store, nil

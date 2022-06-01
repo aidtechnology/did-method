@@ -48,7 +48,7 @@ func init() {
 			Short:     "p",
 		},
 	}
-	if err := cli.SetupCommandParams(syncCmd, params); err != nil {
+	if err := cli.SetupCommandParams(syncCmd, params, viper.GetViper()); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(syncCmd)

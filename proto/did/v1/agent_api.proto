@@ -1,14 +1,8 @@
 syntax = "proto3";
 
-package bryk.did.proto.v1;
+package did.v1;
 
-option csharp_namespace = "Bryk.Did.Proto.V1";
-option go_package = "did/v1;protov1";
-option java_multiple_files = true;
-option java_outer_classname = "AgentApiProto";
-option java_package = "io.bryk.did.proto.v1";
-option objc_class_prefix = "BDP";
-option php_namespace = "Bryk\\Did\\Proto\\V1";
+option go_package = "did/v1;didv1";
 
 import "google/protobuf/empty.proto";
 import "third_party/google/api/annotations.proto";
@@ -67,8 +61,9 @@ message PingResponse {
 message ProcessRequest {
   // Available mutations.
   enum Task {
-    TASK_PUBLISH = 0;
-    TASK_DEACTIVATE = 1;
+    TASK_UNSPECIFIED = 0;
+    TASK_PUBLISH = 1;
+    TASK_DEACTIVATE = 2;
   }
 
   // Mutation type.
