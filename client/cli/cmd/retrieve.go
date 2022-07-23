@@ -12,7 +12,7 @@ var retrieveCmd = &cobra.Command{
 	Use:     "retrieve",
 	Short:   "Retrieve the DID document of an existing identifier",
 	Example: "didctl retrieve [existing DID]",
-	Aliases: []string{"get", "resolve"},
+	Aliases: []string{"get", "pull", "resolve"},
 	RunE:    runRetrieveCmd,
 }
 

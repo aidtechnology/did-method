@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
-	"github.com/pkg/errors"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/x/errors"
 )
 
 type record struct {

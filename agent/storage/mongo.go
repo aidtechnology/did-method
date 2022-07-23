@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"strings"
 
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
-	"github.com/pkg/errors"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/pkg/otel/mongodb"
 	"go.bryk.io/pkg/storage/orm"
+	"go.bryk.io/x/errors"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -68,20 +70,30 @@ func (ir *identifierRecord) encode(id *did.Identifier, proof *did.ProofLD) {
 }
 
 // MongoStore provides a storage handler utilizing MongoDB as underlying
-// database. The connection strings must be of the form "mongodb://...";
-// for example: "mongodb://localhost:27017"
+// database.
 type MongoStore struct {
 	op  *orm.Operator
 	did *orm.Model
 }
 
 // Open establish the connection and database selection for the instance.
-// Must be called before any further operations.
+// Must be called before any further operations. `info` MUST be a valid
+// MongoDB connection string, optionally followed by a database identifier;
+// for example: `mongodb://localhost:27017|my_db`.
+// https://www.mongodb.com/docs/manual/reference/connection-string/
 func (ms *MongoStore) Open(info string) error {
+	// parse connection string
+	db := "didctl" // default database
+	cs := strings.Split(info, "|")
+	if len(cs) == 2 {
+		db = cs[1]
+	}
+
 	var err error
 	opts := options.Client()
-	opts.ApplyURI(info)
-	ms.op, err = orm.NewOperator("didctl", opts)
+	opts.ApplyURI(cs[0])
+	opts.Monitor = otelmongodb.Monitor()
+	ms.op, err = orm.NewOperator(db, opts)
 	if err != nil {
 		return err
 	}

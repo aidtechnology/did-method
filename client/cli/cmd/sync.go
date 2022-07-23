@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"time"
 
@@ -14,6 +13,9 @@ import (
 	"go.bryk.io/pkg/cli"
 	"go.bryk.io/pkg/did"
 	xlog "go.bryk.io/pkg/log"
+	"go.bryk.io/pkg/net/rpc"
+	"go.bryk.io/pkg/otel"
+	"go.bryk.io/x/errors"
 )
 
 var syncCmd = &cobra.Command{
@@ -25,30 +27,7 @@ var syncCmd = &cobra.Command{
 }
 
 func init() {
-	params := []cli.Param{
-		{
-			Name:      "key",
-			Usage:     "cryptographic key to use for the sync operation",
-			FlagKey:   "sync.key",
-			ByDefault: "master",
-			Short:     "k",
-		},
-		{
-			Name:      "deactivate",
-			Usage:     "instruct the network agent to deactivate the identifier",
-			FlagKey:   "sync.deactivate",
-			ByDefault: false,
-			Short:     "d",
-		},
-		{
-			Name:      "pow",
-			Usage:     "set the required request ticket difficulty level",
-			FlagKey:   "sync.pow",
-			ByDefault: 24,
-			Short:     "p",
-		},
-	}
-	if err := cli.SetupCommandParams(syncCmd, params, viper.GetViper()); err != nil {
+	if err := cli.SetupCommandParams(syncCmd, conf.Overrides("client"), viper.GetViper()); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(syncCmd)
@@ -69,7 +48,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	name := sanitize.Name(args[0])
 	id, err := st.Get(name)
 	if err != nil {
-		return fmt.Errorf("no available record under the provided reference name: %s", name)
+		return errors.Errorf("no available record for reference name: %s", name)
 	}
 
 	// Get selected key for the sync operation
@@ -86,10 +65,21 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 
+	// automatically instrument client if agent OTEL settings are available
+	// in the same environment. Often the case for dev/testing.
+	var clOpts []rpc.ClientOption
+	if conf.Agent.OTEL != nil {
+		oop, err := otel.NewOperator(conf.OTEL(log)...)
+		if err == nil {
+			clOpts = append(clOpts, rpc.WithClientObservability(oop))
+			defer oop.Shutdown(context.Background())
+		}
+	}
+
 	// Get client connection
-	conn, err := getClientConnection()
+	conn, err := getClientConnection(clOpts...)
 	if err != nil {
-		return fmt.Errorf("failed to establish connection: %w", err)
+		return err
 	}
 	defer func() {
 		_ = conn.Close()
@@ -121,7 +111,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 }
 
 func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, error) {
-	diff := uint(viper.GetInt("sync.pow"))
+	diff := uint(viper.GetInt("client.pow"))
 	log.WithFields(xlog.Fields{"pow": diff}).Info("generating request ticket")
 
 	// Create new ticket
@@ -166,7 +156,7 @@ func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
 		}
 	}
 	if !isAuth {
-		return nil, errors.New("the key selected is not enabled for authentication purposes")
+		return nil, errors.New("key selected is not enabled for authentication purposes")
 	}
 	return key, nil
 }

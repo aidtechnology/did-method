@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
 	"go.bryk.io/pkg/crypto/pow"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/x/errors"
 	"golang.org/x/crypto/sha3"
 )
 

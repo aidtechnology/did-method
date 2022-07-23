@@ -60,17 +60,13 @@ ca-roots:
 
 ## deps: Download and compile all dependencies and intermediary products
 deps:
-	@-rm -rf vendor
+	go clean
 	go mod tidy
-	go mod verify
-	go mod download
-	go mod vendor
 
 ## docs: Display package documentation on local server
 docs:
 	@echo "Docs available at: http://localhost:8080/"
 	godoc -http=:8080 -goroot=${GOPATH} -play
-
 
 ## docker: Build docker image
 # https://github.com/opencontainers/image-spec/blob/master/annotations.md
@@ -167,4 +163,4 @@ test:
 ## updates: List available updates for direct dependencies
 # https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
 updates:
-	@go list -mod=mod -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -u -m all 2> /dev/null
+	@GOWORK=off go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -mod=mod -m all 2> /dev/null

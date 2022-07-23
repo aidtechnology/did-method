@@ -7,17 +7,17 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/pkg/errors"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/x/errors"
 )
 
-// Provider represents an external system able to return DID
-// Documents on demand.
+// Provider represents an external system able to return a DID Document
+// on demand.
 type Provider struct {
 	// Method value expected on the identifier instance.
 	Method string
 
-	// Network location to retrieve DID documents from. The value can
+	// Network location to retrieve a DID document from. The value can
 	// be a template with support for the following variables: DID, Method
 	// and Subject. For example:
 	// https://did.baidu.com/v1/did/resolve/{{.DID}}
@@ -48,7 +48,7 @@ func Get(id string, providers []*Provider) ([]byte, error) {
 		}
 	}
 	if p == nil {
-		return nil, errors.New("not supported method")
+		return nil, errors.New("unsupported method")
 	}
 
 	// Return result
@@ -73,9 +73,16 @@ func (p *Provider) resolve(id *did.Identifier) ([]byte, error) {
 	}
 
 	// Submit request
-	res, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, buf.String(), nil)
+	req, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, buf.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.Body == nil {
+		return nil, errors.New("no content retrieved")
 	}
 	defer func() {
 		_ = res.Body.Close()

@@ -29,7 +29,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "didctl.fullname" . }}
-        {{- if .Values.configuration.server.tls.enabled }}
+        {{- if .Values.configuration.agent.rpc.tls.enabled }}
         - name: tls
           secret:
             secretName: {{ .Values.tlsSecretName }}
@@ -48,7 +48,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/didctl
-            {{- if .Values.configuration.server.tls.enabled }}
+            {{- if .Values.configuration.agent.rpc.tls.enabled }}
             - name: tls
               mountPath: /etc/didctl/agent
               readOnly: true
@@ -66,23 +66,23 @@ spec:
               containerPort: 9090
               protocol: TCP
           livenessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 10
+            periodSeconds: 60
             successThreshold: 1
             failureThreshold: 3
             httpGet:
-              {{- if .Values.configuration.server.tls.enabled }}
+              {{- if .Values.configuration.agent.rpc.tls.enabled }}
               scheme: HTTPS
               {{- end }}
               path: /v1/ping
               port: rpc
           readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 10
+            periodSeconds: 60
             successThreshold: 1
             failureThreshold: 3
             httpGet:
-              {{- if .Values.configuration.server.tls.enabled }}
+              {{- if .Values.configuration.agent.rpc.tls.enabled }}
               scheme: HTTPS
               {{- end }}
               path: /v1/ping

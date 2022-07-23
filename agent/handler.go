@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -42,80 +43,95 @@ func (h *Handler) Close() error {
 }
 
 // Retrieve an existing DID instance based on its subject string.
-func (h *Handler) Retrieve(req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
-	logFields := xlog.Fields{
-		"method":  req.Method,
-		"subject": req.Subject,
-	}
-	h.oop.WithFields(logFields).Debug("retrieve request")
+func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
+	// Track operation
+	task := h.oop.Start(
+		ctx,
+		"handler.Retrieve",
+		otel.WithSpanKind(otel.SpanKindServer),
+		otel.WithSpanAttributes(otel.Attributes{"method": req.Method}))
+	defer task.End()
 
 	// Verify method is supported
 	if !h.isSupported(req.Method) {
-		h.oop.WithFields(logFields).Warning("non supported method")
-		return nil, nil, errors.New("non supported method")
+		err := errors.New("unsupported method")
+		task.Error(xlog.Error, err, nil)
+		return nil, nil, err
 	}
 
 	// Retrieve document from storage
+	task.Event("database read")
 	id, proof, err := h.store.Get(req)
 	if err != nil {
-		h.oop.WithFields(logFields).Warning(err.Error())
+		task.Error(xlog.Error, err, nil)
 		return nil, nil, err
 	}
 	return id, proof, nil
 }
 
 // Process an incoming request ticket.
-func (h *Handler) Process(req *protov1.ProcessRequest) error {
-	// Empty request
-	if req == nil {
-		return errors.New("empty request")
-	}
+func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) error {
+	// Track operation
+	task := h.oop.Start(
+		ctx,
+		"handler.Process",
+		otel.WithSpanKind(otel.SpanKindServer),
+		otel.WithSpanAttributes(otel.Attributes{"task": req.Task.String()}))
+	defer task.End()
 
 	// Validate ticket
 	if err := req.Ticket.Verify(h.difficulty); err != nil {
-		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
+		task.Error(xlog.Error, err, nil)
 		return err
 	}
 
 	// Load DID document and proof
 	id, err := req.Ticket.GetDID()
 	if err != nil {
-		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID contents")
+		task.Error(xlog.Error, err, nil)
 		return err
 	}
 	proof, err := req.Ticket.GetProofLD()
 	if err != nil {
-		h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid DID proof")
+		task.Error(xlog.Error, err, nil)
 		return err
 	}
 
 	// Verify method is supported
 	if !h.isSupported(id.Method()) {
-		h.oop.WithFields(xlog.Fields{"method": id.Method()}).Warning("non supported method")
-		return errors.New("non supported method")
+		err := errors.New("unsupported method")
+		task.Error(xlog.Error, err, otel.Attributes{
+			"method": id.Method(),
+		})
+		return err
 	}
 
 	// Update operations require another validation step using the original record
 	isUpdate := h.store.Exists(id)
 	if isUpdate {
 		if err := req.Ticket.Verify(h.difficulty); err != nil {
-			h.oop.WithFields(xlog.Fields{"error": err.Error()}).Error("invalid ticket")
+			task.Error(xlog.Error, err, nil)
 			return err
 		}
 	}
 
-	h.oop.WithFields(xlog.Fields{
+	fields := otel.Attributes{
 		"subject": id.Subject(),
 		"update":  isUpdate,
-		"task":    req.Task,
-	}).Debug("write operation")
+		"task":    req.Task.String(),
+	}
 	switch req.Task {
 	case protov1.ProcessRequest_TASK_PUBLISH:
+		task.Event("database save", fields)
 		err = h.store.Save(id, proof)
 	case protov1.ProcessRequest_TASK_DEACTIVATE:
+		task.Event("database delete", fields)
 		err = h.store.Delete(id)
 	default:
 		return errors.New("invalid request task")
+	}
+	if err != nil {
+		task.Error(xlog.Error, err, fields)
 	}
 	return err
 }
@@ -126,14 +142,23 @@ func (h *Handler) ServerSetup(srv *grpc.Server) {
 	protov1.RegisterAgentAPIServer(srv, &rpcHandler{handler: h})
 }
 
-// GatewaySetup return the HTTP setup required to be expose the handler
+// GatewaySetup return the HTTP setup required to expose the handler
 // instance via HTTP.
 func (h *Handler) GatewaySetup() rpc.GatewayRegister {
 	return protov1.RegisterAgentAPIHandler
 }
 
+// CustomGatewayOptions returns additional settings required when exposing
+// the handler instance via HTTP.
+func (h *Handler) CustomGatewayOptions() []rpc.GatewayOption {
+	return []rpc.GatewayOption{
+		rpc.WithSpanFormatter(spanNameFormatter()),
+		rpc.WithInterceptor(h.queryResponseFilter()),
+	}
+}
+
 // QueryResponseFilter provides custom encoding of HTTP query results.
-func (h *Handler) QueryResponseFilter() rpc.GatewayInterceptor {
+func (h *Handler) queryResponseFilter() rpc.GatewayInterceptor {
 	return func(res http.ResponseWriter, req *http.Request) error {
 		// Filter query requests
 		if !strings.HasPrefix(req.URL.Path, "/v1/retrieve/") {
@@ -153,7 +178,7 @@ func (h *Handler) QueryResponseFilter() rpc.GatewayInterceptor {
 			Method:  seg[0],
 			Subject: seg[1],
 		}
-		id, proof, err := h.Retrieve(rr)
+		id, proof, err := h.Retrieve(req.Context(), rr)
 		if err != nil {
 			response, _ = json.MarshalIndent(map[string]string{"error": err.Error()}, "", "  ")
 		} else {
@@ -185,4 +210,15 @@ func (h *Handler) isSupported(method string) bool {
 		}
 	}
 	return false
+}
+
+// SpanNameFormatter determines how transactions are reported to observability
+// services.
+func spanNameFormatter() func(r *http.Request) string {
+	return func(r *http.Request) string {
+		if strings.HasPrefix(r.URL.Path, "/v1/retrieve") {
+			return fmt.Sprintf("%s %s", r.Method, "/v1/retrieve/{method}/{subject}")
+		}
+		return fmt.Sprintf("%s %s", r.Method, r.URL.Path)
+	}
 }

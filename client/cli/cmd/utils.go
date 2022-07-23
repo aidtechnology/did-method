@@ -4,13 +4,13 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/aidtechnology/did-method/client/store"
 	"github.com/aidtechnology/did-method/info"
 	"github.com/aidtechnology/did-method/resolver"
 	"github.com/spf13/viper"
 	"go.bryk.io/pkg/crypto/ed25519"
+	xlog "go.bryk.io/pkg/log"
 	"go.bryk.io/pkg/net/rpc"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/sha3"
@@ -44,34 +44,33 @@ func keyFromMaterial(material []byte) (*ed25519.KeyPair, error) {
 
 // Accessor to the local storage handler.
 func getClientStore() (*store.LocalStore, error) {
-	return store.NewLocalStore(viper.GetString("client.home"))
+	home := viper.GetString("client.home")
+	log.WithField("home", home).Debug("local store handler")
+	return store.NewLocalStore(home)
 }
 
 // Get an RPC network connection.
-func getClientConnection() (*grpc.ClientConn, error) {
+func getClientConnection(op ...rpc.ClientOption) (*grpc.ClientConn, error) {
 	node := viper.GetString("client.node")
-	log.Infof("establishing connection to the network with node: %s", node)
 	timeout := viper.GetInt("client.timeout")
-	opts := []rpc.ClientOption{
-		rpc.WaitForReady(),
-		rpc.WithUserAgent(fmt.Sprintf("didctl-client/%s", info.CoreVersion)),
-		rpc.WithTimeout(time.Duration(timeout) * time.Second),
+	agentV := fmt.Sprintf("didctl-client/%s", info.CoreVersion)
+	log.WithFields(xlog.Fields{
+		"node":       node,
+		"timeout":    timeout,
+		"user-agent": agentV,
+	}).Info("establishing connection to the network")
+
+	// establish new connection
+	opts, err := conf.ClientRPC()
+	if err != nil {
+		return nil, err
 	}
-	if viper.GetBool("client.tls") {
-		opts = append(opts, rpc.WithClientTLS(rpc.ClientTLSConfig{IncludeSystemCAs: true}))
-	}
-	if override := viper.GetString("client.override"); override != "" {
-		opts = append(opts, rpc.WithServerNameOverride(override))
-	}
+	opts = append(opts, op...)
 	return rpc.NewClientConnection(node, opts...)
 }
 
 // Use the global resolver to obtain the DID document for the requested
 // identifier.
 func resolve(id string) ([]byte, error) {
-	var conf []*resolver.Provider
-	if err := viper.UnmarshalKey("resolver", &conf); err != nil {
-		return nil, fmt.Errorf("invalid resolver configuration: %w", err)
-	}
-	return resolver.Get(id, conf)
+	return resolver.Get(id, conf.Resolver)
 }

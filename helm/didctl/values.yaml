@@ -1,10 +1,27 @@
 # Full configmap settings
 configuration:
-  server:
-    pow: 24
-    http: true
-    tls:
-      enabled: false
+  agent:
+    pow: 16
+    methods:
+      - bryk
+    otel:
+      collector: "" # localhost:4317
+      attributes:
+        environment: dev
+    rpc:
+      network_interface: all
+      port: 9090
+      http: true
+      resource_limits:
+        connections: 1000
+        requests: 50
+        rate: 5000
+      tls:
+        enabled: false
+        system_ca: true
+        cert: "/etc/didctl/agent/tls.crt"
+        key: "/etc/didctl/agent/tls.key"
+        custom_ca: []
   resolver:
     - method: bryk
       endpoint: "https://did.bryk.io/v1/retrieve/{{.Method}}/{{.Subject}}"
@@ -16,8 +33,8 @@ configuration:
       endpoint: https://core.blockstack.org/v1/dids/{{.DID}}
       protocol: http
 
-# Specify an existing TLS secret to load the certificate from
-# when enabled.
+# Specify an existing TLS secret to load the certificate from. Will be used
+# when `configuration.agent.rpc.tls.enabled` is `true`.
 tlsSecretName: "tls-secret-name-goes-here"
 
 ## Enable persistence using Persistent Volume Claims

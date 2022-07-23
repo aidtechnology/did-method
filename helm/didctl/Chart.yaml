@@ -3,7 +3,7 @@ name: didctl
 description: Network agent deployment for the "bryk" DID method
 type: application
 version: 0.2.1
-appVersion: 0.7.1
+appVersion: 0.9.0
 home: https://github.com/bryk-io/did-method
 icon: https://raw.githubusercontent.com/bryk-io/did-method/master/helm/didctl/icon.png
 sources:

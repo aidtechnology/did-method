@@ -1,19 +1,46 @@
-server:
-  http: true
-  port: 9090
-  storage: ephemeral
-  tls:
-    enabled: false
+agent:
+  pow: 8
+  storage: ephemeral # mongodb://localhost:27017/?tls=false
+  methods:
+    - bryk
+  otel:
+    collector: "" # localhost:4317
+    sentry:
+      dsn: "" # if set, error reporting will be enabled
+      environment: dev
+    attributes:
+      environment: dev
+  rpc:
+    network_interface: all
+    port: 9090
+    http: true
+    resource_limits:
+      connections: 1000
+      requests: 50
+      rate: 5000
+    tls:
+      enabled: false
+      system_ca: true
+      custom_ca: []
+      cert: ""
+      key: ""
 client:
-  node: did.bryk.io:443
-  tls: true
-  timeout: 5
+  home: "./tmp/home" # defaults to $HOME/.didctl
+  node: localhost:9090 # did.bryk.io:443
+  timeout: 5 # in seconds
+  pow: 8 # when submitting sync operations
+  tls:
+    enabled: false # if connecting to the server securely (recommended)
+    system_ca: true
+    custom_ca: []
+    cert: "" # if client TLS credentials are required
+    key: ""
 resolver:
-  - method: algo
-    endpoint: https://did-agent.aidtech.network/v1/retrieve/{{.Method}}/{{.Subject}}
-    protocol: http
   - method: bryk
     endpoint: https://did.bryk.io/v1/retrieve/{{.Method}}/{{.Subject}}
+    protocol: http
+  - method: algo
+    endpoint: https://did-agent.aidtech.network/v1/retrieve/{{.Method}}/{{.Subject}}
     protocol: http
   - method: ccp
     endpoint: https://did.baidu.com/v1/did/resolve/{{.DID}}

@@ -2,6 +2,7 @@
 .DS_Store
 .idea
 *.iml
+.vscode
 
 # Deps
 vendor/**
@@ -35,6 +36,7 @@ secret*
 
 # Default agent data store
 data
+/config.yaml
 
 # Code coverage reports
 coverage.*
