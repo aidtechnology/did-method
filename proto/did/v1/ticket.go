@@ -11,7 +11,7 @@ import (
 
 	"go.bryk.io/pkg/crypto/pow"
 	"go.bryk.io/pkg/did"
-	"go.bryk.io/x/errors"
+	"go.bryk.io/pkg/errors"
 	"golang.org/x/crypto/sha3"
 )
 

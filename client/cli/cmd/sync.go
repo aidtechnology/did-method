@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/viper"
 	"go.bryk.io/pkg/cli"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/pkg/errors"
 	xlog "go.bryk.io/pkg/log"
 	"go.bryk.io/pkg/net/rpc"
 	"go.bryk.io/pkg/otel"
-	"go.bryk.io/x/errors"
 )
 
 var syncCmd = &cobra.Command{

@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"go.bryk.io/pkg/did"
-	"go.bryk.io/x/errors"
+	"go.bryk.io/pkg/errors"
 )
 
 // Provider represents an external system able to return a DID Document

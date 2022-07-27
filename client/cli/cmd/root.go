@@ -9,8 +9,8 @@ import (
 	"github.com/aidtechnology/did-method/client/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.bryk.io/pkg/errors"
 	xlog "go.bryk.io/pkg/log"
-	"go.bryk.io/x/errors"
 )
 
 var (

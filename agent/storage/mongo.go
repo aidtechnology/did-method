@@ -8,9 +8,9 @@ import (
 
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/did"
+	"go.bryk.io/pkg/errors"
 	"go.bryk.io/pkg/otel/mongodb"
 	"go.bryk.io/pkg/storage/orm"
-	"go.bryk.io/x/errors"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
