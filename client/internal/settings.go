@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/aidtechnology/did-method/info"
@@ -153,9 +154,8 @@ func (s *Settings) OTEL(log xlog.Logger) []otel.OperatorOption {
 	}
 
 	// Error reporter
-	sentryInfo := s.Agent.OTEL.Sentry
-	if sentryInfo.DSN != "" {
-		rep, err := sentry.Reporter(sentryInfo.DSN, sentryInfo.Env, info.CoreVersion)
+	if sentryInfo := s.Agent.OTEL.Sentry; sentryInfo.DSN != "" {
+		rep, err := sentry.Reporter(sentryInfo.DSN, sentryInfo.Env, s.ReleaseCode())
 		if err == nil {
 			opts = append(opts, otel.WithErrorReporter(rep))
 		}
@@ -255,6 +255,30 @@ func (s *Settings) SetDefaults(v *viper.Viper, home, appID string) {
 			Protocol: "http",
 		},
 	})
+}
+
+// ReleaseCode returns the release identifier for the application. A release
+// identifier is of the form: `service-name@version+commit_hash`. If `version`
+// or `commit_hash` are not available will be omitted.
+func (s *Settings) ReleaseCode() string {
+	// use service name
+	release := serviceName
+
+	// attach version tag. manually set value by default but prefer the one set
+	// at build time if available
+	version := s.Agent.OTEL.ServiceVersion
+	if strings.Count(info.CoreVersion, ".") >= 2 {
+		version = info.CoreVersion
+	}
+	if version != "" {
+		release = fmt.Sprintf("%s@%s", release, version)
+	}
+
+	// attach commit hash if available
+	if info.BuildCode != "" {
+		release = fmt.Sprintf("%s+%s", release, info.BuildCode)
+	}
+	return release
 }
 
 // Configuration settings available when running an agent instance.

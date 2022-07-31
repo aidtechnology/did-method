@@ -60,6 +60,7 @@
         "parameters": [
           {
             "name": "body",
+            "description": "Mutation request, either to publish or deactivate a DID record.",
             "in": "body",
             "required": true,
             "schema": {
