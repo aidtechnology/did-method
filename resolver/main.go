@@ -3,7 +3,7 @@ package resolver
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"text/template"
 
@@ -89,7 +89,7 @@ func (p *Provider) resolve(id *did.Identifier) ([]byte, error) {
 	}()
 
 	// Return response
-	return ioutil.ReadAll(res.Body)
+	return io.ReadAll(res.Body)
 }
 
 func (p *Provider) data(id *did.Identifier) map[string]string {

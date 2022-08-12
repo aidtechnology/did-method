@@ -3,7 +3,6 @@ package store
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -32,12 +31,12 @@ func (ls *LocalStore) Save(name string, id *did.Identifier) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(ls.home, name), data, 0600)
+	return os.WriteFile(filepath.Join(ls.home, name), data, 0600)
 }
 
 // Get an existing entry based on its reference name.
 func (ls *LocalStore) Get(name string) (*did.Identifier, error) {
-	data, err := ioutil.ReadFile(filepath.Clean(filepath.Join(ls.home, name)))
+	data, err := os.ReadFile(filepath.Clean(filepath.Join(ls.home, name)))
 	if err != nil {
 		return nil, err
 	}

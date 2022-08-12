@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -52,7 +52,7 @@ func runVerifyCmd(_ *cobra.Command, args []string) error {
 	// Load proof file
 	log.Info("verifying proof document")
 	log.Debug("load signature file")
-	entry, err := ioutil.ReadFile(args[0])
+	entry, err := os.ReadFile(args[0])
 	if err != nil {
 		return fmt.Errorf("failed to read the signature file: %w", err)
 	}

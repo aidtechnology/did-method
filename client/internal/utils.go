@@ -2,7 +2,7 @@ package internal
 
 import (
 	"encoding/base64"
-	"io/ioutil"
+	"os"
 	"path"
 )
 
@@ -35,5 +35,5 @@ func loadPem(value string) ([]byte, error) {
 	if err == nil {
 		return data, nil
 	}
-	return ioutil.ReadFile(path.Clean(value))
+	return os.ReadFile(path.Clean(value))
 }

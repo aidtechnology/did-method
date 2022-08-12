@@ -45,6 +45,7 @@ jobs:
       # Can be excluded if the commit message contains: [scan-deps skip]
       # https://github.com/sonatype-nexus-community/nancy-github-action
       - name: Scan dependencies
+        id: scan-deps
         if: ${{ !contains(env.commit_msg, '[scan-deps skip]') }}
         uses: sonatype-nexus-community/nancy-github-action@v1.0.2
 
@@ -82,9 +83,9 @@ jobs:
       # Setup buf
       - name: Setup buf
         id: buf-setup
-        uses: bufbuild/buf-setup-action@v1.6.0
+        uses: bufbuild/buf-setup-action@v1.7.0
         with:
-          version: 1.5.0
+          version: 1.7.0
           github_token: ${{ github.token }}
 
       # Static analysis
@@ -96,8 +97,8 @@ jobs:
       # Detect breaking changes
       - name: Detect breaking changes
         id: buf-breaking
-        uses: bufbuild/buf-breaking-action@v1.1.0
         if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[buf-breaking skip]')
+        uses: bufbuild/buf-breaking-action@v1.1.0
         with:
           against: 'https://github.com/${{ github.repository }}.git#branch=master'
         env:
@@ -133,6 +134,13 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
+      # Get commit message
+      - name: Get commit message
+        run: |
+          echo 'commit_msg<<EOF' >> $GITHUB_ENV
+          git log --format=%B -n 1 ${{ github.sha }} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
       # If "vendor" is in cache, restore.
       # To run conditional steps use:
       # if: steps.vendor-cache.outputs.cache-hit != 'true'
@@ -150,7 +158,7 @@ jobs:
       - name: Static analysis
         uses: golangci/golangci-lint-action@v3.2.0
         with:
-          version: latest
+          version: v1.48.0
 
       # Run unit tests
       - name: Test
