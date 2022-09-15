@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aidtechnology/did-method/agent/storage"
 	"github.com/aidtechnology/did-method/info"
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/did"
@@ -63,7 +64,9 @@ func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did
 	task.Event("database read")
 	id, proof, err := h.store.Get(req)
 	if err != nil {
-		task.Error(xlog.Error, err, nil)
+		if !errors.Is(err, storage.NotFoundError(req)) {
+			task.Error(xlog.Error, err, nil)
+		}
 		return nil, nil, err
 	}
 	return id, proof, nil

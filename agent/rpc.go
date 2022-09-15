@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/aidtechnology/did-method/agent/storage"
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
+	"go.bryk.io/pkg/errors"
 	"go.bryk.io/pkg/otel"
 	otelcodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/codes"
@@ -61,7 +63,9 @@ func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (*pr
 	// Process request
 	id, proof, err := rh.handler.Retrieve(task.Context(), req)
 	if err != nil {
-		task.SetStatus(otelcodes.Error, err.Error())
+		if !errors.Is(err, storage.NotFoundError(req)) {
+			task.SetStatus(otelcodes.Error, err.Error())
+		}
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	doc, _ := json.Marshal(id.Document(true))

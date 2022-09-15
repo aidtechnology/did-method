@@ -6,6 +6,42 @@ option go_package = "did/v1;didv1";
 
 import "google/protobuf/empty.proto";
 import "third_party/google/api/annotations.proto";
+import "third_party/openapiv2/annotations.proto";
+
+// OpenAPI settings.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  swagger: "2.0";
+  host: "did.bryk.io";
+  schemes: HTTPS;
+  consumes: "application/json";
+  consumes: "application/protobuf";
+  produces: "application/json";
+  produces: "application/protobuf";
+  info: {
+    title: "DID bryk method";
+    version: "0.9.2";
+    contact: {
+      name: "Ben Cessa";
+      email: "ben@aid.technology";
+    };
+  };
+  security_definitions: {
+    security: {
+      key: "bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "Authentication token provided as: 'Bearer {token}'"
+      }
+    }
+  }
+  security: {
+    security_requirement: {
+      key: "bearer"
+    }
+  }
+};
 
 // AgentAPI defines the network protocol as detailed in the DID Method specification.
 service AgentAPI {

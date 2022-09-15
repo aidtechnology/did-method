@@ -54,7 +54,7 @@ func (e *Ephemeral) Get(req *protov1.QueryRequest) (*did.Identifier, *did.ProofL
 	r, ok := e.entries[key]
 	e.mu.Unlock()
 	if !ok {
-		return nil, nil, errors.New("no information available")
+		return nil, nil, errors.Wrap(NotFoundError(req), "storage")
 	}
 	return r.id, r.proof, nil
 }

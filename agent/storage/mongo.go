@@ -121,7 +121,10 @@ func (ms *MongoStore) Get(req *protov1.QueryRequest) (*did.Identifier, *did.Proo
 	filter["method"] = req.Method
 	filter["subject"] = req.Subject
 	if err := ms.did.First(filter, &res); err != nil {
-		return nil, nil, errors.New("no information available")
+		if strings.Contains(err.Error(), "no documents in result") {
+			return nil, nil, errors.Wrap(NotFoundError(req), "storage")
+		}
+		return nil, nil, err
 	}
 
 	// Decode result
