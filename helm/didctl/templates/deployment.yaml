@@ -1,43 +1,45 @@
-{{- $fullName := include "didctl.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $fullName }}
+  name: {{ include "cc.fullname" . }}
   labels:
-    {{- include "didctl.labels" . | nindent 4 }}
+    {{- include "cc.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      {{- include "didctl.selectorLabels" . | nindent 6 }}
+      {{- include "cc.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
-        {{- include "didctl.selectorLabels" . | nindent 8 }}
+            {{- include "cc.selectorLabels" . | nindent 8 }}
     spec:
-    {{- with .Values.imagePullSecrets }}
+    {{- if .Values.image.pullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+        {{- end }}
     {{- end }}
-      restartPolicy: {{ .Values.restartPolicy }}
-      serviceAccountName: {{ include "didctl.serviceAccountName" . }}
+      serviceAccountName: {{ include "cc.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
         - name: config
           configMap:
-            name: {{ include "didctl.fullname" . }}
-        {{- if .Values.configuration.agent.rpc.tls.enabled }}
+            name: {{ include "cc.fullname" . }}
+        {{- if .Values.tlsSecretName }}
         - name: tls
           secret:
             secretName: {{ .Values.tlsSecretName }}
-        {{- end }}
-        {{- if .Values.persistence.enabled }}
-        - name: storage
-          persistentVolumeClaim:
-            claimName: {{ printf "%s-storage" $fullName }}
         {{- end }}
       containers:
         - name: main
@@ -47,24 +49,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: config
-              mountPath: /etc/didctl
-            {{- if .Values.configuration.agent.rpc.tls.enabled }}
+              mountPath: /etc/{{ .Chart.Name }}
+            {{- if .Values.tlsSecretName }}
             - name: tls
-              mountPath: /etc/didctl/agent
+              mountPath: /etc/{{ .Chart.Name }}/tls
               readOnly: true
-            {{- end }}
-            {{- if .Values.persistence.enabled }}
-            - name: storage
-              mountPath: /etc/didctl/agent/data
             {{- end }}
           args:
             - "agent"
-            - "--config"
-            - "/etc/didctl/config.yaml"
           ports:
             - name: rpc
-              containerPort: 9090
               protocol: TCP
+              containerPort: {{ .Values.access.port }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
           livenessProbe:
             initialDelaySeconds: 10
             periodSeconds: 60
