@@ -83,13 +83,13 @@ func (s *Settings) Overrides(cmd string) []cli.Param {
 				Name:      "tls-cert",
 				Usage:     "TLS certificate (path to PEM file)",
 				FlagKey:   "agent.rpc.tls.cert",
-				ByDefault: "/etc/didctl/agent/tls.crt",
+				ByDefault: "/etc/didctl/tls/tls.crt",
 			},
 			{
 				Name:      "tls-key",
 				Usage:     "TLS private key (path to PEM file)",
 				FlagKey:   "agent.rpc.tls.key",
-				ByDefault: "/etc/didctl/agent/tls.key",
+				ByDefault: "/etc/didctl/tls/tls.key",
 			},
 			{
 				Name:      "method",
@@ -194,7 +194,6 @@ func (s *Settings) Gateway(oop *otel.Operator) []rpc.GatewayOption {
 	// gateway internal client options
 	clOpts := []rpc.ClientOption{
 		rpc.WithClientObservability(oop), // instrument internal client
-		rpc.WithInsecureSkipVerify(),     // accept any cert provided
 	}
 	if s.Agent.RPC.TLS.Enabled {
 		clOpts = append(clOpts, rpc.WithClientTLS(rpc.ClientTLSConfig{
