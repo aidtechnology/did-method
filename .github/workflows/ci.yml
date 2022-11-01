@@ -98,7 +98,7 @@ jobs:
       - name: Detect breaking changes
         id: buf-breaking
         if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[buf-breaking skip]')
-        uses: bufbuild/buf-breaking-action@v1.1.0
+        uses: bufbuild/buf-breaking-action@v1.1.2
         with:
           against: 'https://github.com/${{ github.repository }}.git#branch=master'
         env:
