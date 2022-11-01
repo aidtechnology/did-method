@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/kennygrant/sanitize v1.2.4
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.13.0
 	go.bryk.io/pkg v0.0.0-20220908165606-32850f68c8d9
 	go.mongodb.org/mongo-driver v1.10.2
@@ -40,7 +40,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
