@@ -91,7 +91,7 @@ jobs:
       # Static analysis
       - name: Static analysis
         id: buf-lint
-        uses: bufbuild/buf-lint-action@v1.0.1
+        uses: bufbuild/buf-lint-action@v1.0.3
         if: ${{ steps.buf-setup.outcome == 'success' }}
 
       # Detect breaking changes
