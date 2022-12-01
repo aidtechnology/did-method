@@ -12,7 +12,7 @@ require (
 	go.opentelemetry.io/otel v1.9.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
-	google.golang.org/grpc v1.49.0
+	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 	storj.io/drpc v0.0.32
 )
@@ -101,7 +101,7 @@ require (
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
