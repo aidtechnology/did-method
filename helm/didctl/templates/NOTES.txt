@@ -22,7 +22,6 @@
 {{- end }}
 - HTTP access:
     Enabled: {{ .Values.access.ingress.http.enabled }}
-    Path prefix: {{ .Values.access.ingress.http.pathPrefix }}
     Secure backend: {{ .Values.access.ingress.http.secureBackend }}
     Paths:
     {{- with .Values.access.ingress.http.paths }}

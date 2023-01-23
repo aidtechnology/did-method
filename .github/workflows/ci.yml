@@ -42,11 +42,10 @@ jobs:
         run: go list -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' -m all > go.list
 
       # Scan dependencies using Nancy
-      # Can be excluded if the commit message contains: [scan-deps skip]
+      # Can be excluded if the commit message contains: [skip scan-deps]
       # https://github.com/sonatype-nexus-community/nancy-github-action
       - name: Scan dependencies
-        id: scan-deps
-        if: ${{ !contains(env.commit_msg, '[scan-deps skip]') }}
+        if: ${{ !contains(env.commit_msg, '[skip scan-deps]') }}
         uses: sonatype-nexus-community/nancy-github-action@v1.0.2
 
   # Validate the protocol buffer definitions on the project
@@ -83,22 +82,22 @@ jobs:
       # Setup buf
       - name: Setup buf
         id: buf-setup
-        uses: bufbuild/buf-setup-action@v1.7.0
+        uses: bufbuild/buf-setup-action@v1.11.0
         with:
-          version: 1.7.0
+          version: 1.11.0
           github_token: ${{ github.token }}
 
       # Static analysis
       - name: Static analysis
         id: buf-lint
-        uses: bufbuild/buf-lint-action@v1.0.1
+        uses: bufbuild/buf-lint-action@v1.0.3
         if: ${{ steps.buf-setup.outcome == 'success' }}
 
       # Detect breaking changes
       - name: Detect breaking changes
         id: buf-breaking
-        if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[buf-breaking skip]')
-        uses: bufbuild/buf-breaking-action@v1.1.0
+        uses: bufbuild/buf-breaking-action@v1.1.2
+        if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[skip buf-breaking]')
         with:
           against: 'https://github.com/${{ github.repository }}.git#branch=master'
         env:
@@ -112,7 +111,7 @@ jobs:
     needs: protos
     strategy:
       matrix:
-        go-version: [1.17.x, 1.18.x, 1.19.x]
+        go-version: [1.18.x, 1.19.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -156,9 +155,9 @@ jobs:
       # Style consistency and static analysis using 'golangci-lint'
       # https://github.com/marketplace/actions/run-golangci-lint
       - name: Static analysis
-        uses: golangci/golangci-lint-action@v3.2.0
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.48.0
+          version: v1.50.1
 
       # Run unit tests
       - name: Test
@@ -166,7 +165,7 @@ jobs:
 
       # Ensure project compile and build successfully
       - name: Build
-        run: make build-for os=linux arch=amd64
+        run: make build
 
       # Save artifacts
       - name: Save artifacts

@@ -51,12 +51,11 @@ func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did
 		"handler.Retrieve",
 		otel.WithSpanKind(otel.SpanKindServer),
 		otel.WithSpanAttributes(otel.Attributes{"method": req.Method}))
-	defer task.End()
 
 	// Verify method is supported
 	if !h.isSupported(req.Method) {
 		err := errors.New("unsupported method")
-		task.Error(xlog.Error, err, nil)
+		task.End(err)
 		return nil, nil, err
 	}
 
@@ -67,54 +66,54 @@ func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did
 		if !errors.Is(err, storage.NotFoundError(req)) {
 			task.Error(xlog.Error, err, nil)
 		}
+		task.End(err)
 		return nil, nil, err
 	}
+	task.End(nil)
 	return id, proof, nil
 }
 
 // Process an incoming request ticket.
-func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) error {
+func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err error) {
 	// Track operation
 	task := h.oop.Start(
 		ctx,
 		"handler.Process",
 		otel.WithSpanKind(otel.SpanKindServer),
 		otel.WithSpanAttributes(otel.Attributes{"task": req.Task.String()}))
-	defer task.End()
+	defer task.End(err)
 
 	// Validate ticket
-	if err := req.Ticket.Verify(h.difficulty); err != nil {
-		task.Error(xlog.Error, err, nil)
-		return err
+	if err = req.Ticket.Verify(h.difficulty); err != nil {
+		return
 	}
 
 	// Load DID document and proof
-	id, err := req.Ticket.GetDID()
+	var id *did.Identifier
+	id, err = req.Ticket.GetDID()
 	if err != nil {
-		task.Error(xlog.Error, err, nil)
-		return err
+		return
 	}
-	proof, err := req.Ticket.GetProofLD()
+	var proof *did.ProofLD
+	proof, err = req.Ticket.GetProofLD()
 	if err != nil {
-		task.Error(xlog.Error, err, nil)
 		return err
 	}
 
 	// Verify method is supported
 	if !h.isSupported(id.Method()) {
-		err := errors.New("unsupported method")
+		err = errors.New("unsupported method")
 		task.Error(xlog.Error, err, otel.Attributes{
 			"method": id.Method(),
 		})
-		return err
+		return
 	}
 
 	// Update operations require another validation step using the original record
 	isUpdate := h.store.Exists(id)
 	if isUpdate {
-		if err := req.Ticket.Verify(h.difficulty); err != nil {
-			task.Error(xlog.Error, err, nil)
-			return err
+		if err = req.Ticket.Verify(h.difficulty); err != nil {
+			return
 		}
 	}
 
@@ -131,10 +130,7 @@ func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) erro
 		task.Event("database delete", fields)
 		err = h.store.Delete(id)
 	default:
-		return errors.New("invalid request task")
-	}
-	if err != nil {
-		task.Error(xlog.Error, err, fields)
+		err = errors.New("invalid request task")
 	}
 	return err
 }

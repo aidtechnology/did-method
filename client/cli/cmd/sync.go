@@ -97,7 +97,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	// Submit request
 	log.Info("submitting request to the network")
 	client := protov1.NewAgentAPIClient(conn)
-	res, err := client.Process(context.TODO(), req)
+	res, err := client.Process(context.Background(), req)
 	if err != nil {
 		return fmt.Errorf("network return an error: %w", err)
 	}
@@ -110,7 +110,7 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 	return st.Update(name, id)
 }
 
-func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, error) {
+func getRequestTicket(id *did.Identifier, key *did.VerificationKey) (*protov1.Ticket, error) {
 	diff := uint(viper.GetInt("client.pow"))
 	log.WithFields(xlog.Fields{"pow": diff}).Info("generating request ticket")
 
@@ -122,7 +122,7 @@ func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, 
 
 	// Solve PoW challenge
 	start := time.Now()
-	challenge := ticket.Solve(context.TODO(), diff)
+	challenge := ticket.Solve(context.Background(), diff)
 	log.Debugf("ticket obtained: %s", challenge)
 	log.Debugf("time: %s (rounds completed %d)", time.Since(start), ticket.Nonce())
 	ch, _ := hex.DecodeString(challenge)
@@ -140,7 +140,7 @@ func getRequestTicket(id *did.Identifier, key *did.PublicKey) (*protov1.Ticket, 
 	return ticket, nil
 }
 
-func getSyncKey(id *did.Identifier) (*did.PublicKey, error) {
+func getSyncKey(id *did.Identifier) (*did.VerificationKey, error) {
 	// Get selected key for the sync operation
 	key := id.VerificationMethod(viper.GetString("sync.key"))
 	if key == nil {

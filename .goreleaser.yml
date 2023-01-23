@@ -45,6 +45,7 @@ builds:
 archives:
   # a single project can produce multiple archives
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    rlcp: true
     builds:
       # artifacts to pack
       - didctl
@@ -68,6 +69,7 @@ checksum:
 # https://goreleaser.com/customization/source/
 source:
   enabled: true
+  rlcp: true
 # produce test releases
 # https://goreleaser.com/customization/snapshots/
 snapshot:
