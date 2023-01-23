@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"go.bryk.io/pkg/cli"
 	xlog "go.bryk.io/pkg/log"
+	mwHeaders "go.bryk.io/pkg/net/middleware/headers"
 	"go.bryk.io/pkg/net/rpc"
 	"go.bryk.io/pkg/otel"
 	"go.bryk.io/pkg/otel/sentry"
@@ -206,6 +207,10 @@ func (s *Settings) Gateway(oop *otel.Operator) []rpc.GatewayOption {
 		rpc.WithClientOptions(clOpts...),
 		rpc.WithHandlerName("http-gateway"),
 		rpc.WithPrettyJSON("json+pretty"),
+		rpc.WithGatewayMiddleware(mwHeaders.Handler(map[string]string{
+			"x-didctl-version": info.CoreVersion,
+			"x-didctl-build":   info.BuildCode,
+		})),
 	}
 }
 
