@@ -31,3 +31,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "bufbuild/buf-setup-action"
+      - dependency-name: "bufbuild/buf-lint-action"
+      - dependency-name: "bufbuild/buf-breaking-action"
+      - dependency-name: "trufflesecurity/trufflehog"
+      - dependency-name: "sonatype-nexus-community/nancy-github-action"
