@@ -13,7 +13,6 @@ import (
 	"github.com/aidtechnology/did-method/info"
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/did"
-	xlog "go.bryk.io/pkg/log"
 	"go.bryk.io/pkg/net/rpc"
 	"go.bryk.io/pkg/otel"
 	"google.golang.org/grpc"
@@ -64,9 +63,8 @@ func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did
 	id, proof, err := h.store.Get(req)
 	if err != nil {
 		if !errors.Is(err, storage.NotFoundError(req)) {
-			task.Error(xlog.Error, err, nil)
+			task.End(err)
 		}
-		task.End(err)
 		return nil, nil, err
 	}
 	task.End(nil)
@@ -103,9 +101,7 @@ func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err
 	// Verify method is supported
 	if !h.isSupported(id.Method()) {
 		err = errors.New("unsupported method")
-		task.Error(xlog.Error, err, otel.Attributes{
-			"method": id.Method(),
-		})
+		task.End(err)
 		return
 	}
 
@@ -186,7 +182,7 @@ func (h *Handler) queryResponseFilter() rpc.GatewayInterceptor {
 				"proof":    proof,
 			}, "", "  ")
 			status = http.StatusOK
-			res.Header().Set("Etag", fmt.Sprintf("W/%x", sha256.Sum256(response)))
+			res.Header().Set("etag", fmt.Sprintf("W/%x", sha256.Sum256(response)))
 		}
 
 		// Return result
