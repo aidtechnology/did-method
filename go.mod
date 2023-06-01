@@ -10,8 +10,8 @@ require (
 	go.bryk.io/pkg v0.0.0-20230324162805-f7d468209364
 	go.mongodb.org/mongo-driver v1.11.4
 	golang.org/x/crypto v0.8.0
-	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
-	google.golang.org/grpc v1.54.0
+	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
+	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 	storj.io/drpc v0.0.32
 )
