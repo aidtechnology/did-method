@@ -13,7 +13,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
-	storj.io/drpc v0.0.32
+	storj.io/drpc v0.0.33
 )
 
 require (
