@@ -82,9 +82,9 @@ jobs:
       # Setup buf
       - name: Setup buf
         id: buf-setup
-        uses: bufbuild/buf-setup-action@v1.15.1
+        uses: bufbuild/buf-setup-action@v1.17.0
         with:
-          version: 1.15.1
+          version: 1.17.0
           github_token: ${{ github.token }}
 
       # Static analysis
@@ -99,7 +99,7 @@ jobs:
         uses: bufbuild/buf-breaking-action@v1.1.2
         if: steps.buf-lint.outcome == 'success' && !contains(env.commit_msg, '[skip buf-breaking]')
         with:
-          against: 'https://github.com/${{ github.repository }}.git#branch=master'
+          against: 'https://github.com/${{ github.repository }}.git#branch=${{ github.event.repository.default_branch }}'
         env:
           BUF_INPUT_HTTPS_USERNAME: ${{ github.actor }}
           BUF_INPUT_HTTPS_PASSWORD: ${{ secrets.ACCESS_TOKEN }}
@@ -111,7 +111,7 @@ jobs:
     needs: protos
     strategy:
       matrix:
-        go-version: [1.18.x, 1.19.x, 1.20.x]
+        go-version: [1.19.x, 1.20.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
