@@ -32,7 +32,7 @@ plugins:
     out: .
     opt:
       - lang=go
-  - name: go-drpc
-    out: .
-    opt:
-      - paths=source_relative
+  # - name: go-drpc
+  #   out: .
+  #   opt:
+  #     - paths=source_relative

@@ -139,7 +139,7 @@ func (h *Handler) ServerSetup(srv *grpc.Server) {
 
 // GatewaySetup return the HTTP setup required to expose the handler
 // instance via HTTP.
-func (h *Handler) GatewaySetup() rpc.GatewayRegister {
+func (h *Handler) GatewaySetup() rpc.GatewayRegisterFunc {
 	return protov1.RegisterAgentAPIHandler
 }
 
