@@ -155,10 +155,17 @@ func (s *Settings) OTEL(log xlog.Logger) []otel.OperatorOption {
 	}
 
 	// Error reporter
-	if sentryInfo := s.Agent.OTEL.Sentry; sentryInfo.DSN != "" {
-		rep, err := sentry.Reporter(sentryInfo.DSN, sentryInfo.Env, s.ReleaseCode())
+	if sentryOpts := s.Agent.OTEL.Sentry; sentryOpts.DSN != "" {
+		if sentryOpts.Release == "" {
+			sentryOpts.Release = s.ReleaseCode()
+		}
+		rep, err := sentry.NewReporter(sentryOpts)
 		if err == nil {
-			opts = append(opts, otel.WithErrorReporter(rep))
+			opts = append(opts,
+				otel.WithPropagator(rep.Propagator()),
+				otel.WithSpanProcessor(rep.SpanProcessor()),
+				otel.WithSpanInterceptor(rep),
+			)
 		}
 	}
 	return opts
@@ -308,12 +315,7 @@ type otelSettings struct {
 	Collector      string                 `json:"collector" yaml:"collector" mapstructure:"collector"`
 	LogJSON        bool                   `json:"log_json" yaml:"log_json" mapstructure:"log_json"`
 	Attributes     map[string]interface{} `json:"attributes" yaml:"attributes" mapstructure:"attributes"`
-	Sentry         *sentrySettings        `json:"sentry" yaml:"sentry" mapstructure:"sentry"`
-}
-
-type sentrySettings struct {
-	DSN string `json:"dsn" yaml:"dsn" mapstructure:"dsn"`
-	Env string `json:"environment" yaml:"environment" mapstructure:"environment"`
+	Sentry         *sentry.Options        `json:"sentry" yaml:"sentry" mapstructure:"sentry"`
 }
 
 type rpcSettings struct {

@@ -5,11 +5,14 @@ agent:
     - bryk
   otel:
     collector: "" # localhost:4317
-    sentry:
-      dsn: "" # if set, error reporting will be enabled
-      environment: dev
     attributes:
       environment: dev
+    sentry:
+      dsn: "" # if not provided, output will be discarded
+      environment: dev
+      performance_monitoring: true
+      traces_sample_rate: 1.0
+      profiling_sample_rate: 0.5
   rpc:
     network_interface: all
     port: 9090
