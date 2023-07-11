@@ -7,7 +7,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
-	go.bryk.io/pkg v0.0.0-20230711012017-8e69ce8ebd62
+	go.bryk.io/pkg v0.0.0-20230724120603-30e50885239b
 	go.mongodb.org/mongo-driver v1.12.0
 	golang.org/x/crypto v0.11.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
@@ -27,7 +27,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/getsentry/sentry-go v0.22.0 // indirect
-	github.com/getsentry/sentry-go/otel v0.22.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect

@@ -14,8 +14,6 @@ import (
 	"go.bryk.io/pkg/did"
 	"go.bryk.io/pkg/errors"
 	xlog "go.bryk.io/pkg/log"
-	"go.bryk.io/pkg/net/rpc"
-	"go.bryk.io/pkg/otel"
 )
 
 var syncCmd = &cobra.Command{
@@ -65,19 +63,8 @@ func runSyncCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	// automatically instrument client if agent OTEL settings are available
-	// in the same environment. Often the case for dev/testing.
-	var clOpts []rpc.ClientOption
-	if conf.Agent.OTEL != nil {
-		oop, err := otel.NewOperator(conf.OTEL(log)...)
-		if err == nil {
-			clOpts = append(clOpts, rpc.WithClientObservability(oop))
-			defer oop.Shutdown(context.Background())
-		}
-	}
-
 	// Get client connection
-	conn, err := getClientConnection(clOpts...)
+	conn, err := getClientConnection()
 	if err != nil {
 		return err
 	}

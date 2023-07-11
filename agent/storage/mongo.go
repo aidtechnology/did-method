@@ -9,7 +9,7 @@ import (
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/did"
 	"go.bryk.io/pkg/errors"
-	"go.bryk.io/pkg/otel/mongodb"
+	otelMongo "go.bryk.io/pkg/otel/mongodb"
 	"go.bryk.io/pkg/storage/orm"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -92,7 +92,7 @@ func (ms *MongoStore) Open(info string) error {
 	var err error
 	opts := options.Client()
 	opts.ApplyURI(cs[0])
-	opts.Monitor = otelmongodb.Monitor()
+	opts.Monitor = otelMongo.NewMonitor()
 	ms.op, err = orm.NewOperator(db, opts)
 	if err != nil {
 		return err

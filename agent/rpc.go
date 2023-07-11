@@ -6,6 +6,7 @@ import (
 
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/otel"
+	otelApi "go.bryk.io/pkg/otel/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,26 +19,18 @@ type rpcHandler struct {
 }
 
 func (rh *rpcHandler) Ping(ctx context.Context, _ *emptypb.Empty) (*protov1.PingResponse, error) {
-	// Get parent span reference
-	parent := rh.handler.oop.SpanFromContext(ctx)
-
-	// Track operation
-	task := rh.handler.oop.Start(parent.Context(), "Ping", otel.WithSpanKind(otel.SpanKindServer))
-	defer task.End(nil)
 	return &protov1.PingResponse{Ok: true}, nil
 }
 
 func (rh *rpcHandler) Process(ctx context.Context, req *protov1.ProcessRequest) (res *protov1.ProcessResponse, err error) { // nolint: lll
-	// Get parent span reference
-	parent := rh.handler.oop.SpanFromContext(ctx)
-
 	// Track operation
-	task := rh.handler.oop.Start(parent.Context(), "rpc.Process", otel.WithSpanKind(otel.SpanKindServer))
-	defer task.End(err)
+	task := otelApi.Start(ctx, "rpc.Process", otelApi.WithSpanKind(otelApi.SpanKindServer))
+	defer task.End(nil)
 
 	// Process request
 	if err = rh.handler.Process(task.Context(), req); err != nil {
 		res.Ok = false
+		task.End(err)
 		err = status.Error(codes.InvalidArgument, err.Error())
 		return
 	}
@@ -46,22 +39,20 @@ func (rh *rpcHandler) Process(ctx context.Context, req *protov1.ProcessRequest) 
 }
 
 func (rh *rpcHandler) Query(ctx context.Context, req *protov1.QueryRequest) (res *protov1.QueryResponse, err error) {
-	// Get parent span reference
-	parent := rh.handler.oop.SpanFromContext(ctx)
-
 	// Track operation
-	task := rh.handler.oop.Start(
-		parent.Context(),
+	task := otelApi.Start(
+		ctx,
 		"rpc.Query",
-		otel.WithSpanKind(otel.SpanKindServer),
-		otel.WithSpanAttributes(otel.Attributes{
+		otelApi.WithSpanKind(otelApi.SpanKindServer),
+		otelApi.WithAttributes(otel.Attributes{
 			"method": req.Method,
 		}))
-	defer task.End(err)
+	defer task.End(nil)
 
 	// Process request
 	id, proof, err := rh.handler.Retrieve(task.Context(), req)
 	if err != nil {
+		task.End(err)
 		err = status.Error(codes.NotFound, err.Error())
 		return
 	}

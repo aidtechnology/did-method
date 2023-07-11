@@ -13,23 +13,25 @@ import (
 	"github.com/aidtechnology/did-method/info"
 	protov1 "github.com/aidtechnology/did-method/proto/did/v1"
 	"go.bryk.io/pkg/did"
+	xlog "go.bryk.io/pkg/log"
 	"go.bryk.io/pkg/net/rpc"
 	"go.bryk.io/pkg/otel"
+	otelApi "go.bryk.io/pkg/otel/api"
 	"google.golang.org/grpc"
 )
 
 // Handler provides the required functionality for the DID method.
 type Handler struct {
-	oop        *otel.Operator
 	methods    []string
 	store      Storage
+	log        xlog.Logger
 	difficulty uint
 }
 
 // NewHandler starts a new DID method handler instance.
-func NewHandler(methods []string, difficulty uint, store Storage, oop *otel.Operator) (*Handler, error) {
+func NewHandler(methods []string, difficulty uint, store Storage, ll xlog.Logger) (*Handler, error) {
 	return &Handler{
-		oop:        oop,
+		log:        ll,
 		store:      store,
 		methods:    methods,
 		difficulty: difficulty,
@@ -38,18 +40,19 @@ func NewHandler(methods []string, difficulty uint, store Storage, oop *otel.Oper
 
 // Close the instance and safely terminate any internal processing.
 func (h *Handler) Close() error {
-	h.oop.Info("closing agent handler")
+	h.log.Info("closing agent handler")
 	return h.store.Close()
 }
 
 // Retrieve an existing DID instance based on its subject string.
 func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did.Identifier, *did.ProofLD, error) {
 	// Track operation
-	task := h.oop.Start(
+	task := otelApi.Start(
 		ctx,
 		"handler.Retrieve",
-		otel.WithSpanKind(otel.SpanKindServer),
-		otel.WithSpanAttributes(otel.Attributes{"method": req.Method}))
+		otelApi.WithSpanKind(otelApi.SpanKindServer),
+		otelApi.WithAttributes(otel.Attributes{"method": req.Method}))
+	defer task.End(nil)
 
 	// Verify method is supported
 	if !h.isSupported(req.Method) {
@@ -67,22 +70,22 @@ func (h *Handler) Retrieve(ctx context.Context, req *protov1.QueryRequest) (*did
 		}
 		return nil, nil, err
 	}
-	task.End(nil)
 	return id, proof, nil
 }
 
 // Process an incoming request ticket.
 func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err error) {
 	// Track operation
-	task := h.oop.Start(
+	task := otelApi.Start(
 		ctx,
 		"handler.Process",
-		otel.WithSpanKind(otel.SpanKindServer),
-		otel.WithSpanAttributes(otel.Attributes{"task": req.Task.String()}))
-	defer task.End(err)
+		otelApi.WithSpanKind(otelApi.SpanKindServer),
+		otelApi.WithAttributes(otel.Attributes{"task": req.Task.String()}))
+	defer task.End(nil)
 
 	// Validate ticket
 	if err = req.Ticket.Verify(h.difficulty); err != nil {
+		task.End(err)
 		return
 	}
 
@@ -90,11 +93,13 @@ func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err
 	var id *did.Identifier
 	id, err = req.Ticket.GetDID()
 	if err != nil {
+		task.End(err)
 		return
 	}
 	var proof *did.ProofLD
 	proof, err = req.Ticket.GetProofLD()
 	if err != nil {
+		task.End(err)
 		return err
 	}
 
@@ -109,6 +114,7 @@ func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err
 	isUpdate := h.store.Exists(id)
 	if isUpdate {
 		if err = req.Ticket.Verify(h.difficulty); err != nil {
+			task.End(err)
 			return
 		}
 	}
@@ -128,6 +134,7 @@ func (h *Handler) Process(ctx context.Context, req *protov1.ProcessRequest) (err
 	default:
 		err = errors.New("invalid request task")
 	}
+	task.End(err)
 	return err
 }
 

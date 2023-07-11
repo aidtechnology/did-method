@@ -13,7 +13,7 @@ import (
 	xlog "go.bryk.io/pkg/log"
 	mwHeaders "go.bryk.io/pkg/net/middleware/headers"
 	"go.bryk.io/pkg/net/rpc"
-	"go.bryk.io/pkg/otel"
+	otelSdk "go.bryk.io/pkg/otel/sdk"
 	"go.bryk.io/pkg/otel/sentry"
 )
 
@@ -142,16 +142,16 @@ func (s *Settings) Load(v *viper.Viper) error {
 }
 
 // OTEL returns the configuration options available to set up an OTEL operator.
-func (s *Settings) OTEL(log xlog.Logger) []otel.OperatorOption {
-	opts := []otel.OperatorOption{
-		otel.WithLogger(log),
-		otel.WithServiceName(serviceName),
-		otel.WithServiceVersion(info.CoreVersion),
-		otel.WithResourceAttributes(s.Agent.OTEL.Attributes),
+func (s *Settings) OTEL(log xlog.Logger) []otelSdk.Option {
+	opts := []otelSdk.Option{
+		otelSdk.WithBaseLogger(log),
+		otelSdk.WithServiceName(serviceName),
+		otelSdk.WithServiceVersion(info.CoreVersion),
+		otelSdk.WithResourceAttributes(s.Agent.OTEL.Attributes),
 	}
 	collector := s.Agent.OTEL.Collector
 	if collector != "" {
-		opts = append(opts, otel.WithExporterOTLP(collector, true, nil)...)
+		opts = append(opts, otelSdk.WithExporterOTLP(collector, true, nil)...)
 	}
 
 	// Error reporter
@@ -162,9 +162,8 @@ func (s *Settings) OTEL(log xlog.Logger) []otel.OperatorOption {
 		rep, err := sentry.NewReporter(sentryOpts)
 		if err == nil {
 			opts = append(opts,
-				otel.WithPropagator(rep.Propagator()),
-				otel.WithSpanProcessor(rep.SpanProcessor()),
-				otel.WithSpanInterceptor(rep),
+				otelSdk.WithPropagator(rep.Propagator()),
+				otelSdk.WithSpanProcessor(rep.SpanProcessor()),
 			)
 		}
 	}
@@ -172,7 +171,7 @@ func (s *Settings) OTEL(log xlog.Logger) []otel.OperatorOption {
 }
 
 // Server returns the configuration options available to set up an RPC server.
-func (s *Settings) Server(oop *otel.Operator) ([]rpc.ServerOption, error) {
+func (s *Settings) Server() ([]rpc.ServerOption, error) {
 	opts := []rpc.ServerOption{
 		rpc.WithPanicRecovery(),
 		rpc.WithInputValidation(),
@@ -180,7 +179,6 @@ func (s *Settings) Server(oop *otel.Operator) ([]rpc.ServerOption, error) {
 		rpc.WithPort(s.Agent.RPC.Port),
 		rpc.WithNetworkInterface(s.Agent.RPC.NetInt),
 		rpc.WithResourceLimits(s.Agent.RPC.Limits),
-		rpc.WithObservability(oop),
 	}
 	tlsConf := s.Agent.RPC.TLS
 	if tlsConf.Enabled {
@@ -198,11 +196,9 @@ func (s *Settings) Server(oop *otel.Operator) ([]rpc.ServerOption, error) {
 }
 
 // Gateway returns the configuration options available to set up an HTTP gateway.
-func (s *Settings) Gateway(oop *otel.Operator) []rpc.GatewayOption {
+func (s *Settings) Gateway() []rpc.GatewayOption {
 	// gateway internal client options
-	clOpts := []rpc.ClientOption{
-		rpc.WithClientObservability(oop), // instrument internal client
-	}
+	clOpts := []rpc.ClientOption{}
 	if s.Agent.RPC.TLS.Enabled {
 		clOpts = append(clOpts, rpc.WithClientTLS(rpc.ClientTLSConfig{
 			IncludeSystemCAs: s.Agent.RPC.TLS.SystemCA,

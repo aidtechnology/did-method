@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 	"go.bryk.io/pkg/cli"
 	"go.bryk.io/pkg/net/rpc"
-	"go.bryk.io/pkg/otel"
 )
 
 var agentCmd = &cobra.Command{
@@ -32,20 +31,14 @@ func init() {
 }
 
 func runMethodServer(_ *cobra.Command, _ []string) error {
-	// Observability operator
-	oop, err := otel.NewOperator(conf.OTEL(log)...)
-	if err != nil {
-		return err
-	}
-
 	// Prepare API handler
-	handler, err := getAgentHandler(oop)
+	handler, err := getAgentHandler()
 	if err != nil {
 		return err
 	}
 
 	// Base server configuration
-	opts, err := conf.Server(oop)
+	opts, err := conf.Server()
 	if err != nil {
 		return err
 	}
@@ -56,7 +49,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 	// Initialize HTTP gateway
 	if conf.Agent.RPC.HTTP {
 		log.Info("HTTP gateway enabled")
-		gwOpts := conf.Gateway(oop)
+		gwOpts := conf.Gateway()
 		gwOpts = append(gwOpts, handler.CustomGatewayOptions()...)
 		gw, err := rpc.NewGateway(gwOpts...)
 		if err != nil {
@@ -98,7 +91,7 @@ func runMethodServer(_ *cobra.Command, _ []string) error {
 }
 
 // Return an API handler instance.
-func getAgentHandler(oop *otel.Operator) (*agent.Handler, error) {
+func getAgentHandler() (*agent.Handler, error) {
 	// storage handler
 	store, err := getStorage(conf.Agent.Storage)
 	if err != nil {
@@ -108,7 +101,7 @@ func getAgentHandler(oop *otel.Operator) (*agent.Handler, error) {
 	// API handler
 	methods := conf.Agent.Methods
 	pow := conf.Agent.PoW
-	handler, err := agent.NewHandler(methods, pow, store, oop)
+	handler, err := agent.NewHandler(methods, pow, store, log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start method handler: %w", err)
 	}
