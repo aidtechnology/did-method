@@ -7,7 +7,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
-	go.bryk.io/pkg v0.0.0-20230724120603-30e50885239b
+	go.bryk.io/pkg v0.0.0-20230726005736-9113c4947926
 	go.mongodb.org/mongo-driver v1.12.0
 	golang.org/x/crypto v0.11.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
@@ -91,7 +91,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect

@@ -333,8 +333,8 @@ github.com/yusufpapurcu/wmi v1.2.2/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQ
 github.com/zeebo/errs v1.2.2 h1:5NFypMTuSdoySVTqlNs1dEoU21QVamMQJxW/Fii5O7g=
 go.bryk.io/miracl v0.5.1 h1:2XVoDcQc45x8bKPVMlbUzZy8VDc/yI2tWCvhsKRJQco=
 go.bryk.io/miracl v0.5.1/go.mod h1:AdsKWBu3X75H4KRElYk5QNoZ8WX+IsylqsUq3tS7kKM=
-go.bryk.io/pkg v0.0.0-20230724120603-30e50885239b h1:MrVIOqumwH/FyOSausg3uvpNm23T9CJIc/uN0DEDYoA=
-go.bryk.io/pkg v0.0.0-20230724120603-30e50885239b/go.mod h1:90ALzu6ohxSPT7gk+OOw3Ku6ajfYOcfOzlZspcFdeA4=
+go.bryk.io/pkg v0.0.0-20230726005736-9113c4947926 h1:85IuCDW6K1LpmKmy8QC6reLo0SmjZ+yPBr/xW0rqSsQ=
+go.bryk.io/pkg v0.0.0-20230726005736-9113c4947926/go.mod h1:zkx4aoAptoAdY9SRR2bZ8pZhX8bggwEMkWnaNDP0KzA=
 go.mongodb.org/mongo-driver v1.12.0 h1:aPx33jmn/rQuJXPQLZQ8NtfPQG8CaqgLThFtqRb0PiE=
 go.mongodb.org/mongo-driver v1.12.0/go.mod h1:AZkxhPnFJUoH7kZlFkVKucV20K387miPfm7oimrSmK0=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
@@ -384,8 +384,8 @@ go.uber.org/atomic v1.10.0/go.mod h1:LUxbIzbOniOlMKjJjyPfpl4v+PKK2cNJn91OQbhoJI0
 go.uber.org/goleak v1.1.10/go.mod h1:8a7PlsEVH3e/a/GLqe5IIrQx6GzcnRmZEufDUTk4A7A=
 go.uber.org/goleak v1.2.1 h1:NBol2c7O1ZokfZ0LEU9K6Whx/KnwvepVetCUhtKja4A=
 go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9iU=
-go.uber.org/multierr v1.8.0 h1:dg6GjLku4EH+249NNmoIciG9N/jURbDG+pFlTkhzIC8=
-go.uber.org/multierr v1.8.0/go.mod h1:7EAYxJLBy9rStEaz58O2t4Uvip6FSURkq8/ppBp95ak=
+go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
+go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 go.uber.org/zap v1.18.1/go.mod h1:xg/QME4nWcxGxrpdeYfq7UvYrLh66cuVKdrbD1XF/NI=
 go.uber.org/zap v1.24.0 h1:FiJd5l1UOLj0wCgbSE0rwwXHzEdAZS6hiiSnxJN/D60=
 go.uber.org/zap v1.24.0/go.mod h1:2kMP+WWQ8aoFoedH3T2sq6iJ2yDWpHbP0f6MQbS9Gkg=
